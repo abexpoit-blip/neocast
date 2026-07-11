@@ -1,24 +1,20 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, LogOut, Menu, X, Bell } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BuildBadge } from "@/components/BuildBadge";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { cartApi, announcementsApi } from "@/lib/api";
+import { cartApi } from "@/lib/api";
 
-// Scorpion-style navigation. Role-aware.
+// Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
 const buyerNav = [
   { to: "/", label: "HOME", end: true },
   { to: "/shop", label: "SHOP" },
-  { to: "/super-shop", label: "SUPER SHOP" },
-  { to: "/cart", label: "CART" },
+  { to: "/cart", label: "CAR" },
   { to: "/orders", label: "ORDER" },
   { to: "/recharge", label: "RECHARGE CENTER" },
-  { to: "/news", label: "NEWS" },
-  { to: "/refunds", label: "REFUNDS" },
-  { to: "/tickets", label: "SUPPORT" },
 ];
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
@@ -26,31 +22,20 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const settings = useSiteSettings();
   const nav = useNavigate();
   const loc = useLocation();
-  const role = profile?.role ?? "buyer";
-  const isAdmin = role === "admin";
-  const isSeller = role === "seller" || isAdmin;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; body: string; created_at: string }>>([]);
-  const [showNotifs, setShowNotifs] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const items = [...buyerNav];
-  if (isSeller) items.push({ to: "/seller", label: "SELLER" });
-  if (isAdmin) items.push({ to: "/admin", label: "ADMIN" });
+  const items = buyerNav;
 
   const loadCart = useCallback(async () => {
     if (!user) return;
     try { const { items } = await cartApi.list(); setCartCount((items ?? []).length); } catch { /* ignore */ }
   }, [user]);
 
-  const loadAnn = useCallback(async () => {
-    try { const r = await announcementsApi.list(); setAnnouncements((r.announcements ?? []).slice(0, 10) as any); } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => { loadCart(); loadAnn(); }, [loadCart, loadAnn]);
+  useEffect(() => { loadCart(); }, [loadCart]);
   useEffect(() => { loadCart(); }, [loc.pathname, loadCart]);
   useEffect(() => {
     const h = () => loadCart();
@@ -75,7 +60,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       <BuildBadge />
 
       {/* TOP NAV */}
-      <header className="bg-[#1f2d3d] text-white sticky top-0 z-40">
+      <header className="bg-[#304156] text-white sticky top-0 z-40">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-between gap-6">
           <nav className="hidden lg:flex items-center h-full text-[13px] tracking-wide">
             {items.map((n) => (
@@ -84,10 +69,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 to={n.to}
                 end={(n as any).end}
                 className={({ isActive }) =>
-                  `h-full px-3.5 flex items-center transition-colors border-b-2 relative ${
+                  `h-full px-4 flex items-center transition-colors border-b-2 relative ${
                     isActive
-                      ? "text-[#4fc3f7] border-[#4fc3f7]"
-                      : "text-white/85 border-transparent hover:text-white"
+                      ? "text-[#409EFF] border-[#409EFF] bg-[#263445]"
+                      : "text-[#bfcbd9] border-transparent hover:text-white"
                   }`
                 }
               >
@@ -112,7 +97,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
         {drawerOpen && (
-          <div className="lg:hidden bg-[#1f2d3d] border-t border-white/10">
+          <div className="lg:hidden bg-[#304156] border-t border-white/10">
             {items.map((n) => (
               <NavLink
                 key={n.to}
@@ -121,7 +106,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-3 text-sm border-l-2 ${
-                    isActive ? "border-[#4fc3f7] text-[#4fc3f7] bg-white/5" : "border-transparent text-white/85 hover:bg-white/5"
+                    isActive ? "border-[#409EFF] text-[#409EFF] bg-white/5" : "border-transparent text-[#bfcbd9] hover:bg-white/5"
                   }`
                 }
               >
@@ -135,44 +120,9 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       {/* SUB BAR */}
       <div className="bg-white border-b border-[#e6e6e6]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-end gap-3 text-[13px]">
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifs((v) => !v)}
-              className="p-2 text-[#666] hover:text-[#1f2d3d] transition relative"
-              aria-label="Notifications"
-            >
-              <Bell className="h-4 w-4" />
-              {announcements.length > 0 && (
-                <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-[#e53935]" />
-              )}
-            </button>
-            {showNotifs && (
-              <div className="absolute right-0 top-full mt-1 w-80 max-h-96 overflow-y-auto bg-white border border-[#e6e6e6] shadow-lg z-20 text-sm">
-                <div className="p-3 border-b border-[#eee] flex items-center justify-between">
-                  <span className="font-medium text-[#333]">Notifications</span>
-                  <button onClick={() => setShowNotifs(false)} className="text-[#888] hover:text-[#333]"><X className="h-4 w-4" /></button>
-                </div>
-                {announcements.length === 0 ? (
-                  <div className="p-6 text-center text-[#888]">No notifications</div>
-                ) : (
-                  <div className="divide-y divide-[#eee]">
-                    {announcements.map((a) => (
-                      <div key={a.id} className="p-3 hover:bg-[#f7f7f7]">
-                        <p className="font-medium text-[#333]">{a.title}</p>
-                        <p className="text-xs text-[#666] mt-0.5 line-clamp-2">{a.body}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <Link
-            to="/settings"
-            className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3] hover:bg-[#f5faff] transition"
-          >
+          <span className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3]">
             {uname}
-          </Link>
+          </span>
           <Link
             to="/recharge"
             className="px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium"
@@ -184,30 +134,18 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-1.5 pl-1 pr-2 py-1 hover:bg-[#f7f7f7] transition"
             >
-              <span className="h-8 w-8 rounded-full bg-[#1f2d3d] text-white text-xs uppercase font-medium flex items-center justify-center">
+              <span className="h-8 w-8 rounded-full bg-[#304156] text-white text-xs uppercase font-medium flex items-center justify-center">
                 {uname.slice(0, 2)}
               </span>
               <ChevronDown className="h-3.5 w-3.5 text-[#666]" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#e6e6e6] shadow-md z-10 text-sm">
-                <div className="px-3 py-2 border-b border-[#eee] text-[#333]">
-                  <div className="font-medium truncate">{uname}</div>
-                  <div className="text-[11px] text-[#888]">Balance: ${balance}</div>
-                </div>
-                <Link to="/settings" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>Settings</Link>
-                <Link to="/tickets" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>Tickets</Link>
-                {isSeller && (
-                  <Link to="/seller" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>Seller Panel</Link>
-                )}
-                {isAdmin && (
-                  <Link to="/admin" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>Admin</Link>
-                )}
+              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-[#e6e6e6] shadow-md z-10 text-sm">
                 <button
                   onClick={async () => { setMenuOpen(false); await signOut(); nav("/auth"); }}
-                  className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[#d32f2f]"
+                  className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[#333]"
                 >
-                  <LogOut className="h-3.5 w-3.5" /> Sign out
+                  <LogOut className="h-3.5 w-3.5" /> Log out
                 </button>
               </div>
             )}
@@ -216,13 +154,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       </div>
 
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-5">{children}</main>
-
-      {/* FOOTER */}
-      <footer className="border-t border-[#e6e6e6] bg-[#fafafa] mt-10">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 text-center text-[11px] text-[#888]">
-          © {new Date().getFullYear()} {settings.shop_name} · All rights reserved
-        </div>
-      </footer>
     </div>
   );
 };
