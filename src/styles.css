@@ -1,8 +1,10 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./vendor-ui.css";
 
 @custom-variant dark (&:is(.dark *));
+
 
 @theme inline {
   --color-border: hsl(var(--border));
@@ -173,4 +175,3 @@
 }
 
 /* Import the full vendor UI utility layer (glass, nav, badges, etc.) */
-@import "./vendor-ui.css";
