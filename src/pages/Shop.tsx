@@ -5,7 +5,7 @@ import { cardsApi, cartApi, sellersApi, categoriesApi } from "@/lib/api";
 import { Search, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { ActivationGate } from "@/components/ActivationGate";
+
 import Seo from "@/components/Seo";
 
 interface Card {
@@ -140,7 +140,6 @@ const Shop = () => {
   const noResults = !loading && cards.length === 0 && (searched || bin.length >= 6);
 
   return (
-    <ActivationGate>
     <ScorpionShell>
       <Seo title="Shop — cruzercc.shop" description="Browse live stock. Filter by BIN, base, country, ZIP." path="/shop" />
 
@@ -362,7 +361,6 @@ const Shop = () => {
       {/* keep Link import used for potential future links */}
       <span className="hidden"><Link to="/">.</Link></span>
     </ScorpionShell>
-    </ActivationGate>
   );
 };
 
