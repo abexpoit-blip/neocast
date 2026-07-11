@@ -4,8 +4,6 @@ import { AppShell } from "@/components/AppShell";
 import { depositsApi, plisioApi, walletApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Bitcoin, Wallet, CheckCircle2, Copy, Clock, XCircle, Loader2,
   QrCode, AlertCircle, ArrowDownLeft, ArrowUpRight, TimerReset, Receipt
