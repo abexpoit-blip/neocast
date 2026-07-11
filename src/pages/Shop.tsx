@@ -62,9 +62,9 @@ const Shop = () => {
 
   useEffect(() => {
     (async () => {
-      try { const r = await sellersApi.visible(); setSellers((r.sellers ?? []) as Seller[]); } catch { /* noop */ }
+      try { const r = await sellersApi.visible(); setSellers((r.sellers ?? []) as unknown as Seller[]); } catch { /* noop */ }
       try { const r = await cardsApi.bases(); setBases(r.bases ?? []); } catch { /* noop */ }
-      try { const r = await categoriesApi.list(); setCategories((r.categories ?? []) as Category[]); } catch { /* noop */ }
+      try { const r = await categoriesApi.list(); setCategories((r.categories ?? []) as unknown as Category[]); } catch { /* noop */ }
     })();
   }, []);
 
