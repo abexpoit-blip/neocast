@@ -76,7 +76,7 @@ const SuperShop = () => {
 
   return (
     <AppShell>
-      <Seo title="Super Shop — Digital Products | cruzercc.shop" description="Buy methods, accounts, tools and BINs with instant delivery." path="/super-shop" />
+      <Seo title="Super Shop — Digital Products | Scorpion-Shop" description="Buy methods, accounts, tools and BINs with instant delivery." path="/super-shop" />
       
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

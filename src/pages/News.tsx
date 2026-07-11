@@ -57,7 +57,7 @@ const News = () => {
 
   return (
     <AppShell>
-      <Seo title="News & Updates | cruzercc.shop" description="Latest marketplace updates, restock alerts and platform announcements from cruzercc.shop." path="/news" />
+      <Seo title="News & Updates | Scorpion-Shop" description="Latest marketplace updates, restock alerts and platform announcements from Scorpion-Shop." path="/news" />
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Header */}
         <div className="relative">
@@ -68,7 +68,7 @@ const News = () => {
             </div>
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-black tracking-wider neon-text">NEWS & ANNOUNCEMENTS</h1>
-              <p className="text-xs text-muted-foreground mt-0.5">Stay updated with the latest from CruzerCC</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Stay updated with the latest from Scorpion-Shop</p>
             </div>
           </div>
         </div>

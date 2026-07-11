@@ -141,7 +141,7 @@ const Shop = () => {
 
   return (
     <ScorpionShell>
-      <Seo title="Shop — cruzercc.shop" description="Browse live stock. Filter by BIN, base, country, ZIP." path="/shop" />
+      <Seo title="Shop — Scorpion-Shop" description="Browse live stock. Filter by BIN, base, country, ZIP." path="/shop" />
 
       {/* FILTER BAR */}
       <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px]">
