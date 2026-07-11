@@ -273,7 +273,7 @@ export const profileApi = {
   update: async (data: { display_name?: string; bio?: string; country?: string; avatar_url?: string }): Promise<{ ok: true }> => {
     const { data: authData } = await supabase.auth.getUser();
     if (!authData.user) throw new ApiError(401, "Not signed in");
-    const patch: Record<string, unknown> = {};
+    const patch: { avatar_url?: string | null } = {};
     if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabase.from("profiles").update(patch).eq("id", authData.user.id);
