@@ -36,12 +36,6 @@ import AdminStockReview from "./pages/AdminStockReview";
 import AdminDigitalProducts from "./pages/AdminDigitalProducts";
 import AdminBoost from "./pages/AdminBoost";
 import AdminCategories from "./pages/AdminCategories";
-import News from "./pages/News";
-import BuyerRefunds from "./pages/BuyerRefunds";
-import SellerPriceRules from "./pages/SellerPriceRules";
-import Dashboard from "./pages/Dashboard";
-import SuperShop from "./pages/SuperShop";
-import BoostTool from "./pages/BoostTool";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
