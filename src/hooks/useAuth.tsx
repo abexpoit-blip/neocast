@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from "react";
-import { getToken, clearToken, AUTH_CHANGED_EVENT, decodeToken, profileApi, VpsProfile } from "@/lib/api";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { profileApi } from "@/lib/api";
 
 export interface AppUser {
   id: string;
@@ -37,54 +38,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const loadedForUid = useRef<string | null>(null);
 
-  const loadProfile = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
+  const loadProfile = useCallback(async (uid: string | null) => {
+    if (!uid) {
       setUser(null);
       setProfile(null);
       loadedForUid.current = null;
+      setProfileError(null);
       setLoading(false);
       return;
     }
 
-    const decoded = decodeToken(token);
-    if (!decoded?.sub) {
-      clearToken();
-      setUser(null);
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
-
-    const uid = decoded.sub as string;
-    const tokenUser: AppUser = {
-      id: uid,
-      email: String(decoded.email ?? ""),
-      username: String(decoded.username ?? ""),
-      role: String(decoded.role ?? "buyer"),
-    };
-
-    setUser((prev) => {
-      if (
-        prev?.id === tokenUser.id &&
-        prev.email === tokenUser.email &&
-        prev.username === tokenUser.username &&
-        prev.role === tokenUser.role
-      ) {
-        return prev;
-      }
-      return tokenUser;
-    });
-    setProfile((prev) => (prev?.id === uid ? prev : null));
-
-    if (loadedForUid.current === uid) {
-      setLoading(false);
-      return;
-    }
+    if (loadedForUid.current === uid) return;
+    loadedForUid.current = uid;
 
     setLoading(true);
     setProfileError(null);
-
     try {
       const { profile: p } = await profileApi.get();
       const appUser: AppUser = { id: p.id, email: p.email, username: p.username, role: p.role };
@@ -100,49 +68,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       setUser(appUser);
       setProfile(prof);
-      loadedForUid.current = uid;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Couldn't load profile";
       setProfileError(msg);
       setProfile(null);
       loadedForUid.current = null;
-      if (err && typeof err === "object" && "status" in err && (err as { status: number }).status === 401) {
-        clearToken();
-        setUser(null);
-        setProfile(null);
-      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadProfile();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "cruzercc.token") {
-        loadedForUid.current = null;
-        loadProfile();
-      }
-    };
-    const onAuthChanged = () => {
-      loadedForUid.current = null;
-      loadProfile();
-    };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
-    };
+    // Subscribe first, then check the current session so we never miss events.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const uid = session?.user?.id ?? null;
+      // Never call async work synchronously inside the callback — defer it.
+      setTimeout(() => { void loadProfile(uid); }, 0);
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      void loadProfile(data.session?.user?.id ?? null);
+    });
+
+    return () => { sub.subscription.unsubscribe(); };
   }, [loadProfile]);
 
   const refresh = async () => {
     loadedForUid.current = null;
-    await loadProfile();
+    const { data } = await supabase.auth.getSession();
+    await loadProfile(data.session?.user?.id ?? null);
   };
 
   const signOut = async () => {
-    clearToken();
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
     loadedForUid.current = null;

@@ -1,74 +1,126 @@
-# Magic-shop Design → এই TanStack Start প্রজেক্টে Port
+# Full Backend Port to Lovable Cloud
 
-সোর্স: `abexpoit-blip/magic-shop-design-6bed9c33` (Vite + react-router-dom + Supabase)।  
-টার্গেট: এই TanStack Start প্রজেক্ট। **শুধু design/UI**, কোনো real backend/auth নেই — সব dummy in-memory data।
+Goal: vendor repo (`cruzercc.shop/api`) এর সব feature Lovable Cloud (Supabase-based) এ rebuild করা। Frontend already ported; শুধু API layer replace হবে। এখন `src/lib/api.ts` external VPS-এ call করে — সেটা replace হয়ে Supabase-এ যাবে।
 
-## যা করব
+---
 
-### 1. Theme + স্টাইল (foundation)
-- `src/index.css`-এর royal-gold theme (pure black + 24k gold, gradients, glass, shadows) Tailwind v4 format-এ `src/styles.css`-এ port করব — `@theme inline` + `:root` HSL tokens।
-- Google Fonts (Space Grotesk, Manrope, Instrument Serif, JetBrains Mono) `__root.tsx`-এ `<link>` দিয়ে load করব (Tailwind v4 rule — CSS `@import url` দিয়ে নয়)।
-- `tailwind.config.ts`-এর কাস্টম colors/gradients/shadows/animations সব `@theme`-এ map করব।
-- Custom utility classes (`glass`, `gold-text`, `neon-text`, `grid-bg`, ইত্যাদি) `@utility` block-এ port করব।
+## Phase 1 — Auth + Roles + Profiles (foundation)
 
-### 2. Router শিম
-- সোর্স `react-router-dom` ব্যবহার করে। প্রতি ফাইলে rewrite এড়াতে `src/lib/router-compat.ts` বানাব যেটা TanStack Router-এর `Link`, `useNavigate`, `useParams`, `useLocation`, `Navigate`, `Outlet` re-export করে `react-router-dom`-compatible API-সহ।
-- বাল্ক codemod: সব ported ফাইলে `from "react-router-dom"` → `from "@/lib/router-compat"`।
+**Tables (migration):**
+- `profiles` — id (auth.users FK), username unique, email, avatar_url, telegram, created_at
+- `user_roles` — id, user_id, role (enum: `buyer` | `seller` | `admin`)
+- `app_role` enum + `has_role(uuid, app_role)` security-definer function
+- Auto-create profile + default `buyer` role trigger on signup
 
-### 3. Dummy data layer
-- `src/lib/api.ts`-এ সোর্সের সব API method (`newsApi`, `ordersApi`, `cardsApi`, `categoriesApi`, `announcementsApi`, seller/admin APIs, ইত্যাদি) হুবহু signature-এ থাকবে, কিন্তু hardcoded mock data return করবে।
-- `src/hooks/useAuth.tsx` → static mock profile (buyer/seller/admin toggle dev-এর জন্য), `AuthProvider` no-op।
-- `src/hooks/useSiteSettings.ts` → static settings object।
-- `ProtectedRoute` / `AdminRoute` → শুধু children render, কোনো redirect না।
+**Auth setup:**
+- Email/password (Lovable Cloud default) — Google/Apple বাদ (vendor username-based)
+- Auth redirect: existing `/auth` page-এ Supabase call wiring
+- Reset password flow → `/reset-password` route
 
-### 4. Components + Pages copy
-- সব `src/components/ui/*` (মিসিং থাকলে যোগ)।
-- `AppShell`, `AdminLayout`, `Seo`, `ScrollToTop`, `Captcha`, `TrustBadge`, `ForgotPasswordDialog`, `BuildBadge`, `RoleBadge`, ইত্যাদি port।
-- সব ৪০+ পেজ কপি — imports fix + Seo/API calls dummy-এ পাস।
+**Rewrite:**
+- `src/hooks/useAuth.tsx` → Supabase session
+- `src/lib/api.ts` authApi block → Supabase calls
+- `src/pages/Auth.tsx` (login/signup submit)
+- `src/pages/ResetPassword.tsx`
+- `src/components/ForgotPasswordDialog.tsx`
+- Seller/Admin login routes → same auth + role check
 
-### 5. Routes wiring (TanStack file-based)
-সোর্সের `App.tsx`-এর প্রতি path-এর জন্য `src/routes/`-এ একটা করে file তৈরি করব যেটা শুধু ported page component রেন্ডার করে:
+---
 
-```
-routes/
-  index.tsx              → Index
-  auth.tsx               → Auth
-  seller-login.tsx       → SellerLogin
-  reset-password.tsx     → ResetPassword
-  shop.tsx, super-shop.tsx, cart.tsx, orders.tsx, recharge.tsx,
-  tickets.tsx, settings.tsx, news.tsx, refunds.tsx, dashboard.tsx,
-  boost.tsx
-  seller.tsx (+ index, apply, upload, format, price-rules, $id)
-  admin.tsx (+ settings, site, applications, payouts, cards, refunds,
-             deposit-addresses, payments, payment-gateway, stock-review,
-             digital-products, boost, categories)
-  crzr-x9k2-panel.tsx    → AdminLogin
-```
+## Phase 2 — Catalog (categories, cards, digital products)
 
-- `__root.tsx`-এর title/description/og সবগুলা "cruzercc.shop" branding-এ update করব।
-- Toaster + Sonner (dark) + TooltipProvider root-এ যোগ করব।
+**Tables:**
+- `categories` — id, name, slug, icon, order, is_active
+- `cards` — id, base, brand, country, price, stock/quantity, expire_at, seller_id, status
+- `digital_products` — id, title, description, price, image_url, type, stock, seller_id
+- Storage bucket for product images
 
-### 6. Dependencies
-`bun add react-helmet-async qrcode.react next-themes vaul cmdk embla-carousel-react input-otp react-day-picker react-resizable-panels recharts date-fns react-hook-form @hookform/resolvers zod @tailwindcss/typography` (যেগুলো মিসিং)।
+**Server fns:**
+- Public list (anon SELECT policy): categories, cards (list/bases/recent-stock), digital-products
+- Authenticated: card reveal, my cards
+- Admin: CRUD on all
 
-## যা করব না
-- Supabase, real auth, RLS, edge functions — কিছুই না।
-- Cart persistence, real orders/payments, stock refresh।
-- Tests, playwright, color-audit scripts।
-- `deploy.sh`, `vps-setup.sh`, nginx।
+**Frontend rewire:**
+- `Shop.tsx`, `SuperShop.tsx`, `Index.tsx`
+- Admin: `AdminCategories`, `AdminCards`, `AdminDigitalProducts`, `AdminStockReview`
 
-## সীমাবদ্ধতা (আগে থেকে জানিয়ে রাখছি)
-- অনেক পেজে dynamic data-dependent UI আছে; dummy data দিয়ে দেখতে সঠিক হলেও কিছু edge state (empty, error) placeholder থাকবে।
-- Auth flow visual-only — সব "login" ক্লিক করলেই dashboard-এ পাঠাবে।
-- Admin CRUD forms দেখাবে কিন্তু submit no-op।
+---
 
-## Technical execution order
-1. `bun add` মিসিং deps
-2. Theme + fonts + utilities → `src/styles.css`, `__root.tsx`
-3. `router-compat.ts` + dummy `api.ts` + stub hooks
-4. `components/` bulk copy (sed করে imports fix)
-5. `pages/` bulk copy (sed করে imports fix)
-6. `routes/*.tsx` thin wrappers তৈরি
-7. `bun run build` → typecheck errors ব্যাচে ফিক্স
+## Phase 3 — Commerce (cart, orders, wallet, deposits)
 
-কনফার্ম করলে শুরু করব। এটা কয়েক turn নেবে।
+**Tables:**
+- `cart_items` — user_id, card_id / digital_product_id, added_at
+- `orders` — user_id, total, status, created_at
+- `order_items` — order_id, card_id/product_id, price
+- `wallet_balances` — user_id, balance
+- `wallet_transactions` — user_id, amount, type, ref, created_at
+- `deposits` — user_id, amount, method, address, status, tx_hash
+- `deposit_addresses` — admin-managed crypto addresses
+
+**Server fns:**
+- Cart: list/add/batch/remove/checkout
+- Orders: mine/all
+- Wallet: balance/transactions
+- Deposits: create/list/confirm
+
+**Frontend:** `Cart.tsx`, `Orders.tsx`, `Recharge.tsx`, `Dashboard.tsx`, `AdminPayments.tsx`, `AdminDepositAddresses.tsx`
+
+---
+
+## Phase 4 — Seller System
+
+**Tables:**
+- `seller_applications` — user_id, status, notes, applied_at
+- `price_rules` — seller_id, base/brand pattern, markup %
+- `seller_profiles` — payout_address, telegram, format prefs
+
+**Server fns + admin approval flow**
+
+**Frontend:** `SellerApply`, `SellerPanel`, `SellerUpload`, `SellerPriceRules`, `SellerProfile`, `SellerFormat`, `AdminApplications`, `AdminPayouts`
+
+---
+
+## Phase 5 — Support & Extras
+
+**Tables:**
+- `tickets` + `ticket_messages`
+- `refunds` — order_id, reason, status
+- `news` — title, body, published_at
+- `site_settings` — key/value (single-row JSON)
+- `boost_orders` — user_id, target, boost_type, expires_at
+
+**Frontend:** `Tickets.tsx`, `BuyerRefunds.tsx`, `AdminRefunds.tsx`, `News.tsx`, `AdminSettings.tsx`, `AdminSiteSettings.tsx`, `AdminBoost.tsx`, `BoostTool.tsx`, `AdminPaymentGateway.tsx`
+
+---
+
+## Phase 6 — Route Gates + Cleanup
+
+- Move all authenticated routes under `_authenticated/` layout
+- Role-gate admin/seller paths via `has_role`
+- Remove `src/lib/api.ts` external VPS calls entirely
+- Remove old `getToken`/`localStorage` token system
+- Remove `ClientApp` react-router-dom wrapper → move all pages to native TanStack routes (optional, can stay for now)
+
+---
+
+## Approach per phase
+
+Each phase = 1 migration + N server functions + rewire N pages. আমি এক turn-এ **এক phase** shesh করবো, তারপর তুমি test করে বলবে next phase-এ যাবে কিনা।
+
+## Excluded (until you ask)
+
+- Real crypto payment gateway integration (BTC/USDT verify) — data model থাকবে, external verifier লাগবে
+- Email templates customization
+- Realtime updates (subscribe patterns)
+- CSV bulk card import parsing
+- CAPTCHA server-side verify (client-only stays)
+
+## Order of execution
+
+Phase 1 → 2 → 3 → 4 → 5 → 6
+
+## First actionable step
+
+**Phase 1 শুরু করবো।** এটার শেষে login/signup/logout সম্পূর্ণ Lovable Cloud-এ চলবে, তবে shop/cart/admin এখনও VPS-এ থাকবে (ভাঙবে না — parallel চলবে যতক্ষণ replace না হয়)।
+
+তুমি এই plan approve করলে Phase 1 শুরু করি।

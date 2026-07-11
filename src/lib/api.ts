@@ -134,22 +134,102 @@ export const api = {
 };
 
 // ── Typed API helpers ──
+// Auth + Profile now backed by Lovable Cloud (Supabase). Vendor username-based
+// login is preserved by mapping username -> synthetic email <username>@cruzercc.shop.
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AuthResult {
   token: string;
   user: { id: string; email: string; username: string; role: string; roles?: string[] };
 }
 
+const SYNTH_DOMAIN = "cruzercc.shop";
+
+function toAuthEmail(identifier: string): string {
+  const id = identifier.trim();
+  return id.includes("@") ? id.toLowerCase() : `${id.toLowerCase()}@${SYNTH_DOMAIN}`;
+}
+
+async function loadRolesAndProfile(userId: string) {
+  const [{ data: profile }, { data: roles }] = await Promise.all([
+    supabase.from("profiles").select("id, username, email").eq("id", userId).maybeSingle(),
+    supabase.from("user_roles").select("role").eq("user_id", userId),
+  ]);
+  const roleList = (roles ?? []).map((r) => r.role as string);
+  const primary = roleList.includes("admin")
+    ? "admin"
+    : roleList.includes("seller")
+      ? "seller"
+      : "buyer";
+  return {
+    id: userId,
+    email: profile?.email ?? "",
+    username: profile?.username ?? "",
+    role: primary,
+    roles: roleList,
+  };
+}
+
+async function requireRole(userId: string, role: "seller" | "admin"): Promise<boolean> {
+  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
+  return Boolean(data);
+}
+
 export const authApi = {
-  signup: (data: { email: string; username: string; password: string }) =>
-    api.post<AuthResult>("/auth/signup", data),
-  login: (data: { identifier: string; password: string }) =>
-    api.post<AuthResult>("/auth/login", data),
-  sellerLogin: (data: { identifier: string; password: string }) =>
-    api.post<AuthResult>("/auth/seller-login", data),
-  adminLogin: (data: { identifier: string; password: string }) =>
-    api.post<AuthResult>("/auth/admin-login", data),
-  me: () => api.get<{ user: AuthResult["user"] }>("/auth/me"),
+  signup: async (data: { email: string; username: string; password: string }): Promise<AuthResult> => {
+    const email = toAuthEmail(data.username); // username-based auth email
+    const { data: res, error } = await supabase.auth.signUp({
+      email,
+      password: data.password,
+      options: {
+        data: { username: data.username, real_email: data.email || null },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+    if (error) throw new ApiError(400, error.message);
+    if (!res.user) throw new ApiError(400, "Signup failed");
+    const user = await loadRolesAndProfile(res.user.id);
+    return { token: res.session?.access_token ?? "", user };
+  },
+
+  login: async (data: { identifier: string; password: string }): Promise<AuthResult> => {
+    const email = toAuthEmail(data.identifier);
+    const { data: res, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: data.password,
+    });
+    if (error) throw new ApiError(401, error.message);
+    if (!res.user) throw new ApiError(401, "Login failed");
+    const user = await loadRolesAndProfile(res.user.id);
+    return { token: res.session?.access_token ?? "", user };
+  },
+
+  sellerLogin: async (data: { identifier: string; password: string }): Promise<AuthResult> => {
+    const result = await authApi.login(data);
+    const ok = await requireRole(result.user.id, "seller");
+    if (!ok) {
+      await supabase.auth.signOut();
+      throw new ApiError(403, "This account is not a seller");
+    }
+    return result;
+  },
+
+  adminLogin: async (data: { identifier: string; password: string }): Promise<AuthResult> => {
+    const result = await authApi.login(data);
+    const ok = await requireRole(result.user.id, "admin");
+    if (!ok) {
+      await supabase.auth.signOut();
+      throw new ApiError(403, "This account is not an admin");
+    }
+    return result;
+  },
+
+  me: async (): Promise<{ user: AuthResult["user"] }> => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) throw new ApiError(401, "Not signed in");
+    const user = await loadRolesAndProfile(data.user.id);
+    return { user };
+  },
 };
 
 export interface VpsProfile {
@@ -160,9 +240,46 @@ export interface VpsProfile {
 }
 
 export const profileApi = {
-  get: () => api.get<{ profile: VpsProfile }>("/profile"),
-  update: (data: { display_name?: string; bio?: string; country?: string; avatar_url?: string }) =>
-    api.patch<{ ok: true }>("/profile", data),
+  get: async (): Promise<{ profile: VpsProfile }> => {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) throw new ApiError(401, "Not signed in");
+    const [{ data: row, error }, { data: roles }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", authData.user.id),
+    ]);
+    if (error) throw new ApiError(500, error.message);
+    if (!row) throw new ApiError(404, "Profile not found");
+    const roleList = (roles ?? []).map((r) => r.role as string);
+    const primary = roleList.includes("admin")
+      ? "admin"
+      : roleList.includes("seller")
+        ? "seller"
+        : "buyer";
+    return {
+      profile: {
+        id: row.id,
+        email: row.email ?? "",
+        username: row.username,
+        role: primary,
+        display_name: row.username,
+        avatar_url: row.avatar_url,
+        bio: null,
+        country: null,
+        balance: 0, // wallet comes in Phase 3
+        roles: roleList,
+      },
+    };
+  },
+  update: async (data: { display_name?: string; bio?: string; country?: string; avatar_url?: string }): Promise<{ ok: true }> => {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) throw new ApiError(401, "Not signed in");
+    const patch: { avatar_url?: string | null } = {};
+    if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", authData.user.id);
+    if (error) throw new ApiError(500, error.message);
+    return { ok: true };
+  },
 };
 
 // Cards

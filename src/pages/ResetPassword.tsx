@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -12,10 +12,19 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // Extract token from URL hash (?token=xxx or #token=xxx)
-  const params = new URLSearchParams(window.location.search || window.location.hash.replace("#", "?"));
-  const resetToken = params.get("token");
+  useEffect(() => {
+    // Supabase parses the recovery token from the URL hash and fires PASSWORD_RECOVERY.
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
+    });
+    // In case the event already fired before mount, check current session.
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setReady(true);
+    });
+    return () => { sub.subscription.unsubscribe(); };
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +32,9 @@ const ResetPassword = () => {
     if (password !== confirm) return toast.error("Passwords don't match");
     setLoading(true);
     try {
-      await api.post("/auth/reset-password", { token: resetToken, password });
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      await supabase.auth.signOut();
       toast.success("Password updated — please sign in with your new password");
       nav("/auth");
     } catch (err) {
@@ -46,9 +57,9 @@ const ResetPassword = () => {
             <p className="text-[10px] font-mono tracking-[0.4em] text-muted-foreground mt-1">CHOOSE A NEW PASSWORD</p>
           </div>
 
-          {!resetToken ? (
+          {!ready ? (
             <div className="text-center text-sm text-muted-foreground py-6">
-              No reset token found. Please request a new reset link from the sign-in page.
+              Waiting for reset link… If you didn't arrive here from an email link, request a new one from the sign-in page.
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
