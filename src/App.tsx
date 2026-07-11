@@ -19,8 +19,6 @@ import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Recharge from "./pages/Recharge";
-import Tickets from "./pages/Tickets";
-import Settings from "./pages/Settings";
 import SellerPanel from "./pages/SellerPanel";
 import SellerApply from "./pages/SellerApply";
 import SellerUpload from "./pages/SellerUpload";
