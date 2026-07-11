@@ -4,8 +4,6 @@ import { AppShell } from "@/components/AppShell";
 import { depositsApi, plisioApi, walletApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Bitcoin, Wallet, CheckCircle2, Copy, Clock, XCircle, Loader2,
   QrCode, AlertCircle, ArrowDownLeft, ArrowUpRight, TimerReset, Receipt
@@ -283,357 +281,355 @@ const Recharge = () => {
 
   return (
     <AppShell>
-      <div className="space-y-6 max-w-5xl">
-        <h1 className="font-display text-3xl font-black neon-text">RECHARGE CENTER</h1>
+      <div className="space-y-4 max-w-6xl">
+        <h1 className="text-[18px] font-semibold text-[#1f2d3d]">Recharge Center</h1>
 
         {isActivation && (
-          <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 p-4 md:p-5 backdrop-blur-xl">
-            <div className="absolute -top-12 -left-12 w-40 h-40 rounded-full bg-primary/20 blur-3xl" />
-            <div className="relative flex items-start gap-3">
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xl shadow-lg shadow-primary/30">🔓</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold tracking-[0.25em] text-primary uppercase">Account Activation</div>
-                <div className="text-sm md:text-base font-bold text-foreground mt-0.5">
-                  Complete your one-time deposit of ${Number(settings.min_deposit ?? 5).toFixed(2)} to unlock the marketplace.
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  ✨ The amount is pre-filled below. Once approved, you'll be redirected automatically.
-                </div>
+          <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex items-start gap-3 text-[13px]">
+            <div className="shrink-0 h-8 w-8 bg-[#2196f3] text-white flex items-center justify-center text-sm font-bold">$</div>
+            <div>
+              <div className="text-[12px] font-semibold text-[#2196f3] uppercase tracking-wider">Account Activation</div>
+              <div className="text-[#333] mt-0.5">
+                Complete a one-time deposit of ${Number(settings.min_deposit ?? 5).toFixed(2)} to unlock the marketplace.
               </div>
+              <div className="text-[11px] text-[#888] mt-0.5">Amount pre-filled below. You will be redirected once approved.</div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Deposit form or active invoice */}
-          <section className="glass-neon rounded-2xl p-6">
-            <div className="flex items-center gap-2 text-primary-glow mb-3">
-              <Wallet className="h-5 w-5" />
-              <h2 className="font-display tracking-wider">YOUR BALANCE</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left: form / active invoice */}
+          <section className="bg-white border border-[#e6e6e6]">
+            <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
+              <Wallet className="h-4 w-4 mr-2 text-[#2196f3]" /> Your Balance
             </div>
-            <p className="font-display text-5xl font-black neon-text mb-6">
-              ${Number(profile?.balance ?? 0).toFixed(2)}
-            </p>
+            <div className="p-4">
+              <p className="text-[28px] font-semibold text-[#2fb344] font-mono mb-4">
+                ${Number(profile?.balance ?? 0).toFixed(2)}
+              </p>
 
-            {activeInvoice ? (
-              /* ─── Active Invoice ─── */
-              <div className="space-y-5">
-                {/* Countdown timer */}
-                {activeInvoice.expires_at && countdown >= 0 && (
-                  <div className={`flex items-center justify-center gap-2 p-3 rounded-xl border ${
-                    isExpired
-                      ? "bg-destructive/10 border-destructive/40 text-destructive"
-                      : countdown <= 120
-                        ? "bg-warning/10 border-warning/40 text-warning"
-                        : "bg-primary/10 border-primary/30 text-primary-glow"
-                  }`}>
-                    <TimerReset className="h-4 w-4" />
-                    <span className="font-mono text-lg font-bold">
-                      {isExpired ? "EXPIRED" : formatCountdown(countdown)}
-                    </span>
-                    <span className="text-xs opacity-70">
-                      {isExpired ? "— generate a new invoice" : "remaining"}
-                    </span>
+              {activeInvoice ? (
+                <div className="space-y-4">
+                  {/* Countdown */}
+                  {activeInvoice.expires_at && countdown >= 0 && (
+                    <div className={`flex items-center justify-center gap-2 h-10 border text-[13px] ${
+                      isExpired
+                        ? "bg-[#fdecea] border-[#f5c6cb] text-[#c0392b]"
+                        : countdown <= 120
+                          ? "bg-[#fff8e1] border-[#ffe0a0] text-[#b26a00]"
+                          : "bg-[#e8f4ff] border-[#bcdcfa] text-[#1976d2]"
+                    }`}>
+                      <TimerReset className="h-4 w-4" />
+                      <span className="font-mono font-semibold">
+                        {isExpired ? "EXPIRED" : formatCountdown(countdown)}
+                      </span>
+                      <span className="text-[11px] opacity-80">{isExpired ? "— generate a new invoice" : "remaining"}</span>
+                    </div>
+                  )}
+
+                  {/* Amount summary */}
+                  <div className="text-center border border-[#e6e6e6] bg-[#fafafa] p-3">
+                    <p className="text-[11px] uppercase tracking-wider text-[#888]">You are depositing</p>
+                    <p className="text-[22px] font-semibold text-[#2196f3] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
+                    {(feePercent > 0 || feeFlat > 0) && (
+                      <div className="text-[11px] text-[#666] mt-1 space-y-0.5">
+                        <p>Fee: +${computeFee(activeInvoice.usd_amount).toFixed(2)}</p>
+                        <p>Total to pay: ${round2(activeInvoice.usd_amount + computeFee(activeInvoice.usd_amount)).toFixed(2)}</p>
+                        <p className="text-[#2fb344] font-semibold">You receive: ${activeInvoice.usd_amount.toFixed(2)}</p>
+                      </div>
+                    )}
+                    <div className="inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 border border-[#bcdcfa] bg-white text-[11px] text-[#1976d2]">
+                      <Bitcoin className="h-3 w-3" /> {activeInvoice.currency} Network
+                    </div>
                   </div>
-                )}
 
-                {/* Amount + network summary */}
-                <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/30 space-y-2">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">You are depositing</p>
-                  <p className="font-display text-2xl font-black text-primary-glow">
-                    ${activeInvoice.usd_amount.toFixed(2)}
+                  {/* QR */}
+                  <div className={`flex justify-center ${isExpired ? "opacity-30 pointer-events-none" : ""}`}>
+                    <div className="p-3 bg-white border border-[#e6e6e6]">
+                      <QRCodeSVG value={buildQrValue()} size={180} level="M" includeMargin={false} />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-center text-[#888]">
+                    {isExpired ? "Invoice expired — QR no longer valid" : `Scan with your ${activeInvoice.currency} wallet app`}
                   </p>
-                  {(feePercent > 0 || feeFlat > 0) && (
-                    <div className="text-xs space-y-0.5 text-muted-foreground">
-                      <p>Fee: +${computeFee(activeInvoice.usd_amount).toFixed(2)}</p>
-                      <p>Total to pay: ${round2(activeInvoice.usd_amount + computeFee(activeInvoice.usd_amount)).toFixed(2)}</p>
-                      <p className="text-primary-glow font-bold">
-                        You receive: ${activeInvoice.usd_amount.toFixed(2)}
+
+                  {/* Crypto amount */}
+                  <div className={`border border-[#e6e6e6] bg-[#fafafa] p-3 ${isExpired ? "opacity-40" : ""}`}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#888]">Send exactly</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-mono text-[15px] font-semibold text-[#1f2d3d] flex-1 break-all">
+                        {activeInvoice.crypto_amount} {activeInvoice.currency}
+                      </span>
+                      <button
+                        onClick={() => copyField(activeInvoice.crypto_amount, "amount")}
+                        disabled={!!isExpired}
+                        className="shrink-0 h-7 w-7 border border-[#dcdcdc] bg-white hover:bg-[#f5faff] text-[#2196f3] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        {copiedField === "amount" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Wallet address */}
+                  <div className={`border border-[#e6e6e6] bg-[#fafafa] p-3 ${isExpired ? "opacity-40" : ""}`}>
+                    <p className="text-[10px] uppercase tracking-wider text-[#888]">To this {activeInvoice.currency} address</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-[11px] text-[#333] break-all flex-1 font-mono leading-relaxed">
+                        {activeInvoice.wallet_address}
+                      </code>
+                      <button
+                        onClick={() => copyField(activeInvoice.wallet_address, "address")}
+                        disabled={!!isExpired}
+                        className="shrink-0 h-7 w-7 border border-[#dcdcdc] bg-white hover:bg-[#f5faff] text-[#2196f3] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        {copiedField === "address" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Warning */}
+                  <div className="flex items-start gap-2 p-3 border border-[#ffe0a0] bg-[#fff8e1] text-[12px] text-[#b26a00]">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <p>Send <strong>only {activeInvoice.currency}</strong> to this address. Sending any other coin will result in permanent loss.</p>
+                  </div>
+
+                  {/* Status */}
+                  {!isExpired && (
+                    <div className="border border-[#e6e6e6] bg-white p-3 space-y-2 text-[12px]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-[#333]">
+                          <Loader2 className="h-4 w-4 animate-spin text-[#2196f3]" />
+                          <span className="uppercase tracking-wider">
+                            {activeInvoice.status === "pending" ? "Waiting for payment" :
+                             activeInvoice.status === "approved" ? "Approved ✓" :
+                             `Status: ${activeInvoice.status}`}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono text-[#2196f3]">
+                          {activeInvoice.confirmations ?? 0}/2 confirmations
+                        </span>
+                      </div>
+                      <div className="relative h-1.5 w-full overflow-hidden bg-[#eee] border border-[#e6e6e6]">
+                        <div
+                          className="h-full bg-[#2196f3] transition-all duration-500"
+                          style={{
+                            width: `${activeInvoice.status === "approved" ? 100 :
+                              Math.min(95, 15 + ((activeInvoice.confirmations ?? 0) * 40))}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-[#888] uppercase tracking-wider">
+                        <span>● Detecting</span><span>● Confirming</span><span>● Credited</span>
+                      </div>
+                      <p className="text-[11px] text-center text-[#888] pt-1">
+                        Auto-checking every 10 seconds — keep this tab open.
                       </p>
                     </div>
                   )}
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-xs font-display tracking-wider text-primary-glow">
-                    <Bitcoin className="h-3.5 w-3.5" />
-                    {activeInvoice.currency} Network
-                  </div>
-                </div>
 
-                {/* QR Code */}
-                <div className={`flex justify-center ${isExpired ? "opacity-30 pointer-events-none" : ""}`}>
-                  <div className="p-4 bg-popover rounded-2xl shadow-card border border-border/40">
-                    <QRCodeSVG value={buildQrValue()} size={200} level="M" includeMargin={false} />
-                  </div>
-                </div>
-                <p className="text-[10px] text-center text-muted-foreground">
-                  {isExpired ? "Invoice expired — QR no longer valid" : `Scan with your ${activeInvoice.currency} wallet app`}
-                </p>
+                  <button
+                    onClick={() => {
+                      setActiveInvoice(null);
+                      setCountdown(-1);
+                      if (pollRef.current) clearInterval(pollRef.current);
+                      if (countdownRef.current) clearInterval(countdownRef.current);
+                    }}
+                    className={`w-full h-9 text-[13px] transition ${
+                      isExpired
+                        ? "bg-[#2196f3] hover:bg-[#1e88e5] text-white"
+                        : "border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
+                    }`}
+                  >
+                    {isExpired ? "Generate New Invoice" : "Cancel"}
+                  </button>
 
-                {/* Crypto amount */}
-                <div className={`p-4 rounded-xl bg-background/60 border border-primary/40 space-y-1 ${isExpired ? "opacity-40" : ""}`}>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Send exactly</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-lg font-bold text-primary-glow flex-1 break-all">
-                      {activeInvoice.crypto_amount} {activeInvoice.currency}
-                    </span>
-                    <button
-                      onClick={() => copyField(activeInvoice.crypto_amount, "amount")}
-                      disabled={!!isExpired}
-                      className="shrink-0 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary-glow transition disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      {copiedField === "amount" ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Wallet address */}
-                <div className={`p-4 rounded-xl bg-background/60 border border-border/40 space-y-1 ${isExpired ? "opacity-40" : ""}`}>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    To this {activeInvoice.currency} address
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs text-foreground/90 break-all flex-1 font-mono leading-relaxed">
-                      {activeInvoice.wallet_address}
-                    </code>
-                    <button
-                      onClick={() => copyField(activeInvoice.wallet_address, "address")}
-                      disabled={!!isExpired}
-                      className="shrink-0 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary-glow transition disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      {copiedField === "address" ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Warning */}
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30">
-                  <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                  <p className="text-xs text-warning/90">
-                    Send <strong>only {activeInvoice.currency}</strong> to this address.
-                    Sending any other coin will result in permanent loss.
-                  </p>
-                </div>
-
-                {/* Status + Approval Progress */}
-                {!isExpired && (
-                  <div className="space-y-2 p-4 rounded-xl bg-secondary/40 border border-primary/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary-glow" />
-                        <span className="text-sm font-display tracking-wider text-foreground/90">
-                          {activeInvoice.status === "pending" ? "WAITING FOR PAYMENT" :
-                           activeInvoice.status === "approved" ? "APPROVED ✓" :
-                           `STATUS: ${activeInvoice.status.toUpperCase()}`}
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono text-primary-glow">
-                        {activeInvoice.confirmations ?? 0}/2 confirmations
-                      </span>
-                    </div>
-                    {/* Animated progress bar */}
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-background/60 border border-border/40">
-                      <div
-                        className={`h-full bg-gradient-to-r from-primary via-primary-glow to-accent transition-all duration-500 ${
-                          activeInvoice.status === "approved" ? "" : "animate-pulse"
-                        }`}
-                        style={{
-                          width: `${
-                            activeInvoice.status === "approved" ? 100 :
-                            Math.min(95, 15 + ((activeInvoice.confirmations ?? 0) * 40))
-                          }%`,
-                        }}
-                      />
-                      <div className="shimmer-overlay absolute inset-0 animate-shimmer" />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                      <span>● Detecting payment</span>
-                      <span>● Confirming</span>
-                      <span>● Credited</span>
-                    </div>
-                    <p className="text-[11px] text-center text-muted-foreground pt-1">
-                      Auto-checking every 10 seconds — keep this tab open ⚡
+                  {!isExpired && (
+                    <p className="text-[11px] text-[#888] text-center">
+                      Your balance is credited automatically once payment is confirmed on the blockchain (~2-10 min).
                     </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[11px] uppercase tracking-wider text-[#888]">Currency</label>
+                    <div className="mt-1.5 grid grid-cols-4 gap-2">
+                      {(currencies.length ? currencies : [{ id: "LTC" }, { id: "BTC" }, { id: "USDT" }, { id: "TRX" }]).map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => setCurrency(c.id)}
+                          className={`h-9 border text-[12px] font-medium tracking-wider transition ${
+                            currency === c.id
+                              ? "bg-[#2196f3] border-[#2196f3] text-white"
+                              : "bg-white border-[#dcdcdc] text-[#555] hover:border-[#4fc3f7]"
+                          }`}
+                        >
+                          {c.id}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
 
+                  <div>
+                    <label className="text-[11px] uppercase tracking-wider text-[#888]">Amount (USD)</label>
+                    <input
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      type="number"
+                      min={MIN_DEPOSIT}
+                      placeholder="50"
+                      className="mt-1.5 h-11 w-full border border-[#dcdcdc] px-3 text-[16px] font-mono outline-none focus:border-[#4fc3f7]"
+                    />
+                    <p className="text-[11px] text-[#888] mt-1">Minimum deposit: ${MIN_DEPOSIT}</p>
+                  </div>
 
-                <Button variant={isExpired ? "default" : "outline"} size="sm" className="w-full" onClick={() => {
-                  setActiveInvoice(null);
-                  setCountdown(-1);
-                  if (pollRef.current) clearInterval(pollRef.current);
-                  if (countdownRef.current) clearInterval(countdownRef.current);
-                }}>
-                  {isExpired ? "Generate New Invoice" : "Cancel"}
-                </Button>
+                  {amtNum > 0 && (
+                    <div className="border border-[#e6e6e6] bg-[#fafafa] p-3 space-y-1 text-[12px]">
+                      <div className="flex justify-between text-[#666]">
+                        <span>Deposit amount</span><span className="font-mono">${amtNum.toFixed(2)}</span>
+                      </div>
+                      {(feePercent > 0 || feeFlat > 0) && (
+                        <>
+                          {feePercent > 0 && (
+                            <div className="flex justify-between text-[#666]">
+                              <span>Fee ({feePercent}%)</span><span className="font-mono">+${(amtNum * feePercent / 100).toFixed(2)}</span>
+                            </div>
+                          )}
+                          {feeFlat > 0 && (
+                            <div className="flex justify-between text-[#666]">
+                              <span>Flat fee</span><span className="font-mono">+${feeFlat.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <div className="border-t border-[#e6e6e6] pt-1.5 flex justify-between font-semibold text-[#2196f3]">
+                        <span>Total to pay</span><span className="font-mono">${totalToPay.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-[#2fb344]">
+                        <span>You receive</span><span className="font-mono">${amtNum.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
 
-                {!isExpired && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    ✅ Your balance is credited <strong>automatically</strong> once payment is confirmed on the blockchain (~2-10 min).
+                  <button
+                    onClick={createInvoice}
+                    disabled={busy}
+                    className="w-full h-10 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center justify-center gap-2 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bitcoin className="h-4 w-4" />}
+                    Generate Payment Address
+                  </button>
+                  <p className="text-[11px] text-[#888]">
+                    A unique {currency} address will be generated. Send crypto → balance credited automatically after blockchain confirmation.
                   </p>
-                )}
-              </div>
-            ) : (
-              /* ─── New Deposit Form ─── */
-              <div className="space-y-4">
-                <div className="grid grid-cols-4 gap-2">
-                  {(currencies.length ? currencies : [{ id: "LTC" }, { id: "BTC" }, { id: "USDT" }, { id: "TRX" }]).map((c) => (
-                    <button key={c.id} onClick={() => setCurrency(c.id)}
-                      className={`px-2 py-2 rounded-lg border text-xs font-display tracking-wider transition ${
-                        currency === c.id
-                          ? "bg-primary/20 border-primary text-primary-glow"
-                          : "bg-secondary/40 border-border/50 text-foreground/70 hover:border-primary/40"
-                      }`}>
-                      {c.id}
-                    </button>
-                  ))}
                 </div>
-
-                <div>
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground">Amount (USD)</label>
-                  <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={MIN_DEPOSIT}
-                    placeholder="50" className="mt-1.5 bg-input/60 text-2xl font-display h-14" />
-                  <p className="text-[10px] text-muted-foreground mt-1">Minimum deposit: ${MIN_DEPOSIT}</p>
-                </div>
-
-                {/* Fee breakdown — always show when amount entered */}
-                {amtNum > 0 && (
-                  <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 space-y-1.5 text-xs">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Deposit amount</span>
-                      <span>${amtNum.toFixed(2)}</span>
-                    </div>
-                    {(feePercent > 0 || feeFlat > 0) && (
-                      <>
-                        {feePercent > 0 && (
-                          <div className="flex justify-between text-muted-foreground">
-                            <span>Fee ({feePercent}%)</span>
-                            <span>+${(amtNum * feePercent / 100).toFixed(2)}</span>
-                          </div>
-                        )}
-                        {feeFlat > 0 && (
-                          <div className="flex justify-between text-muted-foreground">
-                            <span>Flat fee</span>
-                            <span>+${feeFlat.toFixed(2)}</span>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    <div className="border-t border-border/40 pt-1.5 flex justify-between font-display text-primary-glow font-bold">
-                      <span>Total to pay</span>
-                      <span>${totalToPay.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-success font-display">
-                      <span>You receive</span>
-                      <span>${amtNum.toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
-
-                <Button onClick={createInvoice} disabled={busy} className="w-full bg-gradient-primary shadow-neon h-12">
-                  {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Bitcoin className="h-4 w-4 mr-2" />}
-                  Generate Payment Address
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  A unique {currency} address will be generated. Send crypto → balance is credited <strong>automatically</strong> after blockchain confirmation.
-                </p>
-              </div>
-            )}
+              )}
+            </div>
           </section>
 
-          {/* Right: Bonus table + How it works */}
-          <section className="glass rounded-2xl p-6">
-            <h2 className="font-display tracking-wider mb-3 text-primary-glow">TOP-UP BONUS</h2>
-            <ul className="space-y-2.5">
-              {[["$50", "$2 bonus"], ["$100", "$5 bonus"], ["$500", "$35 bonus"], ["$1,000", "$100 bonus"], ["$2,000", "$240 bonus"], ["$5,000", "$750 bonus"]].map(([a, b]) => (
-                <li key={a} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/40">
-                  <span className="font-display text-foreground">{a}</span>
-                  <span className="text-primary-glow font-medium flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4" />{b}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-muted-foreground mt-4">Bonus credited automatically after deposit confirmation.</p>
+          {/* Right: Bonus + How it works */}
+          <section className="bg-white border border-[#e6e6e6]">
+            <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
+              Top-up Bonus
+            </div>
+            <div className="p-4">
+              <ul className="divide-y divide-[#eee] border border-[#e6e6e6]">
+                {[["$50", "$2 bonus"], ["$100", "$5 bonus"], ["$500", "$35 bonus"], ["$1,000", "$100 bonus"], ["$2,000", "$240 bonus"], ["$5,000", "$750 bonus"]].map(([a, b]) => (
+                  <li key={a} className="flex items-center justify-between px-3 py-2 text-[13px]">
+                    <span className="font-mono text-[#333]">{a}</span>
+                    <span className="text-[#2fb344] flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5" />{b}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[11px] text-[#888] mt-3">Bonus credited automatically after deposit confirmation.</p>
 
-            <div className="mt-6 p-4 rounded-xl bg-background/40 border border-border/40">
-              <h3 className="font-display text-sm tracking-wider text-foreground/80 mb-2 flex items-center gap-2">
-                <QrCode className="h-4 w-4 text-primary-glow" /> HOW IT WORKS
-              </h3>
-              <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-                <li>Enter USD amount and choose crypto</li>
-                <li>Click "Generate Payment Address"</li>
-                <li>Send the exact crypto amount shown</li>
-                <li>Wait for blockchain confirmation (~2-10 min)</li>
-                <li>Balance credited automatically ✅</li>
-              </ol>
+              <div className="mt-4 border border-[#e6e6e6] bg-[#fafafa] p-3">
+                <h3 className="text-[12px] uppercase tracking-wider text-[#555] mb-2 flex items-center gap-1.5">
+                  <QrCode className="h-3.5 w-3.5 text-[#2196f3]" /> How it works
+                </h3>
+                <ol className="text-[12px] text-[#666] space-y-1 list-decimal list-inside">
+                  <li>Enter USD amount and choose crypto</li>
+                  <li>Click "Generate Payment Address"</li>
+                  <li>Send the exact crypto amount shown</li>
+                  <li>Wait for blockchain confirmation (~2-10 min)</li>
+                  <li>Balance credited automatically</li>
+                </ol>
+              </div>
             </div>
           </section>
         </div>
 
-        {/* Transaction History */}
-        <section className="glass rounded-2xl p-6">
-          <h3 className="font-display tracking-wider mb-3 text-primary-glow flex items-center gap-2">
-            <Receipt className="h-5 w-5" /> TRANSACTION HISTORY
-          </h3>
-          <div className="space-y-2">
-            {transactions.length === 0 && <p className="text-sm text-muted-foreground">No transactions yet.</p>}
-            {transactions.slice(0, 20).map((t) => (
-              <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/40">
-                <div className="flex items-center gap-3">
-                  {txnIcon(t.type)}
-                  <div>
-                    <p className="text-sm font-display capitalize text-foreground">{t.type}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {new Date(t.created_at).toLocaleDateString()} {new Date(t.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      {t.method ? ` · ${t.method}` : ""}
-                    </p>
+        {/* Transactions */}
+        <section className="bg-white border border-[#e6e6e6]">
+          <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
+            <Receipt className="h-4 w-4 mr-2 text-[#2196f3]" /> Transaction History
+          </div>
+          <div className="p-3">
+            {transactions.length === 0 && <p className="text-[13px] text-[#888] px-1 py-2">No transactions yet.</p>}
+            <div className="divide-y divide-[#eee]">
+              {transactions.slice(0, 20).map((t) => (
+                <div key={t.id} className="flex items-center justify-between px-2 py-2 text-[13px]">
+                  <div className="flex items-center gap-3">
+                    {txnIcon(t.type)}
+                    <div>
+                      <p className="capitalize text-[#333]">{t.type}</p>
+                      <p className="text-[11px] text-[#888]">
+                        {new Date(t.created_at).toLocaleDateString()} {new Date(t.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {t.method ? ` · ${t.method}` : ""}
+                      </p>
+                    </div>
                   </div>
+                  <span className={`font-mono font-semibold ${Number(t.amount) >= 0 ? "text-[#2fb344]" : "text-[#c0392b]"}`}>
+                    {Number(t.amount) >= 0 ? "+" : ""}${Math.abs(Number(t.amount)).toFixed(2)}
+                  </span>
                 </div>
-                <span className={`font-mono text-sm font-bold ${
-                  Number(t.amount) >= 0 ? "text-success" : "text-destructive"
-                }`}>
-                  {Number(t.amount) >= 0 ? "+" : ""}${Math.abs(Number(t.amount)).toFixed(2)}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Recent deposits */}
-        <section className="glass rounded-2xl p-6">
-          <h3 className="font-display tracking-wider mb-3 text-primary-glow">RECENT DEPOSITS</h3>
-          <div className="space-y-2">
-            {history.length === 0 && <p className="text-sm text-muted-foreground">No deposits yet.</p>}
-            {history.map((d) => {
-              // If pending and older than 30 minutes, show as expired
-              const isDepositExpired = d.status === "pending" && (Date.now() - new Date(d.created_at).getTime() > 30 * 60 * 1000);
-              const displayStatus = isDepositExpired ? "failed" : d.status;
-              return (
-              <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/40">
-                <div>
-                  <p className="font-display text-foreground">
-                    ${Number(d.amount).toFixed(2)}
-                    <span className="text-xs text-muted-foreground ml-2">· {d.crypto_currency || d.method}</span>
-                  </p>
-                  {d.txid && <p className="text-[10px] font-mono text-muted-foreground truncate max-w-[260px] sm:max-w-md">{d.txid}</p>}
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {new Date(d.created_at).toLocaleDateString()} {new Date(d.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    {d.status === "pending" && !isDepositExpired && (
-                      <span className="ml-2">· expires in {Math.max(0, Math.ceil((30 * 60 * 1000 - (Date.now() - new Date(d.created_at).getTime())) / 60000))} min</span>
-                    )}
-                  </p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
-                  displayStatus === "approved" ? "bg-success/20 text-success" :
-                  displayStatus === "rejected" || displayStatus === "failed" ? "bg-destructive/20 text-destructive" : "bg-warning/20 text-warning"
-                }`}>
-                  {displayStatus === "approved" ? <CheckCircle2 className="h-3 w-3" /> :
-                   displayStatus === "rejected" || displayStatus === "failed" ? <XCircle className="h-3 w-3" /> :
-                   <Clock className="h-3 w-3" />}
-                  {displayStatus}
-                </span>
-              </div>
-              );
-            })}
+        <section className="bg-white border border-[#e6e6e6]">
+          <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
+            Recent Deposits
+          </div>
+          <div className="p-3">
+            {history.length === 0 && <p className="text-[13px] text-[#888] px-1 py-2">No deposits yet.</p>}
+            <div className="divide-y divide-[#eee]">
+              {history.map((d) => {
+                const isDepositExpired = d.status === "pending" && (Date.now() - new Date(d.created_at).getTime() > 30 * 60 * 1000);
+                const displayStatus = isDepositExpired ? "failed" : d.status;
+                return (
+                  <div key={d.id} className="flex items-center justify-between px-2 py-2 text-[13px]">
+                    <div>
+                      <p className="text-[#333]">
+                        <span className="font-mono font-semibold">${Number(d.amount).toFixed(2)}</span>
+                        <span className="text-[11px] text-[#888] ml-2">· {d.crypto_currency || d.method}</span>
+                      </p>
+                      {d.txid && <p className="text-[10px] font-mono text-[#888] truncate max-w-[260px] sm:max-w-md">{d.txid}</p>}
+                      <p className="text-[11px] text-[#888] mt-0.5">
+                        {new Date(d.created_at).toLocaleDateString()} {new Date(d.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {d.status === "pending" && !isDepositExpired && (
+                          <span className="ml-2">· expires in {Math.max(0, Math.ceil((30 * 60 * 1000 - (Date.now() - new Date(d.created_at).getTime())) / 60000))} min</span>
+                        )}
+                      </p>
+                    </div>
+                    <span className={`text-[11px] px-2 py-0.5 border inline-flex items-center gap-1 ${
+                      displayStatus === "approved" ? "bg-[#e8f5e9] border-[#c8e6c9] text-[#2e7d32]" :
+                      displayStatus === "rejected" || displayStatus === "failed" ? "bg-[#fdecea] border-[#f5c6cb] text-[#c0392b]" :
+                      "bg-[#fff8e1] border-[#ffe0a0] text-[#b26a00]"
+                    }`}>
+                      {displayStatus === "approved" ? <CheckCircle2 className="h-3 w-3" /> :
+                       displayStatus === "rejected" || displayStatus === "failed" ? <XCircle className="h-3 w-3" /> :
+                       <Clock className="h-3 w-3" />}
+                      {displayStatus}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
       </div>
