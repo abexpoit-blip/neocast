@@ -16,7 +16,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold gold-text">404</h1>
+        <h1 className="text-7xl font-bold text-primary">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
         <Link to="/" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Go home</Link>
       </div>
@@ -45,10 +45,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "cruzercc.shop — Gift Card & CC Marketplace" },
-      { name: "description", content: "Verified inventory from elite sellers, instant delivery, and vault-grade settlement." },
-      { property: "og:title", content: "cruzercc.shop" },
-      { property: "og:description", content: "The world's most trusted Gift Card & CC marketplace." },
+      { title: "Scorpion-Shop — Verified Marketplace" },
+      { name: "description", content: "Scorpion-Shop verified marketplace with instant delivery and secure settlement." },
+      { property: "og:title", content: "Scorpion-Shop" },
+      { property: "og:description", content: "Scorpion-Shop verified marketplace with instant delivery and secure settlement." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
