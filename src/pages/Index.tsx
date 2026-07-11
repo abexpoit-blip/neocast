@@ -1,26 +1,32 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { AppShell } from "@/components/AppShell";
-import { newsApi, announcementsApi, ordersApi, cardsApi, categoriesApi } from "@/lib/api";
+import { Link, NavLink } from "react-router-dom";
+import { newsApi, announcementsApi, ordersApi } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  Wallet, ShoppingBag, TrendingUp, Megaphone, Newspaper, Send,
-  ShieldCheck, Zap, Globe2, ArrowRight, Sparkles, BadgeCheck,
-  Crown, Flame, Lock
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { countryFlag, brandEmoji, detectBrandFromBin, RoleBadge, CatalogBrandIcon, BrandIcon } from "@/lib/brands";
 import Seo from "@/components/Seo";
+import { ChevronDown, LogOut } from "lucide-react";
+
+/**
+ * Buyer HOME dashboard — Scorpion-style layout:
+ *  - Dark navy top nav (HOME, SHOP, CAR, ORDER, RECHARGE CENTER)
+ *  - Balance chip + avatar top-right
+ *  - Two columns: News & Updates (left) + Announcement (right)
+ *  - Below: Shop Rules + Contact Information
+ */
+
+const NAV = [
+  { to: "/", label: "HOME", end: true },
+  { to: "/shop", label: "SHOP" },
+  { to: "/cart", label: "CAR" },
+  { to: "/orders", label: "ORDER" },
+  { to: "/recharge", label: "RECHARGE CENTER" },
+];
 
 const Index = () => {
-  const { profile } = useAuth();
-  const settings = useSiteSettings();
-  const [categories, setCategories] = useState<{ id: string; name: string; description?: string }[]>([]);
-  const [news, setNews] = useState<{ id: string; label: string; count: number; brand?: string; country?: string; bin?: string; created_at?: string }[]>([]);
+  const { profile, signOut } = useAuth();
+  const [news, setNews] = useState<{ id: string; label: string; count: number }[]>([]);
   const [anns, setAnns] = useState<{ id: string; title: string; body: string }[]>([]);
-  const [stats, setStats] = useState({ orders: 0, spend: 0 });
-  const [stockFeed, setStockFeed] = useState<Array<{ base: string; brand: string; country: string; count: number; created_at: string }>>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadNews = useCallback(async () => {
     try {
@@ -29,355 +35,212 @@ const Index = () => {
     } catch { /* ignore */ }
   }, []);
 
-  const loadStockFeed = useCallback(async () => {
-    try {
-      const res = await cardsApi.recentStock();
-      setStockFeed(res.stock ?? []);
-    } catch { /* ignore */ }
-  }, []);
-
   useEffect(() => {
     (async () => {
-      const [cats, , a, o] = await Promise.allSettled([
-        categoriesApi.list(),
+      const [, a] = await Promise.allSettled([
         loadNews(),
         announcementsApi.list(),
-        ordersApi.mine(),
+        ordersApi.mine().catch(() => null),
       ]);
-      loadStockFeed();
-      if (cats.status === "fulfilled") setCategories(cats.value.categories ?? []);
-      if (a.status === "fulfilled") setAnns((a.value.announcements ?? []) as typeof anns);
-      if (o.status === "fulfilled") {
-        const orders = (o.value.orders ?? []) as { total: number }[];
-        setStats({ orders: orders.length, spend: orders.reduce((s, x) => s + Number(x.total), 0) });
-      }
+      if (a.status === "fulfilled" && a.value)
+        setAnns((a.value.announcements ?? []) as typeof anns);
     })();
-  }, [loadNews, loadStockFeed]);
+  }, [loadNews]);
 
-  // Auto-refresh live inventory every 30 seconds
   useEffect(() => {
-    intervalRef.current = setInterval(() => { loadNews(); loadStockFeed(); }, 30000);
+    intervalRef.current = setInterval(loadNews, 30000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [loadNews, loadStockFeed]);
+  }, [loadNews]);
+
+  const balance = Number(profile?.balance ?? 0).toFixed(2);
+  const uname = profile?.username ?? "member";
 
   return (
-    <AppShell>
-      <Seo title="cruzercc.shop — Buyer Dashboard" description="Live stock feed, latest announcements and instant Gift Card & CC orders on cruzercc.shop." path="/" />
-      <div className="space-y-12">
-        {/* HERO */}
-        <section className="relative overflow-hidden rounded-[28px] border border-border/50 bg-gradient-to-br from-card/80 via-card/40 to-background/60 backdrop-blur-2xl">
-          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-primary/25 blur-[120px]" />
-          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-gold/15 blur-[120px]" />
-          <div className="absolute inset-0 grid-bg opacity-30" />
+    <div className="min-h-screen bg-white text-[#1a1a1a]" style={{ fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif' }}>
+      <Seo title="cruzercc.shop — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
 
-          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 p-6 sm:p-8 lg:p-14">
-            <div className="lg:col-span-7 space-y-7">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-[11px] font-mono tracking-[0.2em] text-primary-glow">
-                  <Sparkles className="h-3 w-3" />
-                  {settings.hero_eyebrow} · {profile?.username?.toUpperCase() ?? "MEMBER"}
-                </div>
-                {profile && <RoleBadge role={profile.role ?? "buyer"} />}
-              </div>
-
-              <h1 className="font-display font-extrabold leading-[1.05] tracking-[-0.03em] text-[36px] sm:text-[52px] lg:text-[80px] text-foreground">
-                {settings.hero_title}
-              </h1>
-
-              <p className="text-base lg:text-lg text-muted-foreground max-w-xl leading-relaxed">
-                {settings.hero_sub}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <Link to="/shop" className="btn-luxe">
-                  {settings.hero_cta} <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link to="/recharge" className="btn-ghost-luxe">
-                  <Wallet className="h-4 w-4" /> Recharge wallet
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-2 max-w-xl">
-                <FeaturePill icon={ShieldCheck} label="Vault-grade" />
-                <FeaturePill icon={Zap} label="Instant" />
-                <FeaturePill icon={Crown} label="Curated" />
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 flex items-center justify-center">
-              <div className="relative w-full max-w-sm">
-                <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-2xl opacity-40" />
-                <div className="relative aspect-[1.6/1] rounded-3xl p-6 bg-gradient-to-br from-primary/40 via-primary/20 to-card border border-primary/40 shadow-card overflow-hidden">
-                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gold/30 blur-3xl" />
-                  <div className="absolute inset-0 grid-bg opacity-20" />
-                  <div className="relative flex flex-col h-full justify-between">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-foreground/70">Account balance</p>
-                        <p className="font-display text-4xl font-bold text-foreground mt-1">
-                          ${Number(profile?.balance ?? 0).toFixed(2)}
-                        </p>
-                      </div>
-                      <Crown className="h-7 w-7 text-gold" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 text-[11px] font-mono tracking-widest text-foreground/80">
-                        <Lock className="h-3 w-3" /> SECURE · ENCRYPTED · INSTANT
-                      </div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="font-mono text-xs text-foreground/70">•••• •••• •••• {profile?.username?.slice(-4).toUpperCase() ?? "USER"}</span>
-                        <span className="font-display font-bold text-sm gold-text">CRUZERCC</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* QUICK STATS */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard icon={Wallet} label="Wallet balance" value={`$${Number(profile?.balance ?? 0).toFixed(2)}`} accent="primary" sub="Available now" />
-          <StatCard icon={ShoppingBag} label="Total orders" value={String(stats.orders)} accent="gold" sub="Lifetime" />
-          <StatCard icon={TrendingUp} label="Total spent" value={`$${stats.spend.toFixed(2)}`} accent="primary" sub="All-time volume" />
-          <StatCard icon={Flame} label="Valid rate" value="99.4%" accent="gold" sub="Last 7 days" />
-        </section>
-
-        {/* CATEGORY SHOWCASE */}
-        <section>
-          <SectionHeader eyebrow="Shop by category" title="Premium card catalog" sub="Curated, verified, and ready to deploy." />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {categories.slice(0, 4).map((cat) => (
-              <Link key={cat.id} to={`/shop?category=${cat.id}`} className="group relative aspect-[1.5/1] rounded-2xl overflow-hidden border border-border/60 hover:border-primary/50 transition">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-card opacity-90 group-hover:opacity-100 transition" />
-                <div className="absolute inset-0 grid-bg opacity-20" />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
-                <div className="relative p-4 sm:p-5 h-full flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-mono tracking-[0.3em] text-primary-foreground/75 uppercase">Category</span>
-                    <BadgeCheck className="h-4 w-4 text-primary-foreground/85" />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-primary-foreground">{cat.name}</h3>
-                    <div className="text-[11px] text-primary-foreground/75 mt-1">{cat.description || "Browse inventory"}</div>
-                    <div className="mt-2 sm:mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-primary-foreground/90 group-hover:text-primary-foreground">
-                      Browse <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
+      {/* TOP NAV */}
+      <header className="bg-[#1f2d3d] text-white">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center gap-6">
+          <nav className="flex items-center gap-1 h-full text-[13px] tracking-wide">
+            {NAV.map((n) => (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.end}
+                className={({ isActive }) =>
+                  `h-full px-4 flex items-center transition-colors border-b-2 ${
+                    isActive
+                      ? "text-[#4fc3f7] border-[#4fc3f7]"
+                      : "text-white/85 border-transparent hover:text-white"
+                  }`
+                }
+              >
+                {n.label}
+              </NavLink>
             ))}
-            {categories.length === 0 && (
-              <>
-                <Link to="/shop" className="group relative aspect-[1.5/1] rounded-2xl overflow-hidden border border-border/60 hover:border-primary/50 transition">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f71] to-[#0d1140] opacity-90 group-hover:opacity-100 transition" />
-                  <div className="relative p-5 h-full flex flex-col justify-between">
-                    <span className="text-[10px] font-mono tracking-[0.3em] text-white/75 uppercase">VISA</span>
-                    <h3 className="font-display font-bold text-xl text-white">Classic · Gold</h3>
-                  </div>
+          </nav>
+        </div>
+      </header>
+
+      {/* SUB BAR — balance + user */}
+      <div className="bg-white border-b border-[#e6e6e6]">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-end gap-3 text-[13px]">
+          <Link
+            to="/recharge"
+            className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3] hover:bg-[#f5faff] transition"
+          >
+            Samexpoit
+          </Link>
+          <Link
+            to="/recharge"
+            className="px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium"
+          >
+            $ {balance}
+          </Link>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex items-center gap-1.5 pl-1 pr-2 py-1 hover:bg-[#f7f7f7] transition"
+            >
+              <span className="h-8 w-8 rounded-full bg-[#1f2d3d] text-white text-xs uppercase font-medium flex items-center justify-center">
+                {uname.slice(0, 2)}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5 text-[#666]" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-[#e6e6e6] shadow-md z-10 text-sm">
+                <div className="px-3 py-2 border-b border-[#eee] text-[#333]">
+                  <div className="font-medium truncate">{uname}</div>
+                  <div className="text-[11px] text-[#888]">Balance: ${balance}</div>
+                </div>
+                <Link to="/settings" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>
+                  Settings
                 </Link>
-                {/* ... more placeholders if needed ... */}
-              </>
+                <Link to="/tickets" className="block px-3 py-2 hover:bg-[#f7f7f7]" onClick={() => setMenuOpen(false)}>
+                  Tickets
+                </Link>
+                <button
+                  onClick={() => { setMenuOpen(false); signOut(); }}
+                  className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[#d32f2f]"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> Sign out
+                </button>
+              </div>
             )}
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* NEWS + ANNOUNCEMENTS */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 glass rounded-3xl p-5 sm:p-7">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-                  <Newspaper className="h-4 w-4 text-primary-glow" />
-                </div>
-                <div>
-                  <h2 className="font-display text-lg font-bold tracking-tight">Live inventory updates</h2>
-                  <p className="text-xs text-muted-foreground">Cards uploaded today · auto-refreshed every 30s</p>
-                </div>
-              </div>
-              <span className="hidden md:flex items-center gap-1.5 text-[10px] font-mono tracking-wider text-success">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> LIVE
-              </span>
-            </div>
-            <div className="max-h-[380px] overflow-y-auto scrollbar-thin space-y-1.5 pr-2">
-              {/* Recent stock additions */}
-              {stockFeed.length > 0 && (
-                <div className="mb-3 space-y-1.5">
-                  <p className="text-[10px] uppercase tracking-wider text-primary-glow font-mono mb-1">📦 Cards uploaded today</p>
-                  {stockFeed.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30 hover:bg-primary/15 transition group">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <span className="shrink-0"><BrandIcon brand={s.brand} className="h-5 w-auto" /></span>
-                        {s.country && <span className="text-base shrink-0">{countryFlag(s.country)}</span>}
-                        <span className="text-sm text-foreground/85 group-hover:text-foreground transition truncate font-mono">{s.base.replace(/_\$[\d.]+$/, '')}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-success/20 border border-success/30 text-success font-mono">NEW</span>
-                      </div>
-                      <span className="text-xs font-display font-bold text-primary-glow shrink-0 ml-3">+{s.count}</span>
-                    </div>
-                  ))}
-                </div>
+      {/* MAIN */}
+      <main className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* NEWS & UPDATES */}
+          <Panel title="News & Updates">
+            <div className="max-h-[420px] overflow-y-auto py-3 text-center font-mono text-[15px] leading-[2.1] text-[#d32f2f]">
+              {news.length === 0 && (
+                <div className="text-[#888] font-sans text-sm py-6">No updates yet.</div>
               )}
-              {/* Existing news updates */}
-              {news.length === 0 && stockFeed.length === 0 && <p className="text-sm text-muted-foreground py-6 text-center">No updates yet.</p>}
-              {news.map((n) => {
-                const detectedBrand = n.brand || (n.bin ? detectBrandFromBin(n.bin) : "");
-                const flag = n.country ? countryFlag(n.country) : "";
-                return (
-                  <div key={n.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40 hover:border-primary/40 hover:bg-secondary/50 transition group">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <span className="text-base shrink-0">{detectedBrand ? brandEmoji(detectedBrand) : "📦"}</span>
-                      {flag && <span className="text-base shrink-0">{flag}</span>}
-                      <span className="text-sm text-foreground/85 group-hover:text-foreground transition truncate font-mono">{n.label}</span>
-                      {detectedBrand && (
-                        <span className="hidden sm:inline-flex text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary-glow font-mono uppercase">
-                          {detectedBrand}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-display font-bold text-gold shrink-0 ml-3">×{n.count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="glass-gold rounded-3xl p-5 sm:p-7">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="h-8 w-8 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center">
-                  <Megaphone className="h-4 w-4 text-gold" />
+              {news.map((n) => (
+                <div key={n.id}>
+                  {n.label}
+                  {n.count ? `,COUNT:${n.count}` : ""}
                 </div>
-                <h2 className="font-display text-lg font-bold tracking-tight">📢 Announcements</h2>
-              </div>
-              <div className="space-y-3 max-h-[320px] overflow-y-auto scrollbar-thin pr-1">
-                {anns.length === 0 && <p className="text-sm text-muted-foreground">No announcements.</p>}
-                {anns.map((a) => (
-                  <div key={a.id} className="p-3.5 rounded-xl bg-gradient-to-br from-gold/10 to-transparent border border-gold/20">
-                    <h3 className="font-display font-semibold text-gold mb-1 text-sm">{a.title}</h3>
-                    <p className="text-xs text-foreground/75 leading-relaxed">{a.body}</p>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
-          </div>
-        </section>
+          </Panel>
 
-        {/* WHY US */}
-        <section>
-          <SectionHeader eyebrow="Why cruzercc.shop" title="Built for serious buyers" sub="A luxury operating system for high-volume cardholders." />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { icon: ShieldCheck, t: "🛡️ Vault-grade trust", d: "Every seller manually vetted. Every card validity-checked at intake. Auto-refund if invalid on first use." },
-              { icon: Zap, t: "⚡ Instant fulfillment", d: "Cards delivered to your secure dashboard the moment payment clears. No waiting. No back-and-forth." },
-              { icon: Globe2, t: "🌍 Global coverage", d: "Inventory across 40+ countries with detailed BIN, ZIP, and issuer metadata for surgical targeting." },
-            ].map((f) => (
-              <div key={f.t} className="glass rounded-3xl p-5 sm:p-7 hover:border-primary/40 transition group">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-neon mb-5 group-hover:scale-110 transition">
-                  <f.icon className="h-6 w-6 text-primary-foreground" />
+          {/* ANNOUNCEMENT */}
+          <Panel title="Announcement">
+            <div className="px-6 py-6 space-y-6 text-center max-h-[420px] overflow-y-auto">
+              {anns.length === 0 && (
+                <div className="text-[#888] text-sm py-6">No announcements.</div>
+              )}
+              {anns.map((a, i) => (
+                <div key={a.id}>
+                  <h3
+                    className={`text-lg font-semibold mb-2 ${
+                      i === 0 ? "text-[#8e24aa]" : "text-[#d32f2f]"
+                    }`}
+                  >
+                    {a.title}
+                  </h3>
+                  <p className="text-[14px] text-[#333] leading-[1.75] whitespace-pre-line">
+                    {a.body}
+                  </p>
                 </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold mb-2 tracking-tight">{f.t}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.d}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </Panel>
+        </div>
 
-        {/* RULES + CONTACT */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass rounded-3xl p-5 sm:p-7">
-            <SmallHeader icon={ShieldCheck} title="📋 Shop rules" />
-            <ul className="space-y-3 text-sm text-foreground/80">
+        {/* SHOP RULES + CONTACT */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+          <Panel title="cruzercc.shop Shop Rules">
+            <ul className="px-6 py-5 space-y-2 text-[13px] text-[#1976d2]">
               {[
                 "By registering, you automatically agree to the rules of the store.",
-                "Rules can change without prior notice — review periodically.",
-                "Report bugs or vulnerabilities through tickets — bounties available.",
-                "Exploiting vulnerabilities for profit results in permanent ban.",
-                "Save purchased cards immediately — orders cannot be recovered after deletion.",
+                "Rules can be changed without notifying users.",
+                "If you find bugs or vulnerabilities, report them via tickets.",
+                "If you intentionally exploit bugs or vulnerabilities for profit, your account will be permanently banned.",
+                "After buying, save the cards immediately — orders cannot be recovered after deletion.",
                 "Account balance is non-refundable. Recharge responsibly.",
               ].map((r, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className="font-mono text-[11px] text-primary-glow mt-0.5 shrink-0">0{i + 1}</span>
-                  <span>{r}</span>
-                </li>
+                <li key={i}>{i + 1}. {r}</li>
               ))}
             </ul>
-          </div>
-          <div className="glass-neon rounded-3xl p-5 sm:p-7">
-            <SmallHeader icon={Send} title="📩 Official contact" />
-            <p className="text-xs text-muted-foreground mb-4">Beware of impersonators — only contact us through verified channels below.</p>
-            <div className="space-y-2.5">
-              <ContactRow label="Telegram channel" value="@cruzercc_shop" />
-              <ContactRow label="Sales" value="@cruzercc_sales" />
-              <ContactRow label="Support" value="@cruzercc_support" />
-            </div>
-            <div className="mt-5 p-4 rounded-2xl bg-gradient-to-br from-gold/15 to-transparent border border-gold/30">
-              <div className="flex items-center gap-2 mb-1">
-                <Crown className="h-4 w-4 text-gold" />
-                <span className="font-display font-bold text-sm gold-text">👑 Become a verified seller</span>
+          </Panel>
+
+          <Panel title="Contact Information">
+            <div className="px-6 py-5 space-y-3 text-[13px] text-[#333]">
+              <p>Please be aware of fake cruzercc.shop support. For any suggestion or problems, tell us on TG.</p>
+              <div>
+                <div className="text-[#888] text-xs mb-1">Telegram:</div>
+                <a
+                  href="https://t.me/cruzercc_shop"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-[#1976d2] hover:underline"
+                >
+                  @cruzercc_shop
+                </a>
+                <a
+                  href="https://t.me/cruzercc_shop_002"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-[#1976d2] hover:underline"
+                >
+                  @cruzercc_shop_002
+                </a>
               </div>
-              <p className="text-xs text-foreground/80">Apply through Settings after registration. Approved sellers receive automatic payouts and priority placement.</p>
+              <div>
+                <div className="text-[#888] text-xs mb-1">Telegram channel:</div>
+                <a
+                  href="https://t.me/cruzercc_channel"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-[#1976d2] hover:underline"
+                >
+                  @cruzercc_channel
+                </a>
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
-    </AppShell>
+          </Panel>
+        </div>
+      </main>
+    </div>
   );
 };
 
-const SectionHeader = ({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) => (
-  <div className="mb-6 flex items-end justify-between gap-6 flex-wrap">
-    <div>
-      <div className="text-[10px] font-mono tracking-[0.3em] text-primary-glow uppercase mb-2">{eyebrow}</div>
-      <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">{title}</h2>
-      <p className="text-sm text-muted-foreground mt-1">{sub}</p>
-    </div>
-    <div className="hidden md:block flex-1 max-w-[200px] divider-luxe" />
-  </div>
-);
-
-const SmallHeader = ({ icon: Icon, title }: { icon: React.ComponentType<{ className?: string }>; title: string }) => (
-  <div className="flex items-center gap-2.5 mb-5">
-    <div className="h-8 w-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
-      <Icon className="h-4 w-4 text-primary-glow" />
-    </div>
-    <h2 className="font-display text-lg font-bold tracking-tight">{title}</h2>
-  </div>
-);
-
-const FeaturePill = ({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) => (
-  <div className="group relative flex flex-col items-center justify-center gap-2 rounded-2xl border border-border/60 bg-secondary/20 px-3 sm:px-4 py-3 sm:py-4 backdrop-blur-xl transition-all hover:border-primary/50 hover:bg-secondary/40">
-    <Icon className="h-5 w-5 text-primary-glow transition-transform group-hover:scale-110" />
-    <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-muted-foreground/90">{label}</span>
-  </div>
-);
-
-const StatCard = ({
-  icon: Icon, label, value, sub, accent,
-}: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub: string; accent: "primary" | "gold" }) => {
-  const isGold = accent === "gold";
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 glass group hover:border-primary/40 transition">
-      <div className={`absolute -right-8 -top-8 h-24 w-24 ${isGold ? "bg-gold/15" : "bg-primary/15"} rounded-full blur-2xl group-hover:opacity-150 transition`} />
-      <div className="relative flex items-start justify-between">
-        <div className="min-w-0">
-          <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</p>
-          <p className={`font-display text-2xl sm:text-3xl font-bold mt-2 ${isGold ? "gold-text" : "neon-text"}`}>{value}</p>
-          <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1">{sub}</p>
-        </div>
-        <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl ${isGold ? "bg-gold/15 border-gold/30" : "bg-primary/15 border-primary/30"} border flex items-center justify-center shrink-0`}>
-          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isGold ? "text-gold" : "text-primary-glow"}`} />
-        </div>
-      </div>
-    </div>
+    <section className="bg-white border border-[#e6e6e6]">
+      <header className="px-5 py-3 border-b border-[#eee] text-center">
+        <h2 className="text-[15px] font-medium text-[#1a1a1a]">{title}</h2>
+      </header>
+      <div>{children}</div>
+    </section>
   );
-};
-
-const ContactRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40">
-    <span className="text-xs text-muted-foreground">{label}</span>
-    <span className="font-mono text-sm text-primary-glow">{value}</span>
-  </div>
-);
+}
 
 export default Index;
