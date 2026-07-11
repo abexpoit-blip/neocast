@@ -123,7 +123,7 @@ const Shop = () => {
     if (!user) return;
     try {
       const { items } = await cartApi.list();
-      setCartIds(new Set((items ?? []).map((c) => c.card_id)));
+      setCartIds(new Set((items ?? []).map((c) => c.card_id).filter((x): x is string => !!x)));
     } catch { /* ignore */ }
   };
 
