@@ -27,18 +27,19 @@ export function ScorpionAuthShell({
     >
       {/* Background scorpion mascot */}
       <div
-        className="absolute inset-0 -z-10 bg-[#1a0505]"
+        className="absolute inset-0 -z-10 bg-[#2a0808]"
         style={{
           backgroundImage: `url(${heroBg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       />
       <div
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, rgba(10,2,2,0.85) 70%, rgba(5,0,0,0.95) 100%)",
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(20,4,4,0.55) 55%, rgba(10,2,2,0.85) 100%)",
         }}
       />
 
