@@ -80,20 +80,14 @@ const App = () => (
             <Route path="/admin/boost" element={<AdminRoute><AdminBoost /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
 
-            {/* Buyer/Seller protected routes */}
+            {/* Buyer routes — Scorpion-style: only 5 nav pages */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/welcome" element={<Landing />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
-            <Route path="/super-shop" element={<ProtectedRoute><SuperShop /></ProtectedRoute>} />
             <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-            <Route path="/boost" element={<ProtectedRoute><BoostTool /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
-            <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
-            <Route path="/refunds" element={<ProtectedRoute><BuyerRefunds /></ProtectedRoute>} />
+
+            {/* Seller routes (hidden, still functional for approved sellers) */}
             <Route path="/seller" element={<ProtectedRoute><SellerPanel /></ProtectedRoute>} />
             <Route path="/seller/apply" element={<ProtectedRoute><SellerApply /></ProtectedRoute>} />
             <Route path="/seller/upload" element={<ProtectedRoute><SellerUpload /></ProtectedRoute>} />
