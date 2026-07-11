@@ -51,7 +51,17 @@ export function ScorpionAuthShell({
           <div className="px-8 py-8 sm:px-10 sm:py-10 text-white">
             <div className="text-center mb-6">
               <div className="flex justify-center mb-3">
-                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-[#3a1010] to-[#1a0505] border border-[#ff6b3d]/40 shadow-[0_0_30px_rgba(255,80,40,0.35)] flex items-center justify-center overflow-hidden">
+                <div className="h-24 w-24 rounded-xl bg-gradient-to-br from-[#0a0d1a] to-[#1a1030] border border-[#7c4dff]/40 shadow-[0_0_35px_rgba(88,220,255,0.35)] flex items-center justify-center overflow-hidden">
+                  <img
+                    src={dragonLogo}
+                    alt="Dragon emblem"
+                    width={512}
+                    height={512}
+                    loading="lazy"
+                    className="h-[85%] w-[85%] object-contain drop-shadow-[0_0_10px_rgba(88,220,255,0.6)]"
+                  />
+                </div>
+              </div>
                   <img
                     src={dragonLogo}
                     alt="Dragon emblem"
