@@ -62,16 +62,6 @@ export function ScorpionAuthShell({
                   />
                 </div>
               </div>
-                  <img
-                    src={dragonLogo}
-                    alt="Dragon emblem"
-                    width={512}
-                    height={512}
-                    loading="lazy"
-                    className="h-full w-full object-cover drop-shadow-[0_2px_8px_rgba(255,60,20,0.5)]"
-                  />
-                </div>
-              </div>
               <h1
                 className="text-[28px] leading-none font-extrabold tracking-tight"
                 style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
