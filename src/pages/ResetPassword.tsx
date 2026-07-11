@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Lock, Loader2, ShieldCheck } from "lucide-react";
 import { BuildBadge } from "@/components/BuildBadge";
+import { ScorpionAuthShell } from "@/components/ScorpionAuthShell";
 
 const ResetPassword = () => {
   const nav = useNavigate();
@@ -15,14 +14,10 @@ const ResetPassword = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Supabase parses the recovery token from the URL hash and fires PASSWORD_RECOVERY.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
-    // In case the event already fired before mount, check current session.
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
+    supabase.auth.getSession().then(({ data }) => { if (data.session) setReady(true); });
     return () => { sub.subscription.unsubscribe(); };
   }, []);
 
@@ -43,52 +38,39 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+    <>
       <BuildBadge />
-      <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-primary/15 blur-[140px] pointer-events-none" />
-      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-      <div className="relative z-10 w-full max-w-md p-6">
-        <div className="glass-neon rounded-2xl p-8">
-          <div className="flex flex-col items-center mb-6">
-            <div className="h-14 w-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center">
-              <ShieldCheck className="h-7 w-7 text-primary-glow" />
-            </div>
-            <h1 className="font-display text-2xl font-black tracking-[0.2em] mt-4">RESET PASSWORD</h1>
-            <p className="text-[10px] font-mono tracking-[0.4em] text-muted-foreground mt-1">CHOOSE A NEW PASSWORD</p>
+      <ScorpionAuthShell
+        title="Reset Password"
+        tagline={<span className="inline-flex items-center gap-2 text-white/85"><ShieldCheck className="h-4 w-4 text-[#4fc3f7]" /> Choose a new password</span>}
+      >
+        {!ready ? (
+          <div className="text-center text-sm text-white/70 py-6">
+            Waiting for reset link… If you didn't arrive here from an email link, request a new one from the sign-in page.
           </div>
-
-          {!ready ? (
-            <div className="text-center text-sm text-muted-foreground py-6">
-              Waiting for reset link… If you didn't arrive here from an email link, request a new one from the sign-in page.
+        ) : (
+          <form onSubmit={submit} className="space-y-3">
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                required minLength={8} placeholder="new password"
+                className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors" />
             </div>
-          ) : (
-            <form onSubmit={submit} className="space-y-4">
-              <div>
-                <Label className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">New password</Label>
-                <div className="relative mt-2">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                    required minLength={8} placeholder="••••••••"
-                    className="pl-10 h-11 bg-input/70 border-border/60" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Confirm password</Label>
-                <div className="relative mt-2">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
-                    required minLength={8} placeholder="••••••••"
-                    className="pl-10 h-11 bg-input/70 border-border/60" />
-                </div>
-              </div>
-              <button type="submit" disabled={loading} className="btn-luxe w-full h-12 disabled:opacity-60">
-                {loading ? <Loader2 className="h-4 w-4 mx-auto animate-spin" /> : "Update password"}
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
+                required minLength={8} placeholder="confirm password"
+                className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors" />
+            </div>
+            <button type="submit" disabled={loading}
+              className="w-full py-3 mt-3 rounded-sm bg-[#2196f3] hover:bg-[#1976d2] text-white text-sm font-semibold tracking-wide transition disabled:opacity-60 flex items-center justify-center gap-2">
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Updating…" : "Update password"}
+            </button>
+          </form>
+        )}
+      </ScorpionAuthShell>
+    </>
   );
 };
 
