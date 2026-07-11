@@ -53,14 +53,14 @@ export function ScorpionAuthShell({
           <div className="px-8 py-8 sm:px-10 sm:py-10 text-white">
             <div className="text-center mb-6">
               <div className="flex justify-center mb-3">
-                <div className="h-24 w-24 rounded-xl bg-gradient-to-br from-[#0a0d1a] to-[#1a1030] border border-[#7c4dff]/40 shadow-[0_0_35px_rgba(88,220,255,0.35)] flex items-center justify-center overflow-hidden">
+                <div className="h-24 w-24 rounded-xl bg-gradient-to-br from-[#1a0505] to-[#3a0a0a] border border-[#ffb300]/40 shadow-[0_0_35px_rgba(255,45,45,0.45)] flex items-center justify-center overflow-hidden">
                   <img
                     src={dragonLogo}
                     alt="Dragon emblem"
                     width={512}
                     height={512}
                     loading="lazy"
-                    className="h-[85%] w-[85%] object-contain drop-shadow-[0_0_10px_rgba(88,220,255,0.6)]"
+                    className="h-[90%] w-[90%] object-contain drop-shadow-[0_0_12px_rgba(255,80,20,0.7)]"
                   />
                 </div>
               </div>
@@ -68,7 +68,7 @@ export function ScorpionAuthShell({
                 className="text-[28px] leading-none font-extrabold tracking-tight"
                 style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
               >
-                <span className="inline-block bg-gradient-to-r from-[#7c4dff] to-[#00e5ff] text-white px-2.5 py-0.5 rounded-sm">
+                <span className="inline-block bg-gradient-to-r from-[#ff2d2d] via-[#ff6b1a] to-[#ffb300] text-white px-2.5 py-0.5 rounded-sm">
                   {title}
                 </span>
               </h1>
