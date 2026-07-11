@@ -8,7 +8,7 @@ import { ProtectedRoute, AdminRoute } from "@/components/AppShell";
 import ScrollToTop from "@/components/ScrollToTop";
 
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
+// removed: Landing, Dashboard, News, BuyerRefunds, SuperShop, BoostTool, Tickets, Settings (not part of Scorpion-style nav)
 import Auth from "./pages/Auth";
 import SellerLogin from "./pages/SellerLogin";
 import AdminLogin from "./pages/AdminLogin";
@@ -19,8 +19,6 @@ import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Recharge from "./pages/Recharge";
-import Tickets from "./pages/Tickets";
-import Settings from "./pages/Settings";
 import SellerPanel from "./pages/SellerPanel";
 import SellerApply from "./pages/SellerApply";
 import SellerUpload from "./pages/SellerUpload";
@@ -38,12 +36,7 @@ import AdminStockReview from "./pages/AdminStockReview";
 import AdminDigitalProducts from "./pages/AdminDigitalProducts";
 import AdminBoost from "./pages/AdminBoost";
 import AdminCategories from "./pages/AdminCategories";
-import News from "./pages/News";
-import BuyerRefunds from "./pages/BuyerRefunds";
 import SellerPriceRules from "./pages/SellerPriceRules";
-import Dashboard from "./pages/Dashboard";
-import SuperShop from "./pages/SuperShop";
-import BoostTool from "./pages/BoostTool";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,20 +73,14 @@ const App = () => (
             <Route path="/admin/boost" element={<AdminRoute><AdminBoost /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
 
-            {/* Buyer/Seller protected routes */}
+            {/* Buyer routes — Scorpion-style: only 5 nav pages */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/welcome" element={<Landing />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
-            <Route path="/super-shop" element={<ProtectedRoute><SuperShop /></ProtectedRoute>} />
             <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-            <Route path="/boost" element={<ProtectedRoute><BoostTool /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
-            <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
-            <Route path="/refunds" element={<ProtectedRoute><BuyerRefunds /></ProtectedRoute>} />
+
+            {/* Seller routes (hidden, still functional for approved sellers) */}
             <Route path="/seller" element={<ProtectedRoute><SellerPanel /></ProtectedRoute>} />
             <Route path="/seller/apply" element={<ProtectedRoute><SellerApply /></ProtectedRoute>} />
             <Route path="/seller/upload" element={<ProtectedRoute><SellerUpload /></ProtectedRoute>} />
