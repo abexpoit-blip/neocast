@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import heroBg from "@/assets/scorpion-hero.jpg";
+import dragonLogo from "@/assets/dragon-logo.png";
 
 type Props = {
   children: ReactNode;
