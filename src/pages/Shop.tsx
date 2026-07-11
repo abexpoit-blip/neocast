@@ -5,7 +5,7 @@ import { cardsApi, cartApi, sellersApi, categoriesApi } from "@/lib/api";
 import { Search, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { ActivationGate } from "@/components/ActivationGate";
+
 import Seo from "@/components/Seo";
 
 interface Card {
