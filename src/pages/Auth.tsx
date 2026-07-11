@@ -118,24 +118,26 @@ const Auth = () => {
         }
       >
         {/* Tabs */}
-        <div className="flex mb-6 rounded-sm overflow-hidden border border-white/15">
+        <div className="flex mb-6 p-1 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
           {(["login", "signup"] as const).map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => setMode(m)}
-              className={`flex-1 py-2 text-[13px] font-medium tracking-wide transition-colors ${
-                mode === m ? "bg-[#2196f3] text-white" : "bg-transparent text-white/70 hover:text-white"
+              className={`flex-1 py-2 text-[12px] font-semibold tracking-[0.15em] uppercase rounded-lg transition-all ${
+                mode === m
+                  ? "bg-gradient-to-r from-[#ff2d2d] via-[#ff6b1a] to-[#ffb300] text-white shadow-[0_4px_15px_rgba(255,80,20,0.4)]"
+                  : "text-white/60 hover:text-white/90"
               }`}
             >
-              {m === "login" ? "Log in" : "Sign up"}
+              {m === "login" ? "Sign In" : "Register"}
             </button>
           ))}
         </div>
 
         {savedAccounts.length > 0 && mode === "login" && (
           <div className="mb-5">
-            <div className="text-[10px] uppercase tracking-widest text-white/50 font-medium mb-2">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb300]/80 font-semibold mb-2">
               Switch account
             </div>
             <div className="space-y-1.5">
@@ -144,9 +146,9 @@ const Auth = () => {
                   key={acc.email}
                   type="button"
                   onClick={() => pickAccount(acc)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-sm bg-white/5 border border-white/10 hover:border-[#2196f3] transition-colors group text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#ffb300]/50 hover:bg-white/[0.07] transition-all group text-left"
                 >
-                  <div className="h-8 w-8 rounded-full bg-[#2196f3] text-white flex items-center justify-center text-xs font-semibold shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#ff2d2d] to-[#ffb300] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-[0_2px_8px_rgba(255,80,20,0.4)]">
                     {acc.username[0]?.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -170,40 +172,40 @@ const Auth = () => {
         )}
 
         {statusBanner && (
-          <div className="mb-5 rounded-sm border border-red-400/50 bg-red-500/10 px-3 py-2.5 text-xs text-red-200" role="alert">
+          <div className="mb-5 rounded-lg border border-red-400/40 bg-red-500/10 backdrop-blur-sm px-3 py-2.5 text-xs text-red-200" role="alert">
             <div className="font-semibold">{statusBanner.title}</div>
             {statusBanner.hint && <div className="opacity-80 mt-0.5">{statusBanner.hint}</div>}
           </div>
         )}
 
         <form onSubmit={submit} className="space-y-3">
-          <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+          <div className="relative group">
+            <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="username"
-              className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors"
+              placeholder="Username"
+              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
             />
           </div>
 
           {mode === "signup" && (
-            <div className="relative">
-              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+            <div className="relative group">
+              <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="email (optional)"
-                className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors"
+                placeholder="Email (optional)"
+                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
               />
             </div>
           )}
 
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+          <div className="relative group">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
             <input
               id="auth-password"
               type="password"
@@ -211,27 +213,27 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              placeholder="password"
-              className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors"
+              placeholder="Password"
+              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
             />
           </div>
 
           <div className="flex gap-2 items-stretch">
-            <div className="relative flex-1">
-              <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+            <div className="relative flex-1 group">
+              <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
               <input
                 type="text"
                 inputMode="numeric"
                 value={captcha}
                 onChange={(e) => setCaptcha(e.target.value)}
-                placeholder="verification code"
-                className="w-full pl-10 pr-3 py-3 rounded-sm bg-white/5 border border-white/15 text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#4fc3f7] transition-colors"
+                placeholder="Code"
+                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
               />
             </div>
             <button
               type="button"
               onClick={() => { setCaptcha(""); setCaptchaSeed((s) => s + 1); }}
-              className="min-w-[110px] px-3 rounded-sm bg-white/10 border border-white/15 flex items-center justify-center gap-2 hover:bg-white/15 transition-colors"
+              className="min-w-[115px] px-3 rounded-lg bg-gradient-to-br from-[#1a0505]/60 to-[#3a0a0a]/60 border border-[#ffb300]/30 flex items-center justify-center gap-2 hover:border-[#ffb300]/60 hover:shadow-[0_0_15px_rgba(255,179,0,0.2)] transition-all backdrop-blur-sm"
               aria-label="Refresh challenge"
             >
               <span
@@ -245,22 +247,22 @@ const Auth = () => {
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-[12px] text-white/70 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-[12px] text-white/70 cursor-pointer select-none hover:text-white/90 transition">
               <input
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="h-3.5 w-3.5 accent-[#2196f3]"
+                className="h-3.5 w-3.5 accent-[#ffb300]"
               />
-              Remember the password
+              Remember me
             </label>
             {mode === "login" && (
               <button
                 type="button"
                 onClick={() => setForgotOpen(true)}
-                className="text-[12px] text-white/70 hover:text-[#4fc3f7] transition"
+                className="text-[12px] text-white/70 hover:text-[#ffb300] transition"
               >
-                Forgot?
+                Forgot password?
               </button>
             )}
           </div>
@@ -268,20 +270,35 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 mt-2 rounded-sm bg-[#2196f3] hover:bg-[#1976d2] text-white text-sm font-semibold tracking-wide transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="relative w-full py-3.5 mt-3 rounded-lg text-white text-sm font-bold tracking-[0.2em] uppercase transition-all disabled:opacity-60 flex items-center justify-center gap-2 overflow-hidden group shadow-[0_10px_30px_-5px_rgba(255,45,45,0.5)] hover:shadow-[0_15px_40px_-5px_rgba(255,80,20,0.7)] active:scale-[0.98]"
+            style={{
+              background: "linear-gradient(135deg, #ff2d2d 0%, #ff6b1a 50%, #ffb300 100%)",
+            }}
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? "Signing in…" : mode === "login" ? "Log in" : "Sign up"}
+            <span
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                background: "linear-gradient(135deg, #ffb300 0%, #ff6b1a 50%, #ff2d2d 100%)",
+              }}
+            />
+            <span className="relative flex items-center gap-2">
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Signing in…" : mode === "login" ? "Sign In" : "Create Account"}
+            </span>
           </button>
         </form>
 
-        <div className="mt-5 text-center">
+        <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <button
             type="button"
             onClick={() => setMode(mode === "login" ? "signup" : "login")}
-            className="text-[13px] text-[#4fc3f7] hover:text-[#81d4fa] transition"
+            className="text-[12px] text-white/60 hover:text-[#ffb300] transition tracking-wide"
           >
-            {mode === "login" ? "Sign up" : "Have an account? Log in"}
+            {mode === "login" ? (
+              <>Don't have an account? <span className="text-[#ffb300] font-semibold">Register now</span></>
+            ) : (
+              <>Have an account? <span className="text-[#ffb300] font-semibold">Sign in</span></>
+            )}
           </button>
         </div>
       </ScorpionAuthShell>
