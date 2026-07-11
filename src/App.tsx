@@ -1,0 +1,110 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute, AdminRoute } from "@/components/AppShell";
+import ScrollToTop from "@/components/ScrollToTop";
+
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import SellerLogin from "./pages/SellerLogin";
+import AdminLogin from "./pages/AdminLogin";
+import ResetPassword from "./pages/ResetPassword";
+import AdminSettings from "./pages/AdminSettings";
+import AdminSiteSettings from "./pages/AdminSiteSettings";
+import Shop from "./pages/Shop";
+import Cart from "./pages/Cart";
+import Orders from "./pages/Orders";
+import Recharge from "./pages/Recharge";
+import Tickets from "./pages/Tickets";
+import Settings from "./pages/Settings";
+import SellerPanel from "./pages/SellerPanel";
+import SellerApply from "./pages/SellerApply";
+import SellerUpload from "./pages/SellerUpload";
+import SellerFormat from "./pages/SellerFormat";
+import SellerProfile from "./pages/SellerProfile";
+import Admin from "./pages/Admin";
+import AdminApplications from "./pages/AdminApplications";
+import AdminPayouts from "./pages/AdminPayouts";
+import AdminCards from "./pages/AdminCards";
+import AdminRefunds from "./pages/AdminRefunds";
+import AdminDepositAddresses from "./pages/AdminDepositAddresses";
+import AdminPaymentGateway from "./pages/AdminPaymentGateway";
+import AdminPayments from "./pages/AdminPayments";
+import AdminStockReview from "./pages/AdminStockReview";
+import AdminDigitalProducts from "./pages/AdminDigitalProducts";
+import AdminBoost from "./pages/AdminBoost";
+import AdminCategories from "./pages/AdminCategories";
+import News from "./pages/News";
+import BuyerRefunds from "./pages/BuyerRefunds";
+import SellerPriceRules from "./pages/SellerPriceRules";
+import Dashboard from "./pages/Dashboard";
+import SuperShop from "./pages/SuperShop";
+import BoostTool from "./pages/BoostTool";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner theme="dark" />
+      <BrowserRouter>
+        <AuthProvider>
+          <ScrollToTop />
+          <Routes>
+            {/* Public auth pages */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/seller-login" element={<SellerLogin />} />
+            <Route path="/crzr-x9k2-panel" element={<AdminLogin />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+            <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+            <Route path="/admin/site" element={<AdminRoute><AdminSiteSettings /></AdminRoute>} />
+            <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
+            <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+            <Route path="/admin/cards" element={<AdminRoute><AdminCards /></AdminRoute>} />
+            <Route path="/admin/refunds" element={<AdminRoute><AdminRefunds /></AdminRoute>} />
+            <Route path="/admin/deposit-addresses" element={<AdminRoute><AdminDepositAddresses /></AdminRoute>} />
+            <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
+            <Route path="/admin/payment-gateway" element={<AdminRoute><AdminPaymentGateway /></AdminRoute>} />
+            <Route path="/admin/stock-review" element={<AdminRoute><AdminStockReview /></AdminRoute>} />
+            <Route path="/admin/digital-products" element={<AdminRoute><AdminDigitalProducts /></AdminRoute>} />
+            <Route path="/admin/boost" element={<AdminRoute><AdminBoost /></AdminRoute>} />
+            <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+
+            {/* Buyer/Seller protected routes */}
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
+            <Route path="/super-shop" element={<ProtectedRoute><SuperShop /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path="/boost" element={<ProtectedRoute><BoostTool /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+            <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
+            <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
+            <Route path="/refunds" element={<ProtectedRoute><BuyerRefunds /></ProtectedRoute>} />
+            <Route path="/seller" element={<ProtectedRoute><SellerPanel /></ProtectedRoute>} />
+            <Route path="/seller/apply" element={<ProtectedRoute><SellerApply /></ProtectedRoute>} />
+            <Route path="/seller/upload" element={<ProtectedRoute><SellerUpload /></ProtectedRoute>} />
+            <Route path="/seller/format" element={<ProtectedRoute><SellerFormat /></ProtectedRoute>} />
+            <Route path="/seller/price-rules" element={<ProtectedRoute><SellerPriceRules /></ProtectedRoute>} />
+            <Route path="/seller/:id" element={<ProtectedRoute><SellerProfile /></ProtectedRoute>} />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;

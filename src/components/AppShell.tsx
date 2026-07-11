@@ -1,0 +1,430 @@
+import { ReactNode, useEffect, useState, useCallback, useRef } from "react";
+import { Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, Store, ShoppingCart, ListOrdered, Wallet, LifeBuoy, ShieldCheck, PackagePlus, LogOut, Menu, X, Bell, AlertTriangle, RefreshCw, Newspaper, Undo2, Rocket } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import logo from "@/assets/panther-logo.png";
+import { Button } from "@/components/ui/button";
+import { BuildBadge } from "@/components/BuildBadge";
+import GoldDebugOverlay from "@/components/GoldDebugOverlay";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+// Admin access is purely role-based (server-side via user_roles + RLS).
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { cartApi, announcementsApi } from "@/lib/api";
+import { toast } from "sonner";
+
+
+
+const baseNav = [
+  { to: "/", label: "Home", icon: Home },
+  { to: "/shop", label: "Cards", icon: Store },
+  { to: "/super-shop", label: "Super Shop", icon: PackagePlus },
+  { to: "/cart", label: "Cart", icon: ShoppingCart },
+  { to: "/orders", label: "Orders", icon: ListOrdered },
+  { to: "/recharge", label: "Wallet", icon: Wallet },
+  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/refunds", label: "Refunds", icon: Undo2 },
+  { to: "/tickets", label: "Support", icon: LifeBuoy },
+];
+
+export const AppShell = ({ children }: { children: ReactNode }) => {
+  const { profile, signOut, loading, user, profileError, refresh } = useAuth();
+  const settings = useSiteSettings();
+  const role = profile?.role ?? "buyer";
+  const isAdmin = role === "admin";
+  const canSell = role === "seller" || isAdmin;
+  const effectiveRole: "buyer" | "seller" = canSell ? "seller" : "buyer";
+  const roleLabel = isAdmin
+    ? "🛡️ Admin"
+    : effectiveRole === "seller"
+    ? "✅ Seller"
+    : canSell
+    ? "🏷️ Buyer"
+    : "🏷️ Member";
+  // Skeleton ONLY while genuinely fetching for a logged-in user with no error.
+  // The hook guarantees `loading` flips to false within 8s (timeout) so this
+  // can never be stuck "true" forever.
+  const profileLoading = loading && !profile && !!user && !profileError;
+  const showProfileError = !!profileError && !!user && !profile;
+  const nav = useNavigate();
+  const loc = useLocation();
+  const [open, setOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartBounce, setCartBounce] = useState(false);
+  const prevCartCount = useRef(0);
+  const [announcements, setAnnouncements] = useState<Array<{ id: string; title: string; body: string; created_at: string }>>([]);
+  const [showNotifs, setShowNotifs] = useState(false);
+
+  // Load cart count
+  const loadCartCount = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { items } = await cartApi.list();
+      const newCount = (items ?? []).length;
+      if (newCount !== prevCartCount.current) {
+        setCartBounce(true);
+        setTimeout(() => setCartBounce(false), 400);
+      }
+      prevCartCount.current = newCount;
+      setCartCount(newCount);
+    } catch { /* ignore */ }
+  }, [user]);
+
+  // Load announcements for notification bell
+  const loadAnnouncements = useCallback(async () => {
+    try {
+      const res = await announcementsApi.list();
+      setAnnouncements((res.announcements ?? []).slice(0, 10) as any);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { loadCartCount(); loadAnnouncements(); }, [loadCartCount, loadAnnouncements]);
+  // Re-check cart count when navigating
+  useEffect(() => { loadCartCount(); }, [loc.pathname, loadCartCount]);
+  // Listen for custom "cart-updated" events from Cart/Shop pages for instant badge update
+  useEffect(() => {
+    const handler = () => loadCartCount();
+    window.addEventListener("cart-updated", handler);
+    return () => window.removeEventListener("cart-updated", handler);
+  }, [loadCartCount]);
+
+  const items = [...baseNav];
+  // Only surface the Seller panel link when the user is currently in seller mode
+  // (or is an admin). Buyers in buyer-mode shouldn't see the seller nav even if
+  // their account also holds the seller role.
+  if ((effectiveRole === "seller" && canSell) || isAdmin) {
+    items.splice(5, 0, { to: "/seller", label: "Seller", icon: PackagePlus });
+  }
+  if (isAdmin) {
+    items.push({ to: "/admin", label: "Admin", icon: ShieldCheck });
+  }
+
+  const isActive = (to: string) => to === "/" ? loc.pathname === "/" : loc.pathname.startsWith(to);
+
+  return (
+    <div className="min-h-screen flex flex-col w-full bg-background relative">
+      <ImpersonationBanner />
+      <BuildBadge />
+      <GoldDebugOverlay />
+      {/* Ambient glow */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[420px] bg-gradient-glow opacity-60" />
+
+      {/* Announcement bar */}
+      <div className="relative z-40 border-b border-border/50 bg-primary/10 backdrop-blur-xl overflow-hidden max-w-full">
+        <div className="flex items-center gap-12 py-2 text-[11px] font-mono font-semibold tracking-[0.18em] text-foreground/90 whitespace-nowrap overflow-hidden">
+          <div className="ticker shrink-0 gap-12 flex pl-6">
+            {Array.from({ length: 2 }).map((_, k) => (
+              <div key={k} className="flex gap-12">
+                {settings.ticker_items.map((item, i) => (
+                  <span key={`${k}-${i}`} className={i % 2 === 0 ? "text-primary" : "text-accent"}>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Navbar */}
+      <header className="nav-header sticky top-0 z-40 border-b border-border/40 bg-background/75 backdrop-blur-2xl">
+        <div className="nav-inner mx-auto w-full max-w-[1800px] flex items-center justify-between">
+          {/* Brand */}
+          <NavLink to="/" className="nav-brand flex items-center group shrink-0">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-xl bg-primary/30 blur-xl group-hover:bg-primary/50 transition-all duration-500" />
+              <img src={logo} alt={settings.shop_name} width={44} height={44}
+                className="nav-brand-logo relative drop-shadow-[0_0_18px_hsl(var(--gold)/0.45)] transition-transform duration-500 group-hover:scale-105" />
+            </div>
+            <div className="leading-none ml-3 sm:ml-3.5">
+              <div className="nav-brand-name font-display font-semibold tracking-[-0.02em] text-foreground">
+                {settings.shop_name}
+              </div>
+              <div className="nav-brand-tag font-mono text-muted-foreground/60 mt-1 sm:mt-1.5">
+                {settings.shop_tag}
+              </div>
+            </div>
+          </NavLink>
+
+          {/* Desktop nav pills */}
+          <nav className="nav-pills hidden lg:flex items-center bg-secondary/20 border border-border/30 rounded-2xl overflow-visible">
+            {items.map((it) => {
+              const isSuper = it.to === "/super-shop";
+              return (
+                <NavLink
+                  key={it.to}
+                  to={it.to}
+                  end={it.to === "/"}
+                  className="nav-pill relative"
+                  data-active={isActive(it.to)}
+                >
+                  <it.icon
+                    className={isSuper ? "nav-pill-icon text-primary-glow" : "nav-pill-icon"}
+                    strokeWidth={1.75}
+                  />
+                  <span>{it.label}</span>
+                  {it.to === "/cart" && cartCount > 0 && (
+                    <span
+                      className={`cart-count-badge absolute -top-1 -right-1 min-w-[22px] h-[22px] flex items-center justify-center rounded-full text-[12px] font-black px-1.5 z-50 transition-transform duration-300 ${cartBounce ? "scale-125" : "scale-100"}`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          {/* Right cluster */}
+          <div className="nav-right flex items-center shrink-0">
+            <div className="relative">
+              <button onClick={() => setShowNotifs(!showNotifs)} className="nav-icon-btn hidden md:inline-flex relative !text-foreground/90 hover:!text-primary-glow" aria-label="Notifications">
+                <Bell className="nav-icon" strokeWidth={2} />
+                {announcements.length > 0 && (
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold animate-pulse ring-2 ring-background" />
+                )}
+              </button>
+              {showNotifs && (
+                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-2xl z-50">
+                  <div className="p-3 border-b border-border/40 flex items-center justify-between">
+                    <span className="font-display text-sm tracking-wider text-foreground">NOTIFICATIONS</span>
+                    <button onClick={() => setShowNotifs(false)} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {announcements.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-muted-foreground">No notifications</div>
+                  ) : (
+                    <div className="divide-y divide-border/30">
+                      {announcements.map((a) => (
+                        <div key={a.id} className="p-3 hover:bg-secondary/30 transition">
+                          <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.body}</p>
+                          <p className="text-[10px] text-muted-foreground/60 mt-1">
+                            {new Date(a.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            {showProfileError ? (
+              <button
+                onClick={() => { void refresh(); }}
+                title={profileError ?? "Profile unavailable"}
+                className="hidden sm:flex items-center gap-2 rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-destructive hover:bg-destructive/20 transition-colors"
+                aria-label={`Profile error: ${profileError}. Click to retry.`}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] font-semibold">
+                  Profile unavailable
+                </span>
+                <RefreshCw className="h-3 w-3" />
+              </button>
+            ) : (
+              <div className="nav-balance hidden sm:flex items-center rounded-full">
+                <Wallet className="nav-icon primary-text-strong" strokeWidth={2} />
+                <span className="nav-balance-label uppercase tracking-[0.2em] text-foreground/70">Balance</span>
+                {profileLoading ? (
+                  <span className="nav-balance-value nav-skeleton nav-skeleton-balance" aria-hidden="true" />
+                ) : (
+                  <span className="nav-balance-value font-display font-bold gold-text-strong">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                )}
+              </div>
+            )}
+
+            <NavLink to="/settings" className="nav-profile flex items-center rounded-full border hover:border-primary/70 transition-colors group" aria-label="Profile settings">
+              {showProfileError ? (
+                <div className="nav-profile-avatar rounded-full bg-destructive/20 border border-destructive/60 flex items-center justify-center text-destructive font-bold" title={profileError ?? ""}>
+                  !
+                </div>
+              ) : profileLoading ? (
+                <span className="nav-profile-avatar nav-skeleton rounded-full" aria-hidden="true" />
+              ) : (
+                <div className="nav-profile-avatar rounded-full bg-gradient-primary flex items-center justify-center font-bold text-primary-foreground shadow-neon transition-transform duration-300 group-hover:scale-105">
+                  {profile?.username?.[0]?.toUpperCase() ?? "U"}
+                </div>
+              )}
+              <div className="hidden xl:block leading-tight pr-1">
+                {showProfileError ? (
+                  <>
+                    <div className="nav-profile-name font-bold text-destructive -mb-0.5">Unavailable</div>
+                    <div className="nav-profile-role text-destructive/80 uppercase tracking-[0.22em] font-semibold text-[10px]">
+                      Tap to retry
+                    </div>
+                  </>
+                ) : profileLoading ? (
+                  <>
+                    <span className="nav-skeleton nav-skeleton-name block -mb-0.5" aria-hidden="true" />
+                    <span className="nav-skeleton nav-skeleton-role block" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    <div className="nav-profile-name font-bold gold-text-strong -mb-0.5">{profile?.username}</div>
+                    <div className="nav-profile-role primary-text-strong uppercase tracking-[0.22em] font-semibold">
+                      {roleLabel}
+                    </div>
+                  </>
+                )}
+              </div>
+            </NavLink>
+
+            {/* One-way switch: buyers with a seller account can promote to
+                seller mode, but seller mode is locked — they must sign out and
+                sign in as a buyer to revert. Prevents accidental auto-switch
+                away from seller during a session. */}
+            {/* Seller nav link already visible based on role */}
+
+            <button onClick={async () => { await signOut(); nav("/auth"); }}
+              className="nav-icon-btn nav-icon-btn-danger hidden md:inline-flex" aria-label="Sign out">
+              <LogOut className="nav-icon" strokeWidth={1.75} />
+            </button>
+
+            <button onClick={() => setOpen(!open)} className="nav-icon-btn lg:hidden" aria-label="Menu">
+              {open ? <X className="nav-icon" /> : <Menu className="nav-icon" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile drawer */}
+        {open && (
+          <div className="nav-drawer lg:hidden border-t border-border/50 bg-background/95 backdrop-blur-2xl">
+            {/* Drawer header — avatar + name + balance with skeletons */}
+            <div className="nav-drawer-header flex items-center gap-3">
+              {profileLoading ? (
+                <span className="nav-drawer-avatar nav-skeleton rounded-full" aria-hidden="true" />
+              ) : (
+                <div className="nav-drawer-avatar rounded-full bg-gradient-primary flex items-center justify-center font-semibold text-primary-foreground shadow-neon">
+                  {profile?.username?.[0]?.toUpperCase() ?? "U"}
+                </div>
+              )}
+              <div className="flex-1 min-w-0 leading-tight">
+                {profileLoading ? (
+                  <>
+                    <span className="nav-skeleton nav-drawer-skeleton-name block" aria-hidden="true" />
+                    <span className="nav-skeleton nav-drawer-skeleton-role block mt-1.5" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    <div className="nav-drawer-name font-semibold gold-text truncate">{profile?.username}</div>
+                    <div className="nav-drawer-role text-muted-foreground uppercase tracking-[0.22em]">
+                      {roleLabel}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="nav-drawer-balance flex items-center gap-1.5 rounded-full bg-gradient-to-r from-background/95 to-secondary/85 border border-primary/35 px-3 py-1.5 shrink-0">
+                <Wallet className="h-3.5 w-3.5 primary-text-strong shrink-0" strokeWidth={1.75} />
+                {profileLoading ? (
+                  <span className="nav-skeleton nav-drawer-skeleton-balance" aria-hidden="true" />
+                ) : (
+                  <span className="font-display font-semibold gold-text-strong text-[13px]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="nav-drawer-inner grid grid-cols-2">
+              {items.map((it) => (
+                <NavLink key={it.to} to={it.to} end={it.to === "/"} onClick={() => setOpen(false)}
+                  className="nav-drawer-item relative"
+                  data-active={isActive(it.to) ? "true" : undefined}>
+                  <it.icon className="nav-drawer-icon" strokeWidth={1.75} />
+                  <span>{it.label}</span>
+                  {it.to === "/cart" && cartCount > 0 && (
+                    <span
+                      className={`cart-count-badge absolute top-1 right-1 min-w-[22px] h-[22px] flex items-center justify-center rounded-full text-[12px] font-black px-1.5 z-50 transition-transform duration-300 ${cartBounce ? "scale-125" : "scale-100"}`}
+                    >
+                      {cartCount}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+              <button onClick={async () => { await signOut(); nav("/auth"); }}
+                className="nav-drawer-item nav-drawer-item-danger col-span-2 justify-center">
+                <LogOut className="nav-drawer-icon" strokeWidth={1.75} /> Sign out
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Main */}
+      <main className="flex-1 mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-16 py-6 sm:py-8 animate-fade-up relative z-10">
+        {children}
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-border/40 bg-background/55 backdrop-blur-xl mt-16">
+        <div className="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-16 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="col-span-2">
+            <div className="flex items-center gap-2.5 mb-3">
+              <img src={logo} alt="" className="h-8 w-8" />
+              <div className="font-display font-bold text-base text-foreground">
+                {settings.shop_name}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
+              Premium Gift Card and CC marketplace. Verified inventory, instant delivery, vault-grade
+              security — trusted by thousands of professional buyers worldwide.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-display text-xs uppercase tracking-[0.25em] text-foreground mb-3">Platform</h4>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              <li>Marketplace</li><li>Wallet & Recharge</li><li>Seller Program</li><li>Refund Policy</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-display text-xs uppercase tracking-[0.25em] text-foreground mb-3">Contact</h4>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              <li><span className="gold-text">@cruzercc_shop</span></li>
+              <li><span className="gold-text">@cruzercc_sales</span></li>
+              <li><span className="gold-text">@cruzercc_support</span></li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-border/40 py-4 text-center text-[10px] font-mono tracking-[0.3em] text-muted-foreground">
+          © {new Date().getFullYear()} {settings.shop_name.toUpperCase()} · ALL RIGHTS RESERVED
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, profile, loading, signOut, profileError } = useAuth();
+  const nav = useNavigate();
+  const loc = useLocation();
+  if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
+  if (!user) return <Navigate to="/auth" replace state={{ from: loc }} />;
+  if (profile?.banned) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
+        <div className="glass-neon rounded-2xl p-8 max-w-md">
+          <h2 className="font-display text-2xl text-destructive mb-2">ACCOUNT SUSPENDED</h2>
+          <p className="text-muted-foreground text-sm mb-6">Your account has been banned. Contact support if you believe this is a mistake.</p>
+          <Button onClick={async () => { await signOut(); nav("/auth"); }} variant="outline">Sign out</Button>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
+
+export const AdminRoute = ({ children }: { children: ReactNode }) => {
+  const { profile, loading, user, profileError } = useAuth();
+  const loc = useLocation();
+
+  // Wait for auth state to settle BEFORE deciding whether to redirect.
+  if (loading && !profileError) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
+  }
+  if (!user) return <Navigate to="/crzr-x9k2-panel" replace state={{ from: loc }} />;
+  if (profile?.role !== "admin") {
+    return <Navigate to="/crzr-x9k2-panel" replace state={{ from: loc, reason: "not-admin" }} />;
+  }
+  return <>{children}</>;
+};
