@@ -39,7 +39,7 @@ export function ScorpionAuthShell({
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(20,4,4,0.55) 55%, rgba(10,2,2,0.85) 100%)",
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.0) 0%, rgba(20,4,4,0.25) 60%, rgba(10,2,2,0.6) 100%)",
         }}
       />
 
