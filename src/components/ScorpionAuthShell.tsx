@@ -27,7 +27,7 @@ export function ScorpionAuthShell({
     >
       {/* Background scorpion mascot */}
       <div
-        className="absolute inset-0 -z-10 bg-[#2a0808]"
+        className="absolute inset-0 bg-[#2a0808]"
         style={{
           backgroundImage: `url(${heroBg})`,
           backgroundSize: "cover",
@@ -36,14 +36,14 @@ export function ScorpionAuthShell({
         }}
       />
       <div
-        className="absolute inset-0 -z-10"
+        className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(0,0,0,0.0) 0%, rgba(20,4,4,0.25) 60%, rgba(10,2,2,0.6) 100%)",
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.0) 0%, rgba(20,4,4,0.35) 60%, rgba(10,2,2,0.75) 100%)",
         }}
       />
 
-      <div className="relative w-full max-w-[440px]">
+      <div className="relative z-10 w-full max-w-[440px]">
         {/* Card */}
         <div className="rounded-md bg-[#1d2530]/85 backdrop-blur-md border border-white/10 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)] overflow-hidden">
           <div className={`h-[3px] w-full bg-gradient-to-r ${accentBar[accent]}`} />
