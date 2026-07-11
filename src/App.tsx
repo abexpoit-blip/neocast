@@ -8,7 +8,7 @@ import { ProtectedRoute, AdminRoute } from "@/components/AppShell";
 import ScrollToTop from "@/components/ScrollToTop";
 
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
+// removed: Landing, Dashboard, News, BuyerRefunds, SuperShop, BoostTool, Tickets, Settings (not part of Scorpion-style nav)
 import Auth from "./pages/Auth";
 import SellerLogin from "./pages/SellerLogin";
 import AdminLogin from "./pages/AdminLogin";
