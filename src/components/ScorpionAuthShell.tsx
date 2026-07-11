@@ -66,7 +66,7 @@ export function ScorpionAuthShell({
                 className="text-[28px] leading-none font-extrabold tracking-tight"
                 style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
               >
-                <span className="inline-block bg-gradient-to-r from-[#ff2d2d] to-[#ff8c42] text-white px-2.5 py-0.5 rounded-sm">
+                <span className="inline-block bg-gradient-to-r from-[#7c4dff] to-[#00e5ff] text-white px-2.5 py-0.5 rounded-sm">
                   {title}
                 </span>
               </h1>
