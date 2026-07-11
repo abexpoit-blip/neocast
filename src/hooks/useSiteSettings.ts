@@ -17,19 +17,19 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  shop_name: "cruzercc.shop",
-  shop_tag: "GIFT CARD · CC PROVIDER",
+  shop_name: "Scorpion-Shop",
+  shop_tag: "VERIFIED MARKETPLACE",
   hero_eyebrow: "WELCOME BACK",
-  hero_title: "The world's most trusted Gift Card & CC marketplace.",
+  hero_title: "The verified Scorpion-Shop marketplace.",
   hero_sub:
-    "Verified inventory from elite sellers, instant delivery, automated replacement, and vault-grade settlement.",
+    "Verified inventory, instant delivery, automated replacement, and secure settlement.",
   hero_cta: "Enter the marketplace",
   ticker_items: [
-    "● LIVE INVENTORY · 12,400+ FRESH CARDS",
+    "● LIVE INVENTORY · FRESH STOCK DAILY",
     "★ VERIFIED SELLERS · INSTANT DELIVERY",
     "● 99.4% VALID RATE THIS WEEK",
     "↗ AUTO REPLACEMENT WITHIN 5 MINUTES",
-    "● SUPPORT 24/7 · @CRUZERCC_SUPPORT",
+    "● SUPPORT 24/7 · @SCORPIONCCSTORE02",
   ],
   default_commission_percent: 20,
   min_card_price: 1,

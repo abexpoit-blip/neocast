@@ -57,7 +57,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a]" style={{ fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif' }}>
-      <Seo title="cruzercc.shop — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
+      <Seo title="Scorpion-Shop — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
 
       {/* TOP NAV */}
       <header className="bg-[#1f2d3d] text-white">
@@ -176,7 +176,7 @@ const Index = () => {
 
         {/* SHOP RULES + CONTACT */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-          <Panel title="cruzercc.shop Shop Rules">
+          <Panel title="Scorpion-Shop Rules">
             <ul className="px-6 py-5 space-y-2 text-[13px] text-[#1976d2]">
               {[
                 "By registering, you automatically agree to the rules of the store.",
@@ -193,35 +193,27 @@ const Index = () => {
 
           <Panel title="Contact Information">
             <div className="px-6 py-5 space-y-3 text-[13px] text-[#333]">
-              <p>Please be aware of fake cruzercc.shop support. For any suggestion or problems, tell us on TG.</p>
+              <p>Please be aware of fake Scorpion-Shop support. For any suggestion or problems, tell us on TG.</p>
               <div>
                 <div className="text-[#888] text-xs mb-1">Telegram:</div>
                 <a
-                  href="https://t.me/cruzercc_shop"
+                  href="https://t.me/scorpionccstore02"
                   target="_blank"
                   rel="noreferrer"
                   className="block text-[#1976d2] hover:underline"
                 >
-                  @cruzercc_shop
-                </a>
-                <a
-                  href="https://t.me/cruzercc_shop_002"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block text-[#1976d2] hover:underline"
-                >
-                  @cruzercc_shop_002
+                  @scorpionccstore02
                 </a>
               </div>
               <div>
                 <div className="text-[#888] text-xs mb-1">Telegram channel:</div>
                 <a
-                  href="https://t.me/cruzercc_channel"
+                  href="https://t.me/scorpionccstore02"
                   target="_blank"
                   rel="noreferrer"
                   className="block text-[#1976d2] hover:underline"
                 >
-                  @cruzercc_channel
+                  @scorpionccstore02
                 </a>
               </div>
             </div>
