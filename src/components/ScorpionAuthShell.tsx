@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
-import heroBg from "@/assets/scorpion-hero.jpg";
+import dragonBgAsset from "@/assets/dragon-bg.jpg.asset.json";
 import dragonLogo from "@/assets/dragon-logo.png";
+
+const heroBg = dragonBgAsset.url;
 
 type Props = {
   children: ReactNode;
@@ -28,7 +30,7 @@ export function ScorpionAuthShell({
     >
       {/* Background scorpion mascot */}
       <div
-        className="absolute inset-0 bg-[#2a0808]"
+        className="absolute inset-0 bg-black"
         style={{
           backgroundImage: `url(${heroBg})`,
           backgroundSize: "cover",
@@ -40,7 +42,7 @@ export function ScorpionAuthShell({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(0,0,0,0.0) 0%, rgba(20,4,4,0.35) 60%, rgba(10,2,2,0.75) 100%)",
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(10,2,2,0.55) 55%, rgba(0,0,0,0.85) 100%)",
         }}
       />
 
