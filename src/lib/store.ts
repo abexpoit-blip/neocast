@@ -260,3 +260,83 @@ export const writeSiteSetting = async (key: string, value: string) => {
   const { error } = await supabase.from("site_settings").upsert({ key, value }, { onConflict: "key" });
   if (error) throw error;
 };
+
+/* ---------------- admin: catalog ---------------- */
+
+export interface ProductInput {
+  id?: string;
+  category_id: string | null;
+  title: string;
+  slug: string;
+  short_description?: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  price: number;
+  compare_at_price?: number | null;
+  delivery_type: DeliveryType;
+  download_url?: string | null;
+  instant_content?: string | null;
+  featured?: boolean;
+  active?: boolean;
+  bin?: string | null;
+  brand?: string | null;
+  country?: string | null;
+  base?: string | null;
+}
+
+export const slugify = (s: string) =>
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || `item-${Date.now()}`;
+
+export const adminSaveProduct = async (input: ProductInput): Promise<string> => {
+  if (input.id) {
+    const { id, ...rest } = input;
+    const { error } = await supabase.from("products").update(rest).eq("id", id);
+    if (error) throw error;
+    return id;
+  }
+  const { data, error } = await supabase.from("products").insert(input).select("id").single();
+  if (error) throw error;
+  return data.id as string;
+};
+
+export const adminDeleteProduct = async (id: string) => {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw error;
+};
+
+export const adminSaveCategory = async (input: { id?: string; name: string; slug: string; icon?: string | null; sort_order?: number; active?: boolean }) => {
+  if (input.id) {
+    const { id, ...rest } = input;
+    const { error } = await supabase.from("categories").update(rest).eq("id", id);
+    if (error) throw error;
+    return;
+  }
+  const { error } = await supabase.from("categories").insert(input);
+  if (error) throw error;
+};
+
+export const adminDeleteCategory = async (id: string) => {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw error;
+};
+
+/** Bulk-add card/key lines to a product and re-sync its stock. */
+export const adminAddKeys = async (productId: string, lines: string[]) => {
+  const rows = lines.map((l) => l.trim()).filter(Boolean).map((content) => ({ product_id: productId, content }));
+  if (rows.length === 0) return 0;
+  const { error } = await supabase.from("product_keys").insert(rows);
+  if (error) throw error;
+  await adminSyncStock(productId);
+  return rows.length;
+};
+
+export const adminSyncStock = async (productId: string) => {
+  const { count, error } = await supabase
+    .from("product_keys")
+    .select("id", { count: "exact", head: true })
+    .eq("product_id", productId)
+    .eq("is_sold", false);
+  if (error) throw error;
+  await supabase.from("products").update({ stock: count ?? 0 }).eq("id", productId);
+  return count ?? 0;
+};
