@@ -105,6 +105,14 @@ const Auth = () => {
   return (
     <>
       <Seo title="Вход и регистрация | Zoru Shop" description="Вход и регистрация покупателей в Zoru Shop — проверенный маркетплейс." path="/auth" />
+      <button
+        type="button"
+        onClick={() => setLang(lang === "en" ? "ru" : "en")}
+        title={lang === "en" ? "Переключить на русский" : "Change language to English"}
+        className="fixed top-4 right-4 z-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-[0.15em] text-white/80 bg-white/[0.06] border border-white/15 backdrop-blur-md hover:text-white hover:border-[#ffb300]/60 transition"
+      >
+        {lang === "en" ? "RU" : "EN"}
+      </button>
       <ScorpionAuthShell
         tagline={
           <>
@@ -115,6 +123,7 @@ const Auth = () => {
           </>
         }
       >
+
         {/* Tabs */}
         <div className="flex mb-6 p-1 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm">
           {(["login", "signup"] as const).map((m) => (
