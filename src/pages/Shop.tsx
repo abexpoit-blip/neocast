@@ -388,8 +388,9 @@ function pageNumbers(page: number, total: number): (number | "…")[] {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[#888] text-[11px] tracking-wider">{label}</span>
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-[#888] text-[11px] tracking-wider shrink-0 w-[62px] lg:w-auto">{label}</span>
+
       {children}
     </div>
   );
