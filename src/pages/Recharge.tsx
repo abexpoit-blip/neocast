@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
-import { depositsApi, plisioApi, walletApi } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
+import { createCryptoInvoice, checkDepositStatus } from "@/lib/plisio.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import {
