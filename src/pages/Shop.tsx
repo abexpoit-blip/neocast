@@ -301,6 +301,45 @@ const Shop = () => {
         </table>
       </div>
 
+      {/* PAGINATION */}
+      {!loading && cards.length > PER_PAGE && (
+        <div className="mt-3 flex items-center justify-end gap-1 text-[12px]">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="h-7 px-3 border border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7] disabled:opacity-40"
+          >
+            ‹
+          </button>
+          {pageNumbers(page, totalPages).map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} className="px-2 text-[#aaa]">…</span>
+            ) : (
+              <button
+                key={n}
+                onClick={() => setPage(n as number)}
+                className={`h-7 min-w-[28px] px-2 border ${
+                  n === page
+                    ? "border-[#2196f3] bg-[#2196f3] text-white"
+                    : "border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7]"
+                }`}
+              >
+                {n}
+              </button>
+            ),
+          )}
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="h-7 px-3 border border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7] disabled:opacity-40"
+          >
+            ›
+          </button>
+        </div>
+      )}
+
+
+
       {buying && (
         <div className="mt-3 text-[12px] text-[#888] inline-flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Обработка…
