@@ -40,49 +40,44 @@ const Index = () => {
 
   return (
     <AppShell>
-      <Seo title="Scorpion-Shop — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
+      <Seo title="Zoru Shop — Главная" description="Личный кабинет покупателя, живая лента поступлений и объявления." path="/" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* NEWS & UPDATES */}
-        <Panel title="News & Updates">
+        {/* НОВОСТИ И ОБНОВЛЕНИЯ */}
+        <Panel title="Новости и обновления">
           <div className="max-h-[420px] overflow-y-auto py-3 text-center font-mono text-[15px] leading-[2.1] text-[#d32f2f]">
             {news.length === 0 && (
-              <div className="text-[#888] font-sans text-sm py-6">No updates yet.</div>
+              <div className="text-[#888] font-sans text-sm py-6">Пока нет обновлений.</div>
             )}
             {news.map((n) => (
               <div key={n.id}>
                 {n.label}
-                {n.count ? `,COUNT:${n.count}` : ""}
+                {n.count ? `,КОЛ-ВО:${n.count}` : ""}
               </div>
             ))}
           </div>
         </Panel>
 
-        {/* ANNOUNCEMENT */}
-        <Panel title="Announcement">
+        {/* ОБЪЯВЛЕНИЯ */}
+        <Panel title="Объявления">
           <div className="px-6 py-6 space-y-6 text-center max-h-[420px] overflow-y-auto">
             {anns.length === 0 ? (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-[#8e24aa] mb-2">
-                    Old channel has been banned.<br />follow new channel instead
+                    Добро пожаловать в Zoru Shop
                   </h3>
-                  <a
-                    href="https://t.me/scorpionccstore02"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#8e24aa] font-semibold text-lg hover:underline"
-                  >
-                    https://t.me/scorpionccstore02
-                  </a>
+                  <p className="text-[14px] text-[#333] leading-[1.9]">
+                    Следите за официальным каналом, чтобы не пропустить обновления.
+                  </p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#d32f2f] mb-2">Recharge Promotion Notice</h3>
+                  <h3 className="text-lg font-semibold text-[#d32f2f] mb-2">Акция на пополнение</h3>
                   <p className="text-[14px] text-[#d32f2f] font-semibold leading-[1.9]">
-                    One-time recharge of $500, $35 bonus. One-time recharge of $1000, $100 bonus.
+                    Пополнение на $500 — бонус $35. Пополнение на $1000 — бонус $100.
                   </p>
                   <p className="text-[14px] text-[#d32f2f] font-semibold leading-[1.9] mt-2">
-                    One-time recharge of $2000, $240 bonus. One-time recharge of $5000, $750 bonus.
+                    Пополнение на $2000 — бонус $240. Пополнение на $5000 — бонус $750.
                   </p>
                 </div>
               </div>
@@ -102,40 +97,37 @@ const Index = () => {
         </Panel>
       </div>
 
-      {/* SHOP RULES + CONTACT */}
+      {/* ПРАВИЛА + КОНТАКТЫ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-        <Panel title="Scorpion Shop Rules">
+        <Panel title="Правила Zoru Shop">
           <div className="px-6 py-5 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 space-y-2 leading-[1.7]">
-            <p>By registering, you automatically agree to the rules of the store.</p>
-            <p>Rules can be changed without notifying users.</p>
-            <p>If you find bugs or vulnerabilities, report them via tickets.</p>
-            <p>If you intentionally exploit bugs or vulnerabilities for profit, your account will be permanently banned.</p>
-            <p>After cleaning the section of your purchases, the administration will not be able to return the purchased cards to you. Save cards to your devices.</p>
-            <p>If you lose access to your account, the administration will not be able to restore your data and access will be lost forever.</p>
-            <p>Please recharge your account reasonably. The user balance is not refundable.</p>
-            <p>The Owners of this SHOP will take NO responsibility for the way you use the information on this SHOP.</p>
+            <p>Регистрируясь, вы автоматически соглашаетесь с правилами магазина.</p>
+            <p>Правила могут изменяться без уведомления пользователей.</p>
+            <p>Если вы нашли ошибку или уязвимость, сообщите об этом через тикеты.</p>
+            <p>Умышленное использование ошибок в корыстных целях приведёт к безвозвратной блокировке аккаунта.</p>
+            <p>После очистки раздела покупок администрация не сможет восстановить данные. Сохраняйте покупки на своих устройствах.</p>
+            <p>При потере доступа к аккаунту администрация не сможет восстановить данные, доступ будет утерян навсегда.</p>
+            <p>Пополняйте баланс разумно. Средства на балансе возврату не подлежат.</p>
+            <p>Владельцы магазина не несут ответственности за то, как вы используете информацию с этого ресурса.</p>
           </div>
         </Panel>
 
-        <Panel title="Contact Information">
+        <Panel title="Контактная информация">
           <div className="px-6 py-5 space-y-3 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 leading-[1.7]">
-            <p>Please be aware from fake Scorpion support , For any suggestion or problems, tell us in TG</p>
+            <p>Остерегайтесь поддельной поддержки Zoru Shop. По вопросам и предложениям пишите нам в Telegram.</p>
             <div>
               <div className="text-[#333] mb-1">Telegram:</div>
-              <a href="https://t.me/Scorpion_ccsale" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
-                @Scorpion_ccsale
-              </a>
-              <a href="https://t.me/scorpioncc_shop_002" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
-                @scorpioncc_shop_002
+              <a href="https://t.me/zoru_support" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
+                @zoru_support
               </a>
             </div>
             <div>
-              <div className="text-[#333] mb-1">Telegram channel:</div>
-              <a href="https://t.me/scorpionccstore02" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
-                https://t.me/scorpionccstore02
+              <div className="text-[#333] mb-1">Telegram-канал:</div>
+              <a href="https://t.me/zoru_shop" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
+                https://t.me/zoru_shop
               </a>
             </div>
-            <p className="text-[#d32f2f] font-semibold pt-2">Welcome cvv sellers to join our platform</p>
+            <p className="text-[#d32f2f] font-semibold pt-2">Приглашаем продавцов присоединиться к нашей платформе</p>
           </div>
         </Panel>
       </div>
