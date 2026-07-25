@@ -50,9 +50,333 @@ export type Database = {
         }
         Relationships: []
       }
+      balance_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      deposits: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          reference: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          delivered_content: string | null
+          id: string
+          order_id: string
+          product_id: string | null
+          quantity: number
+          title: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          delivered_content?: string | null
+          id?: string
+          order_id: string
+          product_id?: string | null
+          quantity?: number
+          title: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          delivered_content?: string | null
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          quantity?: number
+          title?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          order_no: string
+          status: string
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_no?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          order_no?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          active: boolean
+          address: string | null
+          code: string
+          created_at: string
+          id: string
+          instructions: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_keys: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_sold: boolean
+          product_id: string
+          sold_at: string | null
+          sold_to: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_sold?: boolean
+          product_id: string
+          sold_at?: string | null
+          sold_to?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_sold?: boolean
+          product_id?: string
+          sold_at?: string | null
+          sold_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_keys_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          compare_at_price: number | null
+          created_at: string
+          delivery_type: string
+          description: string | null
+          download_url: string | null
+          featured: boolean
+          id: string
+          image_url: string | null
+          instant_content: string | null
+          price: number
+          short_description: string | null
+          slug: string
+          sold_count: number
+          stock: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          delivery_type?: string
+          description?: string | null
+          download_url?: string | null
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          instant_content?: string | null
+          price?: number
+          short_description?: string | null
+          slug: string
+          sold_count?: number
+          stock?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          delivery_type?: string
+          description?: string | null
+          download_url?: string | null
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          instant_content?: string | null
+          price?: number
+          short_description?: string | null
+          slug?: string
+          sold_count?: number
+          stock?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          balance: number
+          blocked: boolean
           created_at: string
           email: string | null
           id: string
@@ -62,6 +386,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          balance?: number
+          blocked?: boolean
           created_at?: string
           email?: string | null
           id: string
@@ -71,12 +397,32 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          balance?: number
+          blocked?: boolean
           created_at?: string
           email?: string | null
           id?: string
           telegram?: string | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string | null
         }
         Relationships: []
       }
@@ -106,12 +452,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_balance: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_deposit_status: {
+        Args: { _deposit_id: string; _note?: string; _status: string }
+        Returns: undefined
+      }
+      admin_set_role: {
+        Args: {
+          _grant: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      purchase_product: {
+        Args: { _product_id: string; _quantity?: number }
+        Returns: string
       }
     }
     Enums: {

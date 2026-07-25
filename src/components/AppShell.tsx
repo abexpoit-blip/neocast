@@ -1,18 +1,15 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { BuildBadge } from "@/components/BuildBadge";
-import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { cartApi } from "@/lib/api";
 
 // Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
 const buyerNav = [
   { to: "/", label: "ГЛАВНАЯ", end: true },
   { to: "/shop", label: "МАГАЗИН" },
-  { to: "/cart", label: "КОРЗИНА" },
   { to: "/orders", label: "ЗАКАЗЫ" },
   { to: "/recharge", label: "ПОПОЛНЕНИЕ" },
 ];
@@ -21,27 +18,14 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const { profile, signOut, user } = useAuth();
   const settings = useSiteSettings();
   const nav = useNavigate();
-  const loc = useLocation();
+  useLocation();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const items = buyerNav;
 
-  const loadCart = useCallback(async () => {
-    if (!user) return;
-    try { const { items } = await cartApi.list(); setCartCount((items ?? []).length); } catch { /* ignore */ }
-  }, [user]);
-
-  useEffect(() => { loadCart(); }, [loadCart]);
-  useEffect(() => { loadCart(); }, [loc.pathname, loadCart]);
-  useEffect(() => {
-    const h = () => loadCart();
-    window.addEventListener("cart-updated", h);
-    return () => window.removeEventListener("cart-updated", h);
-  }, [loadCart]);
   useEffect(() => {
     const h = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false); };
     document.addEventListener("mousedown", h);
@@ -56,7 +40,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       className="min-h-screen bg-white text-[#1a1a1a] flex flex-col"
       style={{ fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif' }}
     >
-      <ImpersonationBanner />
       <BuildBadge />
 
       {/* TOP NAV */}
@@ -77,11 +60,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 }
               >
                 {n.label}
-                {n.to === "/cart" && cartCount > 0 && (
-                  <span className="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-[#e53935] text-white">
-                    {cartCount}
-                  </span>
-                )}
               </NavLink>
             ))}
           </nav>
