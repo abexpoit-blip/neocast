@@ -154,19 +154,33 @@ SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
 echo "==> 7/8 Reverse proxy for $DOMAIN_API"
-NEXUS_CONF_DIR="/opt/nexus/deployment/nginx/conf.d"
-NEXUS_WEBROOT="/opt/nexus/deployment/certbot/www"
 HOST_IP="$(hostname -I | awk '{print $1}')"
 
+# Auto-detect the running nginx container that owns host ports 80/443 and read
+# its real bind-mount host paths (may live in /opt/nexus, /opt/nexus-v2/deployment, ...).
+NGINX_CT="$(docker ps --format '{{.Names}}' | grep -E 'nginx' | head -1 || true)"
+NEXUS_CONF_DIR=""
+NEXUS_WEBROOT=""
+if [ -n "$NGINX_CT" ]; then
+  NEXUS_CONF_DIR="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/nginx/conf.d"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+  NEXUS_WEBROOT="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/www/certbot"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+  [ -z "$NEXUS_WEBROOT" ] && NEXUS_WEBROOT="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/www/html"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+fi
+
+
 setup_nexus_nginx() {
-  # Existing nexus_nginx container owns host ports 80/443 -> add our vhost there.
-  mkdir -p "$NEXUS_WEBROOT"
+  # Existing nginx container owns host ports 80/443 -> add our vhost there.
+  ACME_LOC="location /.well-known/acme-challenge/ { proxy_pass http://$HOST_IP:8899; }"
+  if [ -n "$NEXUS_WEBROOT" ]; then
+    mkdir -p "$NEXUS_WEBROOT/.well-known/acme-challenge"
+    ACME_LOC="location /.well-known/acme-challenge/ { root /var/www/certbot; }"
+  fi
   cat > "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
 server {
     listen 80;
     server_name $DOMAIN_API;
     client_max_body_size 50m;
-    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    $ACME_LOC
     location / {
         proxy_pass http://$HOST_IP:8000;
         proxy_http_version 1.1;
@@ -179,14 +193,22 @@ server {
     }
 }
 NGINX
-  docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+  docker exec "$NGINX_CT" nginx -t && docker exec "$NGINX_CT" nginx -s reload
 
   if [ ! -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
     apt-get install -y certbot
-    certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
-      --non-interactive --agree-tos -m admin@zoru.cc \
-      || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    if [ -n "$NEXUS_WEBROOT" ]; then
+      certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
+        --non-interactive --agree-tos -m admin@zoru.cc \
+        || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    else
+      # No shared webroot mount: serve ACME from a temp local http server on 8899
+      certbot certonly --standalone --http-01-port 8899 -d "$DOMAIN_API" \
+        --non-interactive --agree-tos -m admin@zoru.cc \
+        || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    fi
   fi
+
 
   if [ -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
     cat >> "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
@@ -211,7 +233,7 @@ server {
     }
 }
 NGINX
-    docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+    docker exec "$NGINX_CT" nginx -t && docker exec "$NGINX_CT" nginx -s reload
   fi
 }
 
@@ -234,18 +256,21 @@ server {
 }
 NGINX
   ln -sf /etc/nginx/sites-available/supabase.conf /etc/nginx/sites-enabled/supabase.conf
-  nginx -t && (systemctl reload nginx || systemctl restart nginx)
+  systemctl enable --now nginx 2>/dev/null || true
+  nginx -t && (systemctl reload nginx || systemctl restart nginx) || {
+    echo "!! host nginx start failed (port 80 probably taken by a container)"; return 1; }
   apt-get install -y certbot python3-certbot-nginx
   certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@zoru.cc --redirect \
     || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
 }
 
-if docker ps --format '{{.Names}}' | grep -q '^nexus_nginx$' && [ -d "$NEXUS_CONF_DIR" ]; then
-  echo "-- nexus_nginx detected (owns ports 80/443) -> adding vhost there"
-  setup_nexus_nginx || echo "!! nexus_nginx vhost setup had errors, check above"
+if [ -n "$NGINX_CT" ] && [ -n "$NEXUS_CONF_DIR" ] && [ -d "$NEXUS_CONF_DIR" ]; then
+  echo "-- nginx container '$NGINX_CT' owns ports 80/443 -> adding vhost in $NEXUS_CONF_DIR"
+  setup_nexus_nginx || echo "!! container nginx vhost setup had errors, check above"
 else
   setup_host_nginx || echo "!! host nginx setup had errors, check above"
 fi
+
 
 
 echo "==> 8/8 Writing app env at $APP_DIR/.env"
