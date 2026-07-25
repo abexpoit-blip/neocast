@@ -65,6 +65,17 @@ const Shop = () => {
     });
   }, [all, q, searched]);
 
+  const PER_PAGE = 25;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(cards.length / PER_PAGE));
+  useEffect(() => { setPage(1); }, [q, all.length]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
+  const pageCards = useMemo(
+    () => cards.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+    [cards, page],
+  );
+
+
   const runSearch = () => {
     setQ({ bin, base, country, zip });
     setLastBin(bin);
@@ -96,7 +107,8 @@ const Shop = () => {
 
     setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleAll = () =>
-    setSelected((s) => (s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id))));
+    setSelected((s) => (s.size === pageCards.length ? new Set() : new Set(pageCards.map((c) => c.id))));
+
 
   const buyMany = (ids: string[]) => {
     if (!ids.length) return toast.error("Выберите карты");
@@ -183,7 +195,7 @@ const Shop = () => {
           Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
         </button>
         <div className="flex items-center gap-4 text-[12px] text-[#888]">
-          {cards.length > 0 ? <span>{cards.length} results</span> : null}
+          {cards.length > 0 ? <span>{cards.length} results · стр. {page}/{totalPages}</span> : null}
           <Link to="/cart" className="text-[#2196f3] hover:underline">
             Корзина{count > 0 ? ` (${count})` : ""}
           </Link>
@@ -199,7 +211,7 @@ const Shop = () => {
               <th className="p-2 w-8 border-b border-[#eee]">
                 <input
                   type="checkbox"
-                  checked={cards.length > 0 && selected.size === cards.length}
+                  checked={pageCards.length > 0 && selected.size === pageCards.length}
                   onChange={toggleAll}
                   className="cursor-pointer accent-[#2196f3]"
                 />
@@ -215,7 +227,7 @@ const Shop = () => {
                 <td colSpan={14} className="p-3"><div className="h-4 bg-[#f5f5f5] animate-pulse" /></td>
               </tr>
             ))}
-            {!loading && cards.map((c) => (
+            {!loading && pageCards.map((c) => (
               <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
                 <td className="p-2 text-center">
                   <input
@@ -289,6 +301,45 @@ const Shop = () => {
         </table>
       </div>
 
+      {/* PAGINATION */}
+      {!loading && cards.length > PER_PAGE && (
+        <div className="mt-3 flex items-center justify-end gap-1 text-[12px]">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="h-7 px-3 border border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7] disabled:opacity-40"
+          >
+            ‹
+          </button>
+          {pageNumbers(page, totalPages).map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} className="px-2 text-[#aaa]">…</span>
+            ) : (
+              <button
+                key={n}
+                onClick={() => setPage(n as number)}
+                className={`h-7 min-w-[28px] px-2 border ${
+                  n === page
+                    ? "border-[#2196f3] bg-[#2196f3] text-white"
+                    : "border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7]"
+                }`}
+              >
+                {n}
+              </button>
+            ),
+          )}
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="h-7 px-3 border border-[#dcdcdc] bg-white text-[#555] hover:bg-[#f7f7f7] disabled:opacity-40"
+          >
+            ›
+          </button>
+        </div>
+      )}
+
+
+
       {buying && (
         <div className="mt-3 text-[12px] text-[#888] inline-flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Обработка…
@@ -319,6 +370,18 @@ const Shop = () => {
     </AppShell>
   );
 };
+
+function pageNumbers(page: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  const start = Math.max(2, page - 1);
+  const end = Math.min(total - 1, page + 1);
+  if (start > 2) out.push("…");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("…");
+  out.push(total);
+  return out;
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
