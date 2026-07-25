@@ -440,6 +440,24 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
 
 const CHUNK = 200;
 
+/** Retries a chunk on transient network / timeout failures so a big upload never dies half-way silently. */
+const withRetry = async <T,>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      const msg = e instanceof Error ? e.message.toLowerCase() : "";
+      const transient = msg.includes("fetch") || msg.includes("network") || msg.includes("timeout") || msg.includes("504") || msg.includes("502");
+      if (!transient || i === attempts - 1) throw e;
+      await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+    }
+  }
+  throw last;
+};
+
+
 export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: string | null = null) => {
   if (!rows.length) return 0;
   const payload = rows.map((r) => ({
