@@ -211,7 +211,7 @@ export const adminListDeposits = async (): Promise<(Deposit & { username?: strin
 };
 
 export const adminSetDepositStatus = async (id: string, status: string, note?: string) => {
-  const { error } = await supabase.rpc("admin_set_deposit_status", { _deposit_id: id, _status: status, _note: note ?? null });
+  const { error } = await supabase.rpc("admin_set_deposit_status", { _deposit_id: id, _status: status, _note: note });
   if (error) throw error;
 };
 
