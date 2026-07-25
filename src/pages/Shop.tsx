@@ -211,7 +211,7 @@ const Shop = () => {
               <th className="p-2 w-8 border-b border-[#eee]">
                 <input
                   type="checkbox"
-                  checked={cards.length > 0 && selected.size === cards.length}
+                  checked={pageCards.length > 0 && selected.size === pageCards.length}
                   onChange={toggleAll}
                   className="cursor-pointer accent-[#2196f3]"
                 />
