@@ -49,6 +49,29 @@ const AdminShop = () => {
   const [search, setSearch] = useState("");
   const [binInfo, setBinInfo] = useState<BinInfo | null>(null);
   const [binLoading, setBinLoading] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkCat, setBulkCat] = useState<string>("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const bulkPreview = useMemo(() => parseBulkCards(bulkText), [bulkText]);
+
+  const runBulkUpload = async () => {
+    const { rows, errors } = bulkPreview;
+    if (!rows.length) { toast.error("Нет корректных строк"); return; }
+    setBulkBusy(true);
+    try {
+      const n = await adminBulkCreateCards(rows, bulkCat || null);
+      toast.success(`Загружено позиций: ${n}${errors.length ? ` · пропущено: ${errors.length}` : ""}`);
+      setBulkText("");
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+
 
   const [catForm, setCatForm] = useState<{ id?: string; name: string; slug: string; icon: string; sort_order: number; active: boolean }>({
     name: "", slug: "", icon: "", sort_order: 0, active: true,
