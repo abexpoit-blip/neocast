@@ -109,9 +109,29 @@ const Recharge = () => {
 
   useEffect(() => {
     loadHistory(); loadTransactions();
-    if (activeInvoice?.deposit_id && activeInvoice.status === "pending") startPolling(activeInvoice.deposit_id);
+    const returned = searchParams.get("payment");
+    if (activeInvoice?.deposit_id && activeInvoice.status === "pending") {
+      // instant check when the user comes back from the payment page
+      if (returned) {
+        checkDepositStatus({ data: { deposit_id: activeInvoice.deposit_id } })
+          .then((s) => {
+            if (s.status === "approved") {
+              toast.success(`$${s.amount} зачислено на баланс!`);
+              setActiveInvoice(null);
+              loadHistory(); loadTransactions();
+            } else if (s.status === "rejected") {
+              toast.error("Платёж не завершён или истёк.");
+              setActiveInvoice(null);
+              loadHistory();
+            }
+          })
+          .catch(() => { /* ignore */ });
+      }
+      startPolling(activeInvoice.deposit_id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     if (amount) return;
