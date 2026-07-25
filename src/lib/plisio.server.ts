@@ -73,20 +73,27 @@ export interface Operation {
   confirmations?: string | number;
   tx_url?: string;
   amount?: string;
+  source_amount?: string;
+  invoice_total_sum?: string;
   wallet_hash?: string;
+  invoice_url?: string;
 }
 
 export async function getOperation(txnId: string): Promise<Operation> {
   return call<Operation>(`/operations/${encodeURIComponent(txnId)}`, {});
 }
 
-/** Map Plisio status → internal deposit status. */
+/**
+ * Map Plisio status → internal deposit status.
+ * "mismatch" (under/over payment) stays pending for manual review.
+ */
 export function mapStatus(s: string): "approved" | "rejected" | "pending" {
   const v = (s || "").toLowerCase();
   if (v === "completed") return "approved";
   if (v === "expired" || v === "cancelled" || v === "error") return "rejected";
   return "pending";
 }
+
 
 /* ---- callback signature (PHP-serialize + HMAC-SHA1, per provider spec) ---- */
 
