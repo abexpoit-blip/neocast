@@ -22,14 +22,11 @@ import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Recharge from "./pages/Recharge";
 import Admin from "./pages/Admin";
-import AdminApplications from "./pages/AdminApplications";
 
 import AdminCards from "./pages/AdminCards";
-import AdminRefunds from "./pages/AdminRefunds";
 
 import AdminPaymentGateway from "./pages/AdminPaymentGateway";
 import AdminPayments from "./pages/AdminPayments";
-import AdminStockReview from "./pages/AdminStockReview";
 
 import AdminCategories from "./pages/AdminCategories";
 import AdminShop from "./pages/AdminShop";
@@ -59,14 +56,11 @@ const App = () => (
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/site" element={<AdminRoute><AdminSiteSettings /></AdminRoute>} />
-            <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
             
             <Route path="/admin/cards" element={<AdminRoute><AdminCards /></AdminRoute>} />
-            <Route path="/admin/refunds" element={<AdminRoute><AdminRefunds /></AdminRoute>} />
             
             <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
             <Route path="/admin/payment-gateway" element={<AdminRoute><AdminPaymentGateway /></AdminRoute>} />
-            <Route path="/admin/stock-review" element={<AdminRoute><AdminStockReview /></AdminRoute>} />
             
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/shop" element={<AdminRoute><AdminShop /></AdminRoute>} />
