@@ -8,7 +8,8 @@ type: feature
 User: root. SSH: `ssh root@157.173.117.34`.
 
 ## Existing (DO NOT TOUCH)
-- Nexus stack in `/opt/nexus/` (docker compose): nexus_nginx, nexus_v2_app, nexus_frontend, nexus_api, nexus_bot, nexus_db, nexus_certbot
+- ACTIVE Nexus stack lives in `/opt/nexus-v2/` (docker compose). `/opt/nexus/` has no compose file — do not use it.
+- Containers: nexus_nginx, nexus_v2_app, nexus_frontend, nexus_api, nexus_bot, nexus_db, nexus_certbot
 - nexus_nginx binds host ports 80/443
 - Other sites in nginx conf.d: `ai.nexus-x.cloud.conf`, `default.conf`, `mithitrader.com.conf`
 - Node apps on port 3010, 3001 (`/var/www/nexus-x-ai`, `/var/www/signal-landing`)
