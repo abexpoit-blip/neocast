@@ -37,7 +37,7 @@ const AdminPaymentGateway = () => {
 
   const checkPlisioKey = async () => {
     try {
-      const res = await api.get<{ configured: boolean }>("/admin/plisio-key-status");
+      const res = await plisioKeyStatus();
       setKeyExists(res.configured);
     } catch { /* ignore */ }
   };
@@ -48,12 +48,12 @@ const AdminPaymentGateway = () => {
   const saveSettings = async () => {
     setSaving(true);
     try {
-      await siteSettingsApi.update({
-        deposit_fee_percent: settings.deposit_fee_percent,
-        deposit_fee_flat: settings.deposit_fee_flat,
-        default_commission_percent: settings.default_commission_percent,
-        min_card_price: settings.min_card_price,
-      });
+      await Promise.all([
+        writeSiteSetting("deposit_fee_percent", String(settings.deposit_fee_percent)),
+        writeSiteSetting("deposit_fee_flat", String(settings.deposit_fee_flat)),
+        writeSiteSetting("default_commission_percent", String(settings.default_commission_percent)),
+        writeSiteSetting("min_card_price", String(settings.min_card_price)),
+      ]);
       await refreshSiteSettings();
       toast.success("Payment settings saved");
     } catch (e) {
@@ -62,17 +62,10 @@ const AdminPaymentGateway = () => {
   };
 
   const savePlisioKey = async () => {
-    if (!plisioKey.trim()) return toast.error("Enter a Plisio API key");
-    setSavingKey(true);
-    try {
-      await api.post("/admin/plisio-key", { key: plisioKey.trim() });
-      toast.success("Plisio API key saved");
-      setPlisioKey("");
-      setKeyExists(true);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to save key");
-    } finally { setSavingKey(false); }
+    toast.info("The Plisio API key is stored as a server secret and can only be changed from the project settings.");
+    setPlisioKey("");
   };
+
 
   if (loading) {
     return (
