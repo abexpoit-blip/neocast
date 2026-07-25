@@ -186,7 +186,7 @@ const AdminCards = () => {
         )}
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[900px] text-sm">
             <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-secondary/40">
               <tr>
                 <th className="p-2 w-10 text-center"><input type="checkbox" checked={allSelected} onChange={toggleAll} className="accent-primary" /></th>

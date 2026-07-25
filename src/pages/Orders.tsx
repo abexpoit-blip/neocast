@@ -194,7 +194,7 @@ const Orders = () => {
 
         {/* Table */}
         <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
-          <table className="w-full text-[13px]">
+          <table className="w-full min-w-[760px] text-[13px]">
             <thead className="bg-[#fafafa] text-[#606266]">
               <tr>
                 <th className="p-3 w-10 border-b border-[#eee]">

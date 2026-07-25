@@ -388,7 +388,7 @@ const AdminShop = () => {
             )}
             {bulkPreview.rows.length > 0 && (
               <div className="overflow-x-auto">
-                <table className="w-full text-xs">
+                <table className="w-full min-w-[700px] text-xs">
                   <thead className="text-[10px] uppercase tracking-widest text-muted-foreground">
                     <tr>
                       {["BIN", "Бренд", "Страна", "State", "City", "ZIP", "MM", "YY", "Цена"].map((h) => (
@@ -500,7 +500,7 @@ const AdminShop = () => {
           </div>
 
           <div className="glass rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-secondary/50 text-[10px] uppercase tracking-widest text-muted-foreground">
                 <tr><th className="p-3 text-left">Категория</th><th className="p-3 text-left">Slug</th><th className="p-3 text-center">Порядок</th><th className="p-3 text-center">Статус</th><th className="p-3"></th></tr>
               </thead>

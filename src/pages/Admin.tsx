@@ -435,7 +435,7 @@ const Admin = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Section icon={ShoppingCart} title="RECENT ORDERS">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[720px] text-sm">
                     <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       <tr><th className="p-2 text-left">Buyer</th><th className="p-2 text-right">Total</th><th className="p-2">Status</th><th className="p-2 text-right">Date</th></tr>
                     </thead>
@@ -460,7 +460,7 @@ const Admin = () => {
 
               <Section icon={TrendingUp} title="TOP SELLERS">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[720px] text-sm">
                     <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
                       <tr><th className="p-2 text-left">Seller</th><th className="p-2 text-right">Sold</th><th className="p-2 text-right">Revenue</th></tr>
                     </thead>
@@ -505,7 +505,7 @@ const Admin = () => {
                 <Input value={userSearch} onChange={e => setUserSearch(e.target.value)} placeholder="Search username or email…" className="bg-input/60 pl-9" />
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full min-w-[720px] text-sm">
                   <thead className="text-[10px] uppercase tracking-wider text-muted-foreground bg-secondary/40">
                     <tr>
                       <th className="p-2.5 text-left">Username</th>
@@ -713,7 +713,7 @@ const Admin = () => {
                     Preview · first {Math.min(6, formatPreview.cards.length)} of {formatPreview.valid}
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
+                    <table className="w-full min-w-[720px] text-xs">
                       <thead className="text-[10px] uppercase tracking-wider text-muted-foreground bg-secondary/40">
                         <tr>
                           {["Brand", "BIN", "EXP", "CVV", "Name", "City", "State", "ZIP", "Country"].map(h => (

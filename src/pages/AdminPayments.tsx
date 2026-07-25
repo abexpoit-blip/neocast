@@ -175,7 +175,7 @@ const AdminPayments = () => {
         ) : (
           <div className="glass-neon rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[800px] text-sm">
                 <thead>
                   <tr className="border-b border-border/40 text-[10px] uppercase tracking-widest text-muted-foreground">
                     <th className="text-left p-3 pl-5">User</th>
