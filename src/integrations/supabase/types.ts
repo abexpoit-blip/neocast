@@ -308,23 +308,31 @@ export type Database = {
           bin: string | null
           brand: string | null
           category_id: string | null
+          city: string | null
           compare_at_price: number | null
           country: string | null
           created_at: string
           delivery_type: string
           description: string | null
           download_url: string | null
+          exp_month: string | null
+          exp_year: string | null
           featured: boolean
+          has_email: boolean
+          has_phone: boolean
           id: string
           image_url: string | null
           instant_content: string | null
           price: number
+          refundable: boolean
           short_description: string | null
           slug: string
           sold_count: number
+          state: string | null
           stock: number
           title: string
           updated_at: string
+          zip: string | null
         }
         Insert: {
           active?: boolean
@@ -332,23 +340,31 @@ export type Database = {
           bin?: string | null
           brand?: string | null
           category_id?: string | null
+          city?: string | null
           compare_at_price?: number | null
           country?: string | null
           created_at?: string
           delivery_type?: string
           description?: string | null
           download_url?: string | null
+          exp_month?: string | null
+          exp_year?: string | null
           featured?: boolean
+          has_email?: boolean
+          has_phone?: boolean
           id?: string
           image_url?: string | null
           instant_content?: string | null
           price?: number
+          refundable?: boolean
           short_description?: string | null
           slug: string
           sold_count?: number
+          state?: string | null
           stock?: number
           title: string
           updated_at?: string
+          zip?: string | null
         }
         Update: {
           active?: boolean
@@ -356,23 +372,31 @@ export type Database = {
           bin?: string | null
           brand?: string | null
           category_id?: string | null
+          city?: string | null
           compare_at_price?: number | null
           country?: string | null
           created_at?: string
           delivery_type?: string
           description?: string | null
           download_url?: string | null
+          exp_month?: string | null
+          exp_year?: string | null
           featured?: boolean
+          has_email?: boolean
+          has_phone?: boolean
           id?: string
           image_url?: string | null
           instant_content?: string | null
           price?: number
+          refundable?: boolean
           short_description?: string | null
           slug?: string
           sold_count?: number
+          state?: string | null
           stock?: number
           title?: string
           updated_at?: string
+          zip?: string | null
         }
         Relationships: [
           {
