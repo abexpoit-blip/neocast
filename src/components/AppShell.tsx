@@ -158,7 +158,10 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, profile, loading, signOut, profileError } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
+  // 30-minute session limit — regular users only, admins are exempt.
+  useSessionTimeout(Boolean(user) && profile?.role !== "admin");
   if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-[#666]">Загрузка…</div>;
+
   if (!user) return <Navigate to="/auth" replace state={{ from: loc }} />;
   if (profile?.banned) {
     return (
