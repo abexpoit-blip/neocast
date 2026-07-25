@@ -35,10 +35,18 @@ async function call<T>(path: string, params: Record<string, string>): Promise<T>
   return json.data as T;
 }
 
+/** Percentage fee paid by the client on top of the credited amount. */
+export const CLIENT_FEE_PERCENT = 2;
+
 export async function createLtcInvoice(input: {
   usdAmount: number;
   orderNumber: string;
+  /** Status (IPN) URL — server-to-server payment notifications. */
   callbackUrl: string;
+  /** Success URL — where the buyer is redirected after a paid invoice. */
+  successUrl: string;
+  /** Failed URL — where the buyer is redirected on failure/expiry. */
+  failUrl: string;
   email?: string;
 }): Promise<NewInvoice> {
   return call<NewInvoice>("/invoices/new", {
@@ -48,10 +56,17 @@ export async function createLtcInvoice(input: {
     currency: "LTC",
     order_name: "Wallet top-up",
     callback_url: input.callbackUrl,
+    // buyer-facing redirects
+    success_callback_url: input.callbackUrl,
+    fail_callback_url: input.callbackUrl,
+    success_invoice_url: input.successUrl,
+    fail_invoice_url: input.failUrl,
+    redirect_to_invoice: "true",
     expire_min: "30",
     ...(input.email ? { email: input.email } : {}),
   });
 }
+
 
 export interface Operation {
   status: string;
