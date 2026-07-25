@@ -309,6 +309,14 @@ export interface ProductInput {
   brand?: string | null;
   country?: string | null;
   base?: string | null;
+  exp_month?: string | null;
+  exp_year?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  has_phone?: boolean;
+  has_email?: boolean;
+  refundable?: boolean;
 }
 
 export const slugify = (s: string) =>
