@@ -800,6 +800,16 @@ const StatCard = ({ icon: Icon, label, value, accent }: { icon: React.ComponentT
   );
 };
 
+const Chip = ({ label, value, tone }: { label: string; value: number; tone: "muted" | "success" | "warning" | "danger" }) => {
+  const color = tone === "success" ? "text-success" : tone === "warning" ? "text-warning" : tone === "danger" ? "text-destructive" : "text-foreground";
+  return (
+    <div className="rounded-lg border border-border/40 bg-secondary/30 px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`font-display text-lg font-bold ${color}`}>{value}</p>
+    </div>
+  );
+};
+
 const Mini = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
   <div className={`p-3 rounded-lg border ${highlight ? "bg-primary/10 border-primary/40" : "bg-secondary/30 border-border/40"}`}>
     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
