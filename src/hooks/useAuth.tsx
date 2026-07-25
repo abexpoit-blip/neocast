@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { markSessionStart, clearSessionStart } from "@/hooks/useSessionTimeout";
+import { markSessionStart, clearSessionStart } from "@/lib/session";
 
 
 export interface AppUser {
