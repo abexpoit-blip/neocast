@@ -157,6 +157,26 @@ const Shop = () => {
           </div>
         </div>
 
+        {(binLoading || binInfo) && (
+          <div className="mx-4 mt-3 border border-[#e6e6e6] bg-[#fafcff] px-3 py-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px] text-[#606266]">
+            {binLoading && <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Проверка BIN…</span>}
+            {!binLoading && binInfo && (
+              <>
+                <span className="font-mono tracking-wider text-[#303133]">BIN {binInfo.bin}</span>
+                {binInfo.brand && <span className="inline-flex items-center gap-1.5"><BrandLogo brand={binInfo.brand} className="h-5" /></span>}
+                {binInfo.type && <span>Тип: <b className="text-[#303133]">{binInfo.type}</b></span>}
+                {binInfo.level && <span>Уровень: <b className="text-[#303133]">{binInfo.level}</b></span>}
+                {binInfo.bank && <span>Банк: <b className="text-[#303133]">{binInfo.bank}</b></span>}
+                {binInfo.country && (
+                  <span>Страна: <b className="text-[#303133]">{toFlag(binInfo.country)} {binInfo.countryName ?? countryName(binInfo.country)}</b></span>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+
+
         <div className="p-4 flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1">
             <span className="text-[11px] text-[#909399]">Категория</span>
