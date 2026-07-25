@@ -450,7 +450,11 @@ export function parseCardLine(raw: string): ParsedCard | null {
     if (fallback) out.state = take(fallback.i, fallback.p);
   }
 
+  out.country = normCountry(out.country);
+  const e = normExp(out.month === "null" ? "" : out.month, out.year === "null" ? "" : out.year);
+  out.month = e.month; out.year = e.year;
   return out;
+
 }
 
 /** Output in upload/fixer format: cc|month/year|cvv|name|addr|city|state|zip|country|tel|email */
