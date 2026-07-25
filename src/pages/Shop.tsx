@@ -4,7 +4,6 @@ import Seo from "@/components/Seo";
 import { toast } from "sonner";
 import { Loader2, RefreshCw, Copy, CheckCircle2, X, Search } from "lucide-react";
 import { listCategories, listProducts, purchaseAndDeliver, type Category, type Product } from "@/lib/store";
-import { lookupBin, type BinInfo } from "@/lib/bin";
 import { BrandLogo } from "@/lib/brands";
 import { toFlag, countryName } from "@/lib/countryFlag";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,8 +26,6 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
-  const [binInfo, setBinInfo] = useState<BinInfo | null>(null);
-  const [binLoading, setBinLoading] = useState(false);
 
 
   const load = async () => {
@@ -46,22 +43,6 @@ const Shop = () => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { void load(); }, [catId]);
-
-  // Accurate BIN lookup (external providers via /api/public/bin)
-  useEffect(() => {
-    const digits = bin.replace(/\D/g, "");
-    if (digits.length < 6) { setBinInfo(null); setBinLoading(false); return; }
-    let alive = true;
-    setBinLoading(true);
-    const t = setTimeout(async () => {
-      const info = await lookupBin(digits);
-      if (!alive) return;
-      setBinInfo(info);
-      setBinLoading(false);
-    }, 350);
-    return () => { alive = false; clearTimeout(t); };
-  }, [bin]);
-
 
   const countries = useMemo(
     () => [...new Set(products.map((p) => p.country).filter(Boolean) as string[])].sort(),
@@ -156,26 +137,6 @@ const Shop = () => {
             ))}
           </div>
         </div>
-
-        {(binLoading || binInfo) && (
-          <div className="mx-4 mt-3 border border-[#e6e6e6] bg-[#fafcff] px-3 py-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px] text-[#606266]">
-            {binLoading && <span className="inline-flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Проверка BIN…</span>}
-            {!binLoading && binInfo && (
-              <>
-                <span className="font-mono tracking-wider text-[#303133]">BIN {binInfo.bin}</span>
-                {binInfo.brand && <span className="inline-flex items-center gap-1.5"><BrandLogo brand={binInfo.brand} className="h-5" /></span>}
-                {binInfo.type && <span>Тип: <b className="text-[#303133]">{binInfo.type}</b></span>}
-                {binInfo.level && <span>Уровень: <b className="text-[#303133]">{binInfo.level}</b></span>}
-                {binInfo.bank && <span>Банк: <b className="text-[#303133]">{binInfo.bank}</b></span>}
-                {binInfo.country && (
-                  <span>Страна: <b className="text-[#303133]">{toFlag(binInfo.country)} {binInfo.countryName ?? countryName(binInfo.country)}</b></span>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-
 
         <div className="p-4 flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1">
