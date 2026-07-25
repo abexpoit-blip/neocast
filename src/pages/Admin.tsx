@@ -478,7 +478,7 @@ const Admin = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(u => (
+                    {pagedUsers.map(u => (
                       <tr key={u.id} className={`border-t border-border/40 hover:bg-secondary/20 ${u.banned ? "opacity-50" : ""}`}>
                         <td className="p-2.5 font-medium">{u.username}</td>
                         <td className="p-2.5 text-xs text-muted-foreground">{u.email ?? "—"}</td>
