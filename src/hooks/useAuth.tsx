@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { profileApi } from "@/lib/api";
 
 export interface AppUser {
   id: string;
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const loadedForUid = useRef<string | null>(null);
 
-  const loadProfile = useCallback(async (uid: string | null, email: string | null) => {
+  const loadProfile = useCallback(async (uid: string | null) => {
     if (!uid) {
       setUser(null);
       setProfile(null);
@@ -46,35 +47,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return;
     }
+
     if (loadedForUid.current === uid) return;
     loadedForUid.current = uid;
 
     setLoading(true);
     setProfileError(null);
     try {
-      const [{ data: p, error: pErr }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("id, username, email, avatar_url, balance, blocked").eq("id", uid).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", uid),
-      ]);
-      if (pErr) throw pErr;
-
-      const roleList = (roles ?? []).map((r) => r.role as string);
-      const role = roleList.includes("admin") ? "admin" : roleList.includes("seller") ? "seller" : "buyer";
-      const username = p?.username ?? (email ? email.split("@")[0] : "user");
-
-      setUser({ id: uid, email: p?.email ?? email ?? "", username, role });
-      setProfile({
-        id: uid,
-        username,
-        display_name: username,
-        avatar_url: p?.avatar_url ?? null,
-        balance: Number(p?.balance ?? 0),
-        role,
-        is_seller: role === "seller" || role === "admin",
-        banned: Boolean(p?.blocked),
-      });
+      const { profile: p } = await profileApi.get();
+      const appUser: AppUser = { id: p.id, email: p.email, username: p.username, role: p.role };
+      const prof: Profile = {
+        id: p.id,
+        username: p.username,
+        display_name: p.display_name,
+        avatar_url: p.avatar_url,
+        balance: Number(p.balance ?? 0),
+        role: p.role,
+        is_seller: p.role === "seller" || p.role === "admin",
+        banned: false,
+      };
+      setUser(appUser);
+      setProfile(prof);
     } catch (err: unknown) {
-      setProfileError(err instanceof Error ? err.message : "Не удалось загрузить профиль");
+      const msg = err instanceof Error ? err.message : "Couldn't load profile";
+      setProfileError(msg);
       setProfile(null);
       loadedForUid.current = null;
     } finally {
@@ -83,14 +79,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Subscribe first, then check the current session so we never miss events.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       const uid = session?.user?.id ?? null;
-      const mail = session?.user?.email ?? null;
-      setTimeout(() => { void loadProfile(uid, mail); }, 0);
+      // Never call async work synchronously inside the callback — defer it.
+      setTimeout(() => { void loadProfile(uid); }, 0);
     });
 
     supabase.auth.getSession().then(({ data }) => {
-      void loadProfile(data.session?.user?.id ?? null, data.session?.user?.email ?? null);
+      void loadProfile(data.session?.user?.id ?? null);
     });
 
     return () => { sub.subscription.unsubscribe(); };
@@ -99,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refresh = async () => {
     loadedForUid.current = null;
     const { data } = await supabase.auth.getSession();
-    await loadProfile(data.session?.user?.id ?? null, data.session?.user?.email ?? null);
+    await loadProfile(data.session?.user?.id ?? null);
   };
 
   const signOut = async () => {
