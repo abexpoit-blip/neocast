@@ -786,15 +786,21 @@ export const adminUpdateCards = async (
   patch: { price?: number; active?: boolean; category_id?: string | null },
 ) => {
   if (ids.length === 0) return;
-  const { error } = await supabase.from("products").update(patch).in("id", ids);
-  if (error) throw error;
+  // Chunked: a single .in() with thousands of ids overflows the request URL.
+  for (const part of chunk(ids, 200)) {
+    const { error } = await supabase.from("products").update(patch).in("id", part);
+    if (error) throw error;
+  }
 };
 
 export const adminDeleteCards = async (ids: string[]) => {
   if (ids.length === 0) return;
-  const { error } = await supabase.from("products").delete().in("id", ids);
-  if (error) throw error;
+  for (const part of chunk(ids, 200)) {
+    const { error } = await supabase.from("products").delete().in("id", part);
+    if (error) throw error;
+  }
 };
+
 
 /** Hides every card whose expiry month has passed. Returns how many were hidden. */
 export const adminHideExpiredCards = async () => {
