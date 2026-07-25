@@ -65,6 +65,17 @@ const Shop = () => {
     });
   }, [all, q, searched]);
 
+  const PER_PAGE = 25;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(cards.length / PER_PAGE));
+  useEffect(() => { setPage(1); }, [q, all.length]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
+  const pageCards = useMemo(
+    () => cards.slice((page - 1) * PER_PAGE, page * PER_PAGE),
+    [cards, page],
+  );
+
+
   const runSearch = () => {
     setQ({ bin, base, country, zip });
     setLastBin(bin);
