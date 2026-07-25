@@ -75,7 +75,8 @@ const Shop = () => {
   const reset = () => {
     setBin(""); setBase("all"); setCountry(""); setZip("");
     setQ({ bin: "", base: "all", country: "", zip: "" });
-    setSearched(false); setLastBin(""); setSelected(new Set());
+    setSearched(true); setLastBin(""); setSelected(new Set());
+    void load();
   };
 
   useEffect(() => {
