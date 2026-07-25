@@ -517,3 +517,175 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
   }
   return ids.length;
 };
+
+/* ---------------- admin: overview + announcements (Supabase-backed) ---------------- */
+
+export interface AdminOverview {
+  totalRevenue: number;
+  todayRevenue: number;
+  weekRevenue: number;
+  monthRevenue: number;
+  totalUsers: number;
+  totalSellers: number;
+  cardsAvailable: number;
+  todaySalesCount: number;
+  todaySalesAmount: number;
+  todayDeposits: number;
+  totalDeposits: number;
+  pendingPayouts: number;
+  totalPayoutsPaid: number;
+  openTickets: number;
+  pendingApps: number;
+  dailyRevenue: Array<{ day: string; revenue: number; orders: number }>;
+  topSellers: Array<{ id: string; username: string; cards_sold: number; total_sold: number }>;
+  recentOrders: Array<{ id: string; total: number; status: string; created_at: string; buyer: string }>;
+}
+
+export const adminOverview = async (): Promise<AdminOverview> => {
+  const [orders, deposits, users, roles, keys] = await Promise.all([
+    supabase.from("orders").select("id, user_id, total, status, created_at").order("created_at", { ascending: false }).limit(500),
+    supabase.from("deposits").select("amount, status, created_at"),
+    supabase.from("profiles").select("id, username"),
+    supabase.from("user_roles").select("user_id, role"),
+    supabase.from("product_keys").select("is_sold"),
+  ]);
+
+  const nameById = new Map((users.data ?? []).map((u) => [u.id, u.username]));
+  const orderRows = orders.data ?? [];
+  const depositRows = deposits.data ?? [];
+  const keyRows = keys.data ?? [];
+
+  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+  const dayMs = 86_400_000;
+  const since = (days: number) => Date.now() - days * dayMs;
+  const revenueSince = (ts: number) =>
+    orderRows.filter((o) => Date.parse(o.created_at) >= ts).reduce((s, o) => s + num(o.total), 0);
+
+  const byDay = new Map<string, { revenue: number; orders: number }>();
+  orderRows.forEach((o) => {
+    const day = o.created_at.slice(0, 10);
+    const cur = byDay.get(day) ?? { revenue: 0, orders: 0 };
+    cur.revenue += num(o.total); cur.orders += 1;
+    byDay.set(day, cur);
+  });
+
+  const todayOrders = orderRows.filter((o) => Date.parse(o.created_at) >= startOfDay.getTime());
+
+  return {
+    totalRevenue: orderRows.reduce((s, o) => s + num(o.total), 0),
+    todayRevenue: revenueSince(startOfDay.getTime()),
+    weekRevenue: revenueSince(since(7)),
+    monthRevenue: revenueSince(since(30)),
+    totalUsers: (users.data ?? []).length,
+    totalSellers: (roles.data ?? []).filter((r) => r.role === "seller").length,
+    cardsAvailable: keyRows.filter((k) => !k.is_sold).length,
+    todaySalesCount: todayOrders.length,
+    todaySalesAmount: todayOrders.reduce((s, o) => s + num(o.total), 0),
+    todayDeposits: depositRows
+      .filter((d) => d.status === "approved" && Date.parse(d.created_at) >= startOfDay.getTime())
+      .reduce((s, d) => s + num(d.amount), 0),
+    totalDeposits: depositRows.filter((d) => d.status === "approved").reduce((s, d) => s + num(d.amount), 0),
+    pendingPayouts: 0,
+    totalPayoutsPaid: 0,
+    openTickets: 0,
+    pendingApps: 0,
+    dailyRevenue: [...byDay.entries()]
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+      .slice(-14)
+      .map(([day, v]) => ({ day, revenue: v.revenue, orders: v.orders })),
+    topSellers: [],
+    recentOrders: orderRows.slice(0, 10).map((o) => ({
+      id: o.id,
+      total: num(o.total),
+      status: o.status,
+      created_at: o.created_at,
+      buyer: nameById.get(o.user_id) ?? "—",
+    })),
+  };
+};
+
+export interface SystemSnapshot {
+  timestamp: string;
+  users: { total: number; admins: number; sellers: number; buyers: number; banned: number };
+  cards: { total: number; available: number; sold: number; reserved: number };
+  wallets: { count: number; total_balance: number; max_balance: number; avg_balance: number };
+  orders: { total: number; revenue: number };
+  pending_seller_applications: number;
+  sellers_breakdown: Array<{ id: string; username: string; balance: number }>;
+}
+
+export const adminSystemSnapshot = async (): Promise<SystemSnapshot> => {
+  const [profiles, roles, keys, orders] = await Promise.all([
+    supabase.from("profiles").select("id, username, balance, blocked"),
+    supabase.from("user_roles").select("user_id, role"),
+    supabase.from("product_keys").select("is_sold"),
+    supabase.from("orders").select("total"),
+  ]);
+  const profileRows = profiles.data ?? [];
+  const roleRows = roles.data ?? [];
+  const keyRows = keys.data ?? [];
+  const balances = profileRows.map((p) => num(p.balance));
+  const sellerIds = new Set(roleRows.filter((r) => r.role === "seller").map((r) => r.user_id));
+
+  return {
+    timestamp: new Date().toISOString(),
+    users: {
+      total: profileRows.length,
+      admins: roleRows.filter((r) => r.role === "admin").length,
+      sellers: sellerIds.size,
+      buyers: roleRows.filter((r) => r.role === "buyer").length,
+      banned: profileRows.filter((p) => p.blocked).length,
+    },
+    cards: {
+      total: keyRows.length,
+      available: keyRows.filter((k) => !k.is_sold).length,
+      sold: keyRows.filter((k) => k.is_sold).length,
+      reserved: 0,
+    },
+    wallets: {
+      count: balances.length,
+      total_balance: balances.reduce((s, b) => s + b, 0),
+      max_balance: balances.length ? Math.max(...balances) : 0,
+      avg_balance: balances.length ? balances.reduce((s, b) => s + b, 0) / balances.length : 0,
+    },
+    orders: {
+      total: (orders.data ?? []).length,
+      revenue: (orders.data ?? []).reduce((s, o) => s + num(o.total), 0),
+    },
+    pending_seller_applications: 0,
+    sellers_breakdown: profileRows
+      .filter((p) => sellerIds.has(p.id))
+      .map((p) => ({ id: p.id, username: p.username, balance: num(p.balance) })),
+  };
+};
+
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  kind: string;
+  created_at: string;
+}
+
+export const listAnnouncements = async (): Promise<Announcement[]> => {
+  const { data, error } = await supabase
+    .from("announcements")
+    .select("id, title, body, kind, created_at")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((a) => ({ ...a, body: a.body ?? "" }));
+};
+
+export const adminCreateAnnouncement = async (input: { title: string; body: string; kind: string }) => {
+  const { error } = await supabase.from("announcements").insert({
+    title: input.title,
+    body: input.body,
+    kind: input.kind,
+  });
+  if (error) throw error;
+};
+
+export const adminDeleteAnnouncement = async (id: string) => {
+  const { error } = await supabase.from("announcements").delete().eq("id", id);
+  if (error) throw error;
+};

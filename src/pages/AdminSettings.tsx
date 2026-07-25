@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { adminApi, api, clearToken } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -20,11 +20,12 @@ const AdminSettings = () => {
     if (password !== confirm) return toast.error("Passwords don't match");
     setLoading(true);
     try {
-      await adminApi.changePassword(password);
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
       toast.success("Password updated");
       setPassword(""); setConfirm("");
       toast.info("You'll be signed out — please log in with the new credentials.");
-      setTimeout(() => { clearToken(); window.location.href = "/crzr-x9k2-panel"; }, 1500);
+      setTimeout(async () => { await supabase.auth.signOut(); window.location.href = "/admin-login"; }, 1500);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed");
     } finally { setLoading(false); }

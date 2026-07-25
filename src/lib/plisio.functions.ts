@@ -2,19 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequestUrl } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { CLIENT_FEE_PERCENT, withFee } from "@/lib/fees";
 
-/** Fee (%) added on top of the amount the user wants credited. */
-export const CLIENT_FEE_PERCENT = 2;
-
-/** Amount the user must actually pay so that `credit` lands on the balance. */
-export function withFee(credit: number) {
-  const fee = Math.round(credit * CLIENT_FEE_PERCENT) / 100;
-  return {
-    credit: Math.round(credit * 100) / 100,
-    fee: Math.round(fee * 100) / 100,
-    charged: Math.round((credit + fee) * 100) / 100,
-  };
-}
 
 /** Create an LTC top-up invoice for the signed-in user. */
 export const createCryptoInvoice = createServerFn({ method: "POST" })
