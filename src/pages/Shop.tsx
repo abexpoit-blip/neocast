@@ -76,7 +76,14 @@ const Shop = () => {
     }
   }, [bin]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    setCount(cartCount());
+    return onCartChange(() => setCount(cartCount()));
+  }, []);
+
   const toggle = (id: string) =>
+
     setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleAll = () =>
     setSelected((s) => (s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id))));
