@@ -114,16 +114,23 @@ export type Database = {
         Row: {
           admin_note: string | null
           amount: number
+          charged_amount: number | null
           confirmations: number
           created_at: string
           crypto_amount: string | null
           crypto_currency: string | null
           expires_at: string | null
+          fee_amount: number
+          fee_percent: number
           id: string
           invoice_id: string | null
+          invoice_url: string | null
+          last_checked_at: string | null
           method: string
+          received_amount: string | null
           reference: string | null
           status: string
+          tx_url: string | null
           txid: string | null
           updated_at: string
           user_id: string
@@ -132,16 +139,23 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           amount: number
+          charged_amount?: number | null
           confirmations?: number
           created_at?: string
           crypto_amount?: string | null
           crypto_currency?: string | null
           expires_at?: string | null
+          fee_amount?: number
+          fee_percent?: number
           id?: string
           invoice_id?: string | null
+          invoice_url?: string | null
+          last_checked_at?: string | null
           method?: string
+          received_amount?: string | null
           reference?: string | null
           status?: string
+          tx_url?: string | null
           txid?: string | null
           updated_at?: string
           user_id: string
@@ -150,16 +164,23 @@ export type Database = {
         Update: {
           admin_note?: string | null
           amount?: number
+          charged_amount?: number | null
           confirmations?: number
           created_at?: string
           crypto_amount?: string | null
           crypto_currency?: string | null
           expires_at?: string | null
+          fee_amount?: number
+          fee_percent?: number
           id?: string
           invoice_id?: string | null
+          invoice_url?: string | null
+          last_checked_at?: string | null
           method?: string
+          received_amount?: string | null
           reference?: string | null
           status?: string
+          tx_url?: string | null
           txid?: string | null
           updated_at?: string
           user_id?: string
@@ -525,6 +546,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      expire_stale_deposits: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -42,7 +42,9 @@ const Recharge = () => {
     deposit_id: string; wallet_address: string; crypto_amount: string;
     currency: string; qr_data: string; status: string;
     confirmations: number; usd_amount: number; expires_ms: number;
+    fee_amount?: number; charged_amount?: number;
   } | null>(() => {
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return null;
@@ -107,9 +109,29 @@ const Recharge = () => {
 
   useEffect(() => {
     loadHistory(); loadTransactions();
-    if (activeInvoice?.deposit_id && activeInvoice.status === "pending") startPolling(activeInvoice.deposit_id);
+    const returned = searchParams.get("payment");
+    if (activeInvoice?.deposit_id && activeInvoice.status === "pending") {
+      // instant check when the user comes back from the payment page
+      if (returned) {
+        checkDepositStatus({ data: { deposit_id: activeInvoice.deposit_id } })
+          .then((s) => {
+            if (s.status === "approved") {
+              toast.success(`$${s.amount} зачислено на баланс!`);
+              setActiveInvoice(null);
+              loadHistory(); loadTransactions();
+            } else if (s.status === "rejected") {
+              toast.error("Платёж не завершён или истёк.");
+              setActiveInvoice(null);
+              loadHistory();
+            }
+          })
+          .catch(() => { /* ignore */ });
+      }
+      startPolling(activeInvoice.deposit_id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     if (amount) return;
@@ -160,8 +182,11 @@ const Recharge = () => {
         qr_data: inv.wallet_address || "",
         status: "pending",
         confirmations: 0,
-        usd_amount: amtNum,
+        usd_amount: inv.usd_amount ?? amtNum,
+        fee_amount: inv.fee_amount,
+        charged_amount: inv.charged_amount,
         expires_ms: inv.expires_ms || Date.now() + INVOICE_TTL_SEC * 1000,
+
       });
       startPolling(inv.deposit_id);
       toast.success("Заявка создана — отправьте LTC на адрес ниже.");
@@ -254,6 +279,12 @@ const Recharge = () => {
                 <div className="text-center border border-[#e6e6e6] bg-[#fafafa] p-3">
                   <p className="text-[11px] uppercase tracking-wider text-[#888]">Сумма пополнения</p>
                   <p className="text-[24px] font-semibold text-[#2196f3] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
+                  {activeInvoice.charged_amount ? (
+                    <p className="text-[11px] text-[#888] font-mono">
+                      к оплате ${activeInvoice.charged_amount.toFixed(2)} (комиссия 2%)
+                    </p>
+                  ) : null}
+
                 </div>
                 <div className={`flex justify-center ${isExpired ? "opacity-25 pointer-events-none" : ""}`}>
                   <div className="p-3 bg-white border border-[#e6e6e6]">
@@ -385,10 +416,21 @@ const Recharge = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-[12px] text-[#666] mt-4 pt-4 border-t border-[#eee]">
-                  <span>Текущий баланс</span>
-                  <span className="font-mono font-semibold text-[#1f2d3d]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                <div className="text-[12px] text-[#666] mt-4 pt-4 border-t border-[#eee] space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span>Комиссия сети (2%)</span>
+                    <span className="font-mono text-[#1f2d3d]">${(amtNum * 0.02).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>К оплате</span>
+                    <span className="font-mono font-semibold text-[#2196f3]">${(amtNum * 1.02).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Текущий баланс</span>
+                    <span className="font-mono font-semibold text-[#1f2d3d]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                  </div>
                 </div>
+
 
                 <button
                   onClick={createInvoice}
