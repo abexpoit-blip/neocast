@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { adminApi, depositsApi, payoutsApi, setToken } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandLogo, detectBrandFromBin, BRANDS } from "@/lib/brands";
 import { parseAndFormat, dedupe, detectBrand, toPipeFormat } from "@/lib/cardFormatter";
-import { adminPublishFullCards, adminListUsers, adminAdjustBalance, adminSetBlocked } from "@/lib/store";
+import {
+  adminPublishFullCards, adminListUsers, adminAdjustBalance, adminSetBlocked,
+  adminOverview, adminSystemSnapshot, adminListDeposits, adminSetDepositStatus,
+  adminSetRole, listAnnouncements, adminCreateAnnouncement, adminDeleteAnnouncement,
+  type SystemSnapshot,
+} from "@/lib/store";
 import { toast } from "sonner";
 import {
   Check, X, Users, Megaphone, CreditCard, Ban, UserCheck, Wallet,
@@ -34,7 +38,7 @@ const Admin = () => {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [stats, setStats] = useState<Record<string, any>>({});
-  const [vpsState, setVpsState] = useState<Awaited<ReturnType<typeof adminApi.vpsState>> | null>(null);
+  const [vpsState, setVpsState] = useState<SystemSnapshot | null>(null);
   const [vpsBusy, setVpsBusy] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -102,25 +106,28 @@ const Admin = () => {
 
   const load = async () => {
     try {
-      const [s, u, d, p, n] = await Promise.allSettled([
-        adminApi.stats(),
+      const [s, u, d, n] = await Promise.allSettled([
+        adminOverview(),
         loadUsers(userSearch),
-        depositsApi.all(),
-        payoutsApi.all(),
-        adminApi.getNews(),
+        adminListDeposits(),
+        listAnnouncements(),
       ]);
-      if (s.status === "fulfilled") setStats(s.value);
+      if (s.status === "fulfilled") setStats(s.value as unknown as Record<string, unknown>);
       if (u.status === "fulfilled") setUsers(u.value as Profile[]);
-      if (d.status === "fulfilled") setDeposits((d.value.deposits ?? []) as unknown as Deposit[]);
-      if (p.status === "fulfilled") setPayouts((p.value.payouts ?? []) as unknown as Payout[]);
-      if (n.status === "fulfilled") setNews((n.value.news ?? []) as unknown as NewsItem[]);
+      if (d.status === "fulfilled") setDeposits(d.value as unknown as Deposit[]);
+      if (n.status === "fulfilled") {
+        setNews(n.value.map((a) => ({
+          id: a.id, title: a.title, body: a.body, type: a.kind, created_at: a.created_at,
+        })) as unknown as NewsItem[]);
+      }
+      setPayouts([]);
     } catch { /* ignore */ }
   };
 
   const refreshVpsState = async () => {
     setVpsBusy(true);
     try {
-      const v = await adminApi.vpsState();
+      const v = await adminSystemSnapshot();
       setVpsState(v);
       toast.success("VPS state refreshed");
     } catch (e: unknown) {
@@ -130,7 +137,7 @@ const Admin = () => {
     }
   };
 
-  useEffect(() => { load(); adminApi.vpsState().then(setVpsState).catch(() => {}); }, []);
+  useEffect(() => { load(); adminSystemSnapshot().then(setVpsState).catch(() => {}); }, []);
   useEffect(() => {
     if (userSearch.length === 0 || userSearch.length >= 2) {
       const t = setTimeout(() => { loadUsers(userSearch).then(setUsers).catch(() => {}); }, 300);
@@ -156,20 +163,15 @@ const Admin = () => {
   // Actions
   const decideDeposit = async (dep: Deposit, approve: boolean) => {
     try {
-      if (approve) await depositsApi.approve(dep.id);
-      else await depositsApi.reject(dep.id);
+      await adminSetDepositStatus(dep.id, approve ? "approved" : "rejected",
+        approve ? "Approved by admin" : "Rejected by admin");
       toast.success(approve ? "Deposit approved & credited" : "Deposit rejected");
       load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
-  const decidePayout = async (p: Payout, paid: boolean) => {
-    try {
-      if (paid) await payoutsApi.complete(p.id);
-      else await payoutsApi.reject(p.id);
-      toast.success(paid ? "Marked as paid" : "Payout rejected");
-      load();
-    } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
+  const decidePayout = async (_p: Payout, _paid: boolean) => {
+    toast.error("Payouts are not enabled on this backend yet");
   };
 
   const submitBalance = async (sign: 1 | -1) => {
@@ -196,28 +198,20 @@ const Admin = () => {
 
   const revokeSeller = async (u: Profile) => {
     try {
-      await adminApi.revokeSeller(u.id);
+      await adminSetRole(u.id, "seller", false);
       toast.success("Seller revoked"); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
   const makeSeller = async (u: Profile) => {
     try {
-      await adminApi.makeSeller(u.id);
+      await adminSetRole(u.id, "seller", true);
       toast.success("Promoted to seller"); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
   const impersonate = async (u: Profile) => {
-    if (!confirm(`Login as ${u.username}? You can return to admin anytime via the top banner.`)) return;
-    try {
-      const res = await adminApi.impersonate(u.id);
-      const { startImpersonation } = await import("@/components/ImpersonationBanner");
-      const currentToken = localStorage.getItem("cruzercc.token");
-      if (currentToken) startImpersonation(currentToken, res.token);
-      else setToken(res.token);
-      window.location.href = "/";
-    } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    toast.error(`Login-as is not available on this backend (${u.username})`);
   };
 
   // Card upload
@@ -258,13 +252,13 @@ const Admin = () => {
   const postNews = async () => {
     if (!annTitle || !annBody) return toast.error("Title and body required");
     try {
-      await adminApi.postNews({ title: annTitle, body: annBody, type: annType });
+      await adminCreateAnnouncement({ title: annTitle, body: annBody, kind: annType });
       toast.success("News published"); setAnnTitle(""); setAnnBody(""); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
   const deleteNews = async (id: string) => {
-    try { await adminApi.deleteNews(id); toast.success("Deleted"); load(); } catch { /* ignore */ }
+    try { await adminDeleteAnnouncement(id); toast.success("Deleted"); load(); } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
   const pendingDeposits = deposits.filter(d => d.status === "pending");
