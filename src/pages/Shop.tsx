@@ -3,7 +3,8 @@ import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
 import { toast } from "sonner";
 import { Loader2, RefreshCw, Copy, CheckCircle2, X, Search } from "lucide-react";
-import { listCategories, listProducts, purchaseProduct, type Category, type Product } from "@/lib/store";
+import { listCategories, listProducts, purchaseAndDeliver, type Category, type Product } from "@/lib/store";
+import { lookupBin, type BinInfo } from "@/lib/bin";
 import { BrandLogo } from "@/lib/brands";
 import { toFlag, countryName } from "@/lib/countryFlag";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +13,7 @@ const money = (n: number) => `$${Number(n || 0).toFixed(2)}`;
 const BRAND_TABS = ["", "VISA", "MASTERCARD", "AMEX", "DISCOVER"] as const;
 
 const Shop = () => {
-  const { profile } = useAuth();
+  const { profile, refresh: refreshProfile } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [catId, setCatId] = useState("");
