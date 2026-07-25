@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { listMyOrders } from "@/lib/store";
+import { listMyOrders, listProducts, type Product } from "@/lib/store";
+import { CARD_TXT_HEADER, formatCardTxtLine, isPipeLine } from "@/lib/cardFormat";
 import { useAuth } from "@/hooks/useAuth";
 import { Search, RotateCcw, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -8,13 +9,12 @@ import { toast } from "sonner";
 interface OrderItem {
   id?: string;
   price: number;
-  card_snapshot?: Record<string, unknown>;
-  digital_product_id?: string;
+  product_id?: string;
   product_title?: string;
-  product_type?: string;
   product_text_content?: string;
 }
 interface Order { id: string; total: number; status: string; created_at: string; order_items?: OrderItem[]; }
+
 
 const Orders = () => {
   const { user } = useAuth();
