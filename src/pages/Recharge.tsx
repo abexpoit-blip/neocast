@@ -42,7 +42,9 @@ const Recharge = () => {
     deposit_id: string; wallet_address: string; crypto_amount: string;
     currency: string; qr_data: string; status: string;
     confirmations: number; usd_amount: number; expires_ms: number;
+    fee_amount?: number; charged_amount?: number;
   } | null>(() => {
+
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return null;
