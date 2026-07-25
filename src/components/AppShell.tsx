@@ -99,18 +99,20 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
       {/* SUB BAR */}
       <div className="bg-white border-b border-[#e6e6e6]">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-end gap-3 text-[13px]">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-12 py-1.5 flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
           <LanguageToggle />
-          <span className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3]">
+          <span className="px-2 sm:px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3] max-w-[120px] sm:max-w-none truncate">
+
 
             {uname}
           </span>
           <Link
             to="/recharge"
-            className="px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium"
+            className="px-2 sm:px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium whitespace-nowrap"
           >
             $ {balance}
           </Link>
+
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
@@ -135,7 +137,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </div>
 
-      <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-5">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-[1400px] px-3 sm:px-6 py-4 sm:py-5">{children}</main>
 
       {/* ПОДВАЛ */}
       <footer className="bg-[#304156] text-white/70 mt-6">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
 import { toast } from "sonner";
@@ -26,7 +26,10 @@ const Shop = () => {
 
   const [q, setQ] = useState({ bin: "", base: "all", country: "", zip: "" });
 
-  const load = async () => {
+  const lastLoad = useRef(0);
+  const load = async (force = false) => {
+    if (!force && Date.now() - lastLoad.current < 60_000) return;
+    lastLoad.current = Date.now();
     setLoading(true);
     try {
       setAll(await listProducts());
@@ -39,15 +42,13 @@ const Shop = () => {
   };
 
   useEffect(() => {
-    void load();
-    const onFocus = () => { if (document.visibilityState === "visible") void load(); };
-    document.addEventListener("visibilitychange", onFocus);
-    window.addEventListener("focus", onFocus);
-    return () => {
-      document.removeEventListener("visibilitychange", onFocus);
-      window.removeEventListener("focus", onFocus);
-    };
+    void load(true);
+    // Refresh stock when the tab becomes visible again, but at most once a minute.
+    const onVisible = () => { if (document.visibilityState === "visible") void load(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
+
 
   const bases = useMemo(
     () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
@@ -87,7 +88,8 @@ const Shop = () => {
     setBin(""); setBase("all"); setCountry(""); setZip("");
     setQ({ bin: "", base: "all", country: "", zip: "" });
     setSearched(true); setLastBin(""); setSelected(new Set());
-    void load();
+    void load(true);
+
   };
 
   useEffect(() => {
@@ -131,21 +133,21 @@ const Shop = () => {
       />
 
       {/* FILTER BAR */}
-      <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px]">
+      <div className="bg-white border border-[#e6e6e6] px-3 sm:px-4 py-3 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-x-6 gap-y-3 text-[13px]">
         <Field label="BIN">
           <input
             value={bin}
             onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 16))}
             onKeyDown={(e) => e.key === "Enter" && runSearch()}
             placeholder="Please enter the card number"
-            className="h-8 w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
+            className="h-8 w-full min-w-0 lg:w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
           />
         </Field>
         <Field label="BASE">
           <select
             value={base}
             onChange={(e) => setBase(e.target.value)}
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
+            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
           >
             <option value="all">base</option>
             {bases.map((b) => <option key={b} value={b}>{b}</option>)}
@@ -157,7 +159,7 @@ const Shop = () => {
             onChange={(e) => setCountry(e.target.value.toUpperCase())}
             onKeyDown={(e) => e.key === "Enter" && runSearch()}
             placeholder="Please enter country"
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
+            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
           />
         </Field>
         <Field label="ZIP">
@@ -166,19 +168,19 @@ const Shop = () => {
             onChange={(e) => setZip(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && runSearch()}
             placeholder="Please enter your zip code"
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
+            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
           />
         </Field>
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 sm:col-span-2 lg:col-auto lg:ml-auto">
           <button
             onClick={runSearch}
-            className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5 transition"
+            className="h-8 flex-1 lg:flex-none px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center justify-center gap-1.5 transition"
           >
             <Search className="h-3.5 w-3.5" /> search
           </button>
           <button
             onClick={reset}
-            className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center gap-1.5 transition"
+            className="h-8 flex-1 lg:flex-none px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center justify-center gap-1.5 transition"
           >
             <RotateCcw className="h-3.5 w-3.5" /> reset
           </button>
@@ -186,7 +188,7 @@ const Shop = () => {
       </div>
 
       {/* BATCH ADD BUTTON */}
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <button
           onClick={() => void buyMany(Array.from(selected))}
           disabled={selected.size === 0 || buying}
@@ -204,8 +206,9 @@ const Shop = () => {
       </div>
 
       {/* TABLE */}
-      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
-        <table className="w-full text-[13px] border-collapse">
+      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto -mx-3 sm:mx-0">
+        <table className="w-full min-w-[1000px] text-[13px] border-collapse">
+
           <thead>
             <tr className="bg-[#fafafa] text-[#555] text-[12px]">
               <th className="p-2 w-8 border-b border-[#eee]">
@@ -385,8 +388,9 @@ function pageNumbers(page: number, total: number): (number | "…")[] {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[#888] text-[11px] tracking-wider">{label}</span>
+    <div className="flex items-center gap-2 min-w-0">
+      <span className="text-[#888] text-[11px] tracking-wider shrink-0 w-[62px] lg:w-auto">{label}</span>
+
       {children}
     </div>
   );

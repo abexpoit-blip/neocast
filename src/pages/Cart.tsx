@@ -76,8 +76,9 @@ const Cart = () => {
         </div>
       </div>
 
-      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
-        <table className="w-full text-[13px] border-collapse">
+      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto -mx-3 sm:mx-0">
+        <table className="w-full min-w-[820px] text-[13px] border-collapse">
+
           <thead>
             <tr className="bg-[#fafafa] text-[#555] text-[12px]">
               {["BIN", "month", "year", "city", "state", "zip", "country", "prices", "base", "operation"].map((h) => (

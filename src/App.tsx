@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,29 +11,41 @@ import TopProgress from "@/components/TopProgress";
 
 import { LanguageProvider } from "@/lib/i18n";
 
+// Eager: first screens users hit.
 import Index from "./pages/Index";
-// removed: Landing, Dashboard, News, BuyerRefunds, SuperShop, BoostTool, Tickets, Settings (not part of Scorpion-style nav)
 import Auth from "./pages/Auth";
-import AdminLogin from "./pages/AdminLogin";
-import ResetPassword from "./pages/ResetPassword";
-import AdminSettings from "./pages/AdminSettings";
-import AdminSiteSettings from "./pages/AdminSiteSettings";
 import Shop from "./pages/Shop";
-import Cart from "./pages/Cart";
-import Orders from "./pages/Orders";
-import Recharge from "./pages/Recharge";
-import Admin from "./pages/Admin";
 
-import AdminCards from "./pages/AdminCards";
+// Lazy: everything else — keeps the initial bundle small and first paint fast.
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
+const AdminSiteSettings = lazy(() => import("./pages/AdminSiteSettings"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Orders = lazy(() => import("./pages/Orders"));
+const Recharge = lazy(() => import("./pages/Recharge"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminCards = lazy(() => import("./pages/AdminCards"));
+const AdminPaymentGateway = lazy(() => import("./pages/AdminPaymentGateway"));
+const AdminPayments = lazy(() => import("./pages/AdminPayments"));
+const AdminCategories = lazy(() => import("./pages/AdminCategories"));
+const AdminShop = lazy(() => import("./pages/AdminShop"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
-import AdminPaymentGateway from "./pages/AdminPaymentGateway";
-import AdminPayments from "./pages/AdminPayments";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
-import AdminCategories from "./pages/AdminCategories";
-import AdminShop from "./pages/AdminShop";
-import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
+const RouteFallback = () => (
+  <div className="min-h-[40vh] flex items-center justify-center text-[13px] text-[#888]">Загрузка…</div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -45,6 +58,7 @@ const App = () => (
           <ScrollToTop />
           <TopProgress />
 
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public auth pages */}
             <Route path="/auth" element={<Auth />} />
@@ -56,12 +70,12 @@ const App = () => (
             <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/site" element={<AdminRoute><AdminSiteSettings /></AdminRoute>} />
-            
+
             <Route path="/admin/cards" element={<AdminRoute><AdminCards /></AdminRoute>} />
-            
+
             <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
             <Route path="/admin/payment-gateway" element={<AdminRoute><AdminPaymentGateway /></AdminRoute>} />
-            
+
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/shop" element={<AdminRoute><AdminShop /></AdminRoute>} />
 
@@ -72,10 +86,9 @@ const App = () => (
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
 
-
-
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </AuthProvider>
         </LanguageProvider>
       </BrowserRouter>

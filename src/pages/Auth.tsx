@@ -86,8 +86,8 @@ const Auth = () => {
         const result = await authApi.login({ identifier: username.trim(), password });
         setToken(result.token);
         await refresh();
-        const destination = safeFrom
-          ?? (result.user.role === "seller" || result.user.role === "admin" ? "/seller" : "/shop");
+        const destination = safeFrom ?? (result.user.role === "admin" ? "/admin" : "/shop");
+
         toast.success("С возвращением");
         nav(destination, { replace: true });
       }
