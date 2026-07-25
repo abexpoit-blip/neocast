@@ -3,6 +3,19 @@ import { z } from "zod";
 import { getRequestUrl } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/** Fee (%) added on top of the amount the user wants credited. */
+export const CLIENT_FEE_PERCENT = 2;
+
+/** Amount the user must actually pay so that `credit` lands on the balance. */
+export function withFee(credit: number) {
+  const fee = Math.round(credit * CLIENT_FEE_PERCENT) / 100;
+  return {
+    credit: Math.round(credit * 100) / 100,
+    fee: Math.round(fee * 100) / 100,
+    charged: Math.round((credit + fee) * 100) / 100,
+  };
+}
+
 /** Create an LTC top-up invoice for the signed-in user. */
 export const createCryptoInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -11,12 +24,24 @@ export const createCryptoInvoice = createServerFn({ method: "POST" })
     const { createLtcInvoice } = await import("@/lib/plisio.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const amount = Math.round(data.amount * 100) / 100;
+    const { credit, fee, charged } = withFee(data.amount);
     const origin = getRequestUrl().origin;
+
+    // clean up anything stale first
+    await supabaseAdmin.rpc("expire_stale_deposits");
 
     const { data: dep, error } = await supabaseAdmin
       .from("deposits")
-      .insert({ user_id: context.userId, amount, method: "crypto", status: "pending", crypto_currency: "LTC" })
+      .insert({
+        user_id: context.userId,
+        amount: credit,
+        method: "crypto",
+        status: "pending",
+        crypto_currency: "LTC",
+        fee_percent: CLIENT_FEE_PERCENT,
+        fee_amount: fee,
+        charged_amount: charged,
+      })
       .select("id")
       .single();
     if (error || !dep) throw new Error("deposit_create_failed");
@@ -24,12 +49,17 @@ export const createCryptoInvoice = createServerFn({ method: "POST" })
     let inv;
     try {
       inv = await createLtcInvoice({
-        usdAmount: amount,
+        usdAmount: charged,
         orderNumber: dep.id,
         callbackUrl: `${origin}/api/public/deposit-callback`,
+        successUrl: `${origin}/recharge?payment=success&deposit=${dep.id}`,
+        failUrl: `${origin}/recharge?payment=failed&deposit=${dep.id}`,
       });
     } catch (e) {
-      await supabaseAdmin.from("deposits").update({ status: "rejected" }).eq("id", dep.id);
+      await supabaseAdmin
+        .from("deposits")
+        .update({ status: "rejected", admin_note: "Gateway error while creating invoice" })
+        .eq("id", dep.id);
       throw e;
     }
 
@@ -41,6 +71,7 @@ export const createCryptoInvoice = createServerFn({ method: "POST" })
         wallet_address: inv.wallet_hash,
         crypto_amount: String(inv.amount),
         reference: inv.txn_id,
+        invoice_url: inv.invoice_url ?? null,
         expires_at: expiresAt,
       })
       .eq("id", dep.id);
@@ -50,7 +81,10 @@ export const createCryptoInvoice = createServerFn({ method: "POST" })
       wallet_address: inv.wallet_hash,
       crypto_amount: String(inv.amount),
       currency: "LTC",
-      usd_amount: amount,
+      usd_amount: credit,
+      fee_percent: CLIENT_FEE_PERCENT,
+      fee_amount: fee,
+      charged_amount: charged,
       expires_ms: Date.parse(expiresAt),
       status: "pending" as const,
       confirmations: 0,
@@ -72,31 +106,50 @@ export const checkDepositStatus = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!dep || dep.user_id !== context.userId) throw new Error("not_found");
     if (dep.status !== "pending" || !dep.invoice_id) {
-      return { status: dep?.status ?? "rejected", confirmations: dep?.confirmations ?? 0, amount: dep?.amount ?? 0 };
+      return { status: dep.status, confirmations: dep.confirmations ?? 0, amount: dep.amount };
     }
 
-    let status = "pending";
+    let status: "approved" | "rejected" | "pending" = "pending";
+    let rawStatus = "";
     let confirmations = dep.confirmations ?? 0;
-    let txid: string | null = null;
+    let txUrl: string | null = null;
+    let received: string | null = null;
     try {
       const op = await getOperation(dep.invoice_id);
+      rawStatus = (op.status || "").toLowerCase();
       status = mapStatus(op.status);
       confirmations = Number(op.confirmations ?? confirmations) || confirmations;
-      txid = op.tx_url ?? null;
+      txUrl = op.tx_url ?? null;
+      received = op.amount ?? null;
     } catch {
-      return { status: "pending", confirmations, amount: dep.amount };
+      return { status: "pending" as const, confirmations, amount: dep.amount };
     }
 
-    if (status === "pending" && dep.expires_at && Date.parse(dep.expires_at) < Date.now()) {
-      status = "rejected";
-    }
+    const expired = !!dep.expires_at && Date.parse(dep.expires_at) < Date.now();
+    if (status === "pending" && expired && rawStatus !== "mismatch") status = "rejected";
+
+    await supabaseAdmin
+      .from("deposits")
+      .update({
+        last_checked_at: new Date().toISOString(),
+        tx_url: txUrl,
+        received_amount: received,
+        ...(rawStatus === "mismatch"
+          ? { admin_note: `Payment mismatch — received ${received ?? "?"} LTC, manual review required` }
+          : {}),
+      })
+      .eq("id", dep.id);
 
     const { data: settled } = await supabaseAdmin.rpc("settle_crypto_deposit", {
       _invoice_id: dep.invoice_id,
       _status: status,
       _confirmations: confirmations,
-      _txid: txid ?? undefined,
+      _txid: txUrl ?? undefined,
     });
 
-    return { status: (settled as string) ?? status, confirmations, amount: dep.amount };
+    return {
+      status: ((settled as string) ?? status) as string,
+      confirmations,
+      amount: dep.amount,
+    };
   });
