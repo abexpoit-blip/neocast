@@ -468,8 +468,9 @@ export function parseAndFormat(input: string): { lines: ParsedCard[]; output: st
   const failed: string[] = [];
   for (const raw of input.split(/\r?\n/)) {
     if (!raw.trim()) continue;
-    const parsed = parseCardLine(raw);
-    if (parsed && parsed.cc !== "null") lines.push(parsed);
+    let parsed = parseCardLine(raw);
+    if (!parsed || parsed.cc === "null") parsed = parseLoose(raw);
+    if (parsed && parsed.cc !== "null" && isCC(parsed.cc)) lines.push(parsed);
     else failed.push(raw);
   }
   return { lines, output: lines.map(toPipeFormat).join("\n"), failed };
