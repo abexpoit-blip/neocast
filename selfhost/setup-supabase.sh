@@ -154,9 +154,19 @@ SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
 echo "==> 7/8 Reverse proxy for $DOMAIN_API"
-NEXUS_CONF_DIR="/opt/nexus/deployment/nginx/conf.d"
-NEXUS_WEBROOT="/opt/nexus/deployment/certbot/www"
 HOST_IP="$(hostname -I | awk '{print $1}')"
+
+# Auto-detect the running nginx container that owns host ports 80/443 and read
+# its real bind-mount host paths (may live in /opt/nexus, /opt/nexus-v2/deployment, ...).
+NGINX_CT="$(docker ps --format '{{.Names}}' | grep -E 'nginx' | head -1 || true)"
+NEXUS_CONF_DIR=""
+NEXUS_WEBROOT=""
+if [ -n "$NGINX_CT" ]; then
+  NEXUS_CONF_DIR="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/nginx/conf.d"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+  NEXUS_WEBROOT="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/www/certbot"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+  [ -z "$NEXUS_WEBROOT" ] && NEXUS_WEBROOT="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/www/html"}}{{.Source}}{{end}}{{end}}' "$NGINX_CT" 2>/dev/null || true)"
+fi
+
 
 setup_nexus_nginx() {
   # Existing nexus_nginx container owns host ports 80/443 -> add our vhost there.
