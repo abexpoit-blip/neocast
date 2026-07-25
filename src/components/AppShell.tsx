@@ -100,7 +100,9 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       {/* SUB BAR */}
       <div className="bg-white border-b border-[#e6e6e6]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-end gap-3 text-[13px]">
+          <LanguageToggle />
           <span className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3]">
+
             {uname}
           </span>
           <Link
