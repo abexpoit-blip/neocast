@@ -1,27 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { listMyOrders } from "@/lib/store";
 import { useAuth } from "@/hooks/useAuth";
-import { Download, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Search, RotateCcw, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
-interface OrderItem { 
-  id?: string; price: number; 
-  card_snapshot?: Record<string, unknown>; card_id?: string; 
-  brand?: string; bin?: string; country?: string; last4?: string; city?: string; state?: string; zip?: string; base?: string; exp_month?: string; exp_year?: string;
-  digital_product_id?: string; product_title?: string; product_type?: string; product_video_url?: string; product_download_url?: string; product_text_content?: string; product_guidelines?: string;
+interface OrderItem {
+  id?: string;
+  price: number;
+  card_snapshot?: Record<string, unknown>;
+  digital_product_id?: string;
+  product_title?: string;
+  product_type?: string;
+  product_text_content?: string;
 }
-interface Order { id: string; total: number; status: string; created_at: string; order_items?: OrderItem[]; items?: OrderItem[]; }
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ExternalLink, Video, FileText, Wrench, UserCircle, CreditCard, PackageX } from "lucide-react";
+interface Order { id: string; total: number; status: string; created_at: string; order_items?: OrderItem[]; }
 
 const Orders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [q, setQ] = useState("");
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,190 +51,224 @@ const Orders = () => {
     })();
   }, [user]);
 
-  const getItems = (o: Order) => o.order_items ?? o.items ?? [];
-
-  const download = async (o: Order) => {
-    const items = getItems(o);
-    const date = new Date(o.created_at);
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-    setDownloading(o.id);
-    try {
-      // Fetch full card data for each item via reveal endpoint
-      const revealedCards = items.map((it) => ({ ...it, revealed: null as Record<string, unknown> | null }));
-
-      const lines = [
-        `Order: ${o.id}`,
-        `Date: ${date.toLocaleString()}`,
-        `Total: $${Number(o.total).toFixed(2)}`,
-        `Items: ${items.length}`,
-        `Format: base|cc|month/year|cvv|name|address|city|state|zip|country|phonenumber|email|price`,
-        `---`,
-      ];
-
-      for (const it of revealedCards) {
-        if (it.digital_product_id) {
-          lines.push(`Product: ${it.product_title}`);
-          lines.push(`Type: ${it.product_type}`);
-          if (it.product_video_url) lines.push(`Video: ${it.product_video_url}`);
-          if (it.product_download_url) lines.push(`Download: ${it.product_download_url}`);
-          if (it.product_text_content) lines.push(`Data: ${it.product_text_content}`);
-          if (it.product_guidelines) lines.push(`Guidelines: ${it.product_guidelines}`);
-          lines.push(`Price: $${Number(it.price).toFixed(2)}`);
-          lines.push(`---`);
-        } else {
-          const c = (it.revealed ?? it.card_snapshot ?? it) as Record<string, any>;
-          const base = c.base ?? "N/A";
-          const cc = c.cc_number ?? c.cc_data ?? "N/A";
-          const month = c.exp_month != null ? String(c.exp_month).padStart(2, "0") : "null";
-          const year = c.exp_year != null ? String(c.exp_year) : "null";
-          const expiry = `${month}/${year}`;
-          const cvv = c.cvv ?? "null";
-          const name = c.holder_name ?? c.name ?? "null";
-          const addr = c.address ?? c.addr ?? "null";
-          const city = c.city ?? "null";
-          const state = c.state ?? "null";
-          const zip = c.zip ?? "null";
-          const country = c.country ?? "null";
-          const tel = c.phone ?? c.tel ?? "null";
-          const email = c.email ?? "null";
-          const price = `$${Number(it.price).toFixed(2)}`;
-          lines.push(`${base}|${cc}|${expiry}|${cvv}|${name}|${addr}|${city}|${state}|${zip}|${country}|${tel}|${email}|${price}`);
-        }
+  const buildLines = (o: Order) => {
+    const items = o.order_items ?? [];
+    const lines: string[] = [];
+    for (const it of items) {
+      const c = (it.card_snapshot ?? {}) as Record<string, any>;
+      if (it.product_text_content) {
+        lines.push(...String(it.product_text_content).split("\n").filter(Boolean));
+      } else if (c.cc_number || c.cc_data) {
+        const month = c.exp_month != null ? String(c.exp_month).padStart(2, "0") : "null";
+        const year = c.exp_year != null ? String(c.exp_year) : "null";
+        lines.push(
+          [c.base ?? "N/A", c.cc_number ?? c.cc_data, `${month}/${year}`, c.cvv ?? "null",
+           c.holder_name ?? "null", c.address ?? "null", c.city ?? "null", c.state ?? "null",
+           c.zip ?? "null", c.country ?? "null", c.phone ?? "null", c.email ?? "null",
+           `$${Number(it.price).toFixed(2)}`].join("|"),
+        );
+      } else if (it.product_title) {
+        lines.push(`${it.product_title} | $${Number(it.price).toFixed(2)}`);
       }
-
-      const blob = new Blob([lines.join("\n")], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `order-${dateStr}-${o.id.slice(0, 8)}.txt`; a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Downloaded");
-    } catch (e) {
-      toast.error("Download failed");
-    } finally {
-      setDownloading(null);
     }
+    return lines;
   };
 
-  const filtered = orders.filter((o) => o.id.toLowerCase().includes(q.toLowerCase()));
+  const downloadTxt = (name: string, lines: string[]) => {
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const download = (o: Order) => {
+    setDownloading(o.id);
+    try {
+      const lines = buildLines(o);
+      if (!lines.length) { toast.error("Нет данных для скачивания"); return; }
+      downloadTxt(`${o.id.slice(0, 12)}.txt`, lines);
+      toast.success("Скачано");
+    } finally { setDownloading(null); }
+  };
+
+  const downloadSelected = () => {
+    const chosen = orders.filter((o) => selected[o.id]);
+    if (!chosen.length) { toast.error("Выберите заказы"); return; }
+    const lines = chosen.flatMap((o) => buildLines(o));
+    if (!lines.length) { toast.error("Нет данных для скачивания"); return; }
+    downloadTxt(`orders-${Date.now()}.txt`, lines);
+    toast.success("Скачано");
+  };
+
+  const filtered = useMemo(
+    () => orders.filter((o) => o.id.toLowerCase().includes(query.toLowerCase())),
+    [orders, query],
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const current = Math.min(page, totalPages);
+  const rows = filtered.slice((current - 1) * perPage, current * perPage);
+  const allChecked = rows.length > 0 && rows.every((o) => selected[o.id]);
+
+  const fmtTime = (s: string) => {
+    const d = new Date(s);
+    const p = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  };
+
+  const pageNumbers = () => {
+    const out: (number | "…")[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i <= 6 || i === totalPages) out.push(i);
+      else if (out[out.length - 1] !== "…") out.push("…");
+    }
+    return out;
+  };
 
   return (
     <AppShell>
-      <div className="space-y-5">
-        <h1 className="font-display text-3xl font-black neon-text">ORDERS</h1>
-
-        <div className="glass rounded-2xl p-4 flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by order id" className="pl-10 bg-input/60" />
-          </div>
+      <div className="text-[13px] text-[#333]">
+        {/* Search bar */}
+        <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-3">
+          <label className="font-medium text-[#333]">Номер заказа</label>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { setQuery(q); setPage(1); } }}
+            placeholder="Введите номер заказа"
+            className="h-8 w-[230px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
+          />
+          <button
+            onClick={() => { setQuery(q); setPage(1); }}
+            className="h-8 px-4 bg-[#409eff] hover:bg-[#3a8ee6] text-white text-[13px] inline-flex items-center gap-1.5 transition"
+          >
+            <Search className="h-3.5 w-3.5" /> Поиск
+          </button>
+          <button
+            onClick={() => { setQ(""); setQuery(""); setPage(1); }}
+            className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center gap-1.5 transition"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Сброс
+          </button>
+          <button
+            onClick={downloadSelected}
+            className="h-8 px-4 ml-auto bg-[#e8f5e9] hover:bg-[#dcedc8] border border-[#c8e6c9] text-[#2e7d32] text-[13px] transition"
+          >
+            Скачать выбранные
+          </button>
         </div>
 
-        <div className="glass rounded-2xl p-4 text-sm text-warning bg-warning/5 border-warning/20 border">
-          ⚠️ Notice: Once cleared, orders cannot be recovered. Save your downloads to a safe place.
+        {/* Notice */}
+        <div className="mt-3 bg-[#fdf6ec] border border-[#faecd8] text-[#e6a23c] px-4 py-2.5 flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 mt-[1px] shrink-0" />
+          <span>
+            Внимание: последние заказы могут появиться не сразу. Если ваш заказ не отображается, подождите
+            несколько секунд, обновите страницу и попробуйте скачать снова.
+          </span>
         </div>
 
-        <div className="glass rounded-2xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary/60 text-xs uppercase tracking-wider text-muted-foreground">
+        {/* Table */}
+        <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead className="bg-[#fafafa] text-[#606266]">
               <tr>
-                <th className="p-3 text-left">Order</th>
-                <th className="p-3 text-left">Items</th>
-                <th className="p-3 text-left">Total</th>
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-right">Action</th>
+                <th className="p-3 w-10 border-b border-[#eee]">
+                  <input
+                    type="checkbox"
+                    checked={allChecked}
+                    onChange={(e) => {
+                      const next = { ...selected };
+                      rows.forEach((o) => { next[o.id] = e.target.checked; });
+                      setSelected(next);
+                    }}
+                  />
+                </th>
+                <th className="p-3 text-center font-normal border-b border-[#eee]">Номер заказа</th>
+                <th className="p-3 text-center font-normal border-b border-[#eee] w-[280px]">Время оплаты</th>
+                <th className="p-3 text-center font-normal border-b border-[#eee] w-[160px]">Операция</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((o) => (
-                <tr key={o.id} className="border-t border-border/40 hover:bg-secondary/30 transition">
-                  <td className="p-3 font-mono text-xs">{o.id.slice(0, 16)}…</td>
-                  <td className="p-3">{getItems(o).length}</td>
-                  <td className="p-3 font-display text-primary-glow">${Number(o.total).toFixed(2)}</td>
-                  <td className="p-3 text-muted-foreground">{new Date(o.created_at).toLocaleString()}</td>
-                  <td className="p-3 text-right space-x-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-primary">
-                          View Details
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl bg-background/95 backdrop-blur-xl border-border/40 max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Order Details - {o.id.slice(0, 8)}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          {getItems(o).map((it, idx) => (
-                            <div key={idx} className="glass p-4 rounded-xl border border-border/40 space-y-3">
-                              {it.digital_product_id ? (
-                                <>
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-primary-glow">{it.product_title}</h4>
-                                    <span className="text-[10px] uppercase font-bold tracking-widest bg-primary/20 px-2 py-0.5 rounded">
-                                      {it.product_type}
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                                    {it.product_video_url && (
-                                      <a href={it.product_video_url} target="_blank" rel="noreferrer" 
-                                        className="flex items-center gap-2 p-2 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition">
-                                        <Video className="h-4 w-4" /> Watch Video
-                                      </a>
-                                    )}
-                                    {it.product_download_url && (
-                                      <a href={it.product_download_url} target="_blank" rel="noreferrer"
-                                        className="flex items-center gap-2 p-2 rounded bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 transition">
-                                        <Download className="h-4 w-4" /> Download Files
-                                      </a>
-                                    )}
-                                  </div>
-
-                                  {it.product_text_content && (
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Product Data</label>
-                                      <pre className="bg-black/40 p-3 rounded font-mono text-xs whitespace-pre-wrap break-all border border-border/20">
-                                        {it.product_text_content}
-                                      </pre>
-                                    </div>
-                                  )}
-
-                                  {it.product_guidelines && (
-                                    <div className="space-y-1">
-                                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Guidelines</label>
-                                      <p className="text-xs text-muted-foreground">{it.product_guidelines}</p>
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-primary-glow">Card - {it.bin}</h4>
-                                    <span className="text-[10px] uppercase font-bold tracking-widest bg-secondary px-2 py-0.5 rounded">
-                                      {it.brand}
-                                    </span>
-                                  </div>
-                                  <p className="text-xs font-mono bg-black/40 p-2 rounded border border-border/20">
-                                    {(it.card_snapshot?.cc_number as string) || (it.card_snapshot?.cc_data as string) || "Reveal via download"}
-                                  </p>
-                                </>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <Button size="sm" variant="outline" onClick={() => download(o)} disabled={downloading === o.id} className="border-primary/40 text-primary-glow">
-                      <Download className="h-3 w-3 mr-1" /> {downloading === o.id ? "Loading…" : "Download"}
-                    </Button>
+              {rows.map((o) => (
+                <tr key={o.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
+                  <td className="p-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={!!selected[o.id]}
+                      onChange={(e) => setSelected({ ...selected, [o.id]: e.target.checked })}
+                    />
+                  </td>
+                  <td className="p-3 text-center font-mono text-[#333]">{o.id.replace(/-/g, "")}</td>
+                  <td className="p-3 text-center text-[#606266]">{fmtTime(o.created_at)}</td>
+                  <td className="p-3 text-center">
+                    <button
+                      onClick={() => download(o)}
+                      disabled={downloading === o.id}
+                      className="text-[#409eff] hover:underline disabled:opacity-60"
+                    >
+                      {downloading === o.id ? "Загрузка…" : "Скачать"}
+                    </button>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">No orders yet.</td></tr>
+              {rows.length === 0 && (
+                <tr><td colSpan={4} className="p-12 text-center text-[#909399]">Нет заказов</td></tr>
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-[13px] text-[#606266]">
+          <span>Всего {filtered.length}</span>
+          <select
+            value={perPage}
+            onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="h-7 border border-[#dcdcdc] px-2 bg-white outline-none"
+          >
+            {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / стр.</option>)}
+          </select>
+          <button
+            onClick={() => setPage(Math.max(1, current - 1))}
+            disabled={current === 1}
+            className="h-7 w-7 border border-[#dcdcdc] bg-white inline-flex items-center justify-center disabled:opacity-40"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          {pageNumbers().map((p, i) =>
+            p === "…" ? (
+              <span key={`e${i}`} className="px-1">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`h-7 min-w-7 px-2 border text-[13px] ${p === current ? "bg-[#409eff] border-[#409eff] text-white" : "bg-white border-[#dcdcdc] hover:text-[#409eff]"}`}
+              >
+                {p}
+              </button>
+            ),
+          )}
+          <button
+            onClick={() => setPage(Math.min(totalPages, current + 1))}
+            disabled={current === totalPages}
+            className="h-7 w-7 border border-[#dcdcdc] bg-white inline-flex items-center justify-center disabled:opacity-40"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+          <span className="ml-2">Перейти</span>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            defaultValue={current}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const v = Number((e.target as HTMLInputElement).value);
+                if (v >= 1 && v <= totalPages) setPage(v);
+              }
+            }}
+            className="h-7 w-14 border border-[#dcdcdc] px-2 outline-none focus:border-[#4fc3f7]"
+          />
         </div>
       </div>
     </AppShell>
