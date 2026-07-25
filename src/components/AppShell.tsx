@@ -4,6 +4,9 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { LanguageToggle } from "@/lib/i18n";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+
 
 // Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
 const buyerNav = [
