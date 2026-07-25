@@ -27,6 +27,9 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
+  const [binInfo, setBinInfo] = useState<BinInfo | null>(null);
+  const [binLoading, setBinLoading] = useState(false);
+
 
   const load = async () => {
     setLoading(true);
