@@ -526,6 +526,18 @@ const Admin = () => {
                   </tbody>
                 </table>
               </div>
+              {users.length > USERS_PER_PAGE && (
+                <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                  <span className="text-xs text-muted-foreground">
+                    Showing {(userPage - 1) * USERS_PER_PAGE + 1}–{Math.min(userPage * USERS_PER_PAGE, users.length)} of {users.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="outline" className="h-7 px-2" disabled={userPage === 1} onClick={() => setUserPage(p => Math.max(1, p - 1))}>‹</Button>
+                    <span className="text-xs text-muted-foreground px-2">{userPage} / {userTotalPages}</span>
+                    <Button size="sm" variant="outline" className="h-7 px-2" disabled={userPage === userTotalPages} onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))}>›</Button>
+                  </div>
+                </div>
+              )}
             </Section>
 
             {/* Seller Summary */}
