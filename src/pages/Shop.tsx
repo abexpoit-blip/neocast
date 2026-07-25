@@ -227,7 +227,7 @@ const Shop = () => {
                 <td colSpan={14} className="p-3"><div className="h-4 bg-[#f5f5f5] animate-pulse" /></td>
               </tr>
             ))}
-            {!loading && cards.map((c) => (
+            {!loading && pageCards.map((c) => (
               <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
                 <td className="p-2 text-center">
                   <input
