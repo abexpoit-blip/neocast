@@ -7,7 +7,9 @@ interface Item { to: string; label: string; icon: React.ComponentType<{ classNam
 
 const items: Item[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
+  { to: "/admin/shop", label: "Shop · Cards", icon: CreditCard },
   { to: "/admin/applications", label: "Applications", icon: Users },
+
   { to: "/admin/payouts", label: "Payouts & Commission", icon: Wallet },
   { to: "/admin/categories", label: "Categories", icon: LayoutGrid },
   { to: "/admin/cards", label: "Card moderation", icon: CreditCard },
