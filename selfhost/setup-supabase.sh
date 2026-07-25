@@ -153,8 +153,70 @@ echo "==> 6/8 Applying Zoru Shop schema"
 SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
-echo "==> 7/8 Nginx reverse proxy for $DOMAIN_API"
-cat > /etc/nginx/sites-available/supabase.conf <<NGINX
+echo "==> 7/8 Reverse proxy for $DOMAIN_API"
+NEXUS_CONF_DIR="/opt/nexus/deployment/nginx/conf.d"
+NEXUS_WEBROOT="/opt/nexus/deployment/certbot/www"
+HOST_IP="$(hostname -I | awk '{print $1}')"
+
+setup_nexus_nginx() {
+  # Existing nexus_nginx container owns host ports 80/443 -> add our vhost there.
+  mkdir -p "$NEXUS_WEBROOT"
+  cat > "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
+server {
+    listen 80;
+    server_name $DOMAIN_API;
+    client_max_body_size 50m;
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / {
+        proxy_pass http://$HOST_IP:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+NGINX
+  docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+
+  if [ ! -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
+    apt-get install -y certbot
+    certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
+      --non-interactive --agree-tos -m admin@zoru.cc \
+      || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+  fi
+
+  if [ -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
+    cat >> "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name $DOMAIN_API;
+    client_max_body_size 50m;
+    ssl_certificate     /etc/letsencrypt/live/$DOMAIN_API/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_API/privkey.pem;
+    location / {
+        proxy_pass http://$HOST_IP:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300s;
+    }
+}
+NGINX
+    docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+  fi
+}
+
+setup_host_nginx() {
+  cat > /etc/nginx/sites-available/supabase.conf <<NGINX
 server {
     listen 80;
     server_name $DOMAIN_API;
@@ -171,10 +233,20 @@ server {
     }
 }
 NGINX
-ln -sf /etc/nginx/sites-available/supabase.conf /etc/nginx/sites-enabled/supabase.conf
-nginx -t && systemctl reload nginx
-apt-get install -y certbot python3-certbot-nginx
-certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@zoru.cc --redirect || echo "!! certbot failed — DNS A record for $DOMAIN_API -> this VPS lagbe"
+  ln -sf /etc/nginx/sites-available/supabase.conf /etc/nginx/sites-enabled/supabase.conf
+  nginx -t && (systemctl reload nginx || systemctl restart nginx)
+  apt-get install -y certbot python3-certbot-nginx
+  certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@zoru.cc --redirect \
+    || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+}
+
+if docker ps --format '{{.Names}}' | grep -q '^nexus_nginx$' && [ -d "$NEXUS_CONF_DIR" ]; then
+  echo "-- nexus_nginx detected (owns ports 80/443) -> adding vhost there"
+  setup_nexus_nginx || echo "!! nexus_nginx vhost setup had errors, check above"
+else
+  setup_host_nginx || echo "!! host nginx setup had errors, check above"
+fi
+
 
 echo "==> 8/8 Writing app env at $APP_DIR/.env"
 if [ -d "$APP_DIR" ]; then
