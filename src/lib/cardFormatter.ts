@@ -348,10 +348,11 @@ export function parseCardLine(raw: string): ParsedCard | null {
 
   // 2. Month / year — check for MM/YY combo at next index, else two separate
   const next = parts[ccIdx + 1];
-  if (next && isMMYY(next)) {
-    const [mm, yy] = next.split(/[\/\-]/);
-    out.month = take(ccIdx + 1, mm.padStart(2, "0"));
-    out.year = yy.length === 4 ? yy.slice(2) : yy;
+  const blob = next ? parseExpBlob(next) : null;
+  if (next && (isMMYY(next) || (blob && /^\d{4,6}$/.test(next.replace(/\D/g, ""))))) {
+    const e = blob ?? { month: "null", year: "null" };
+    used.add(ccIdx + 1);
+    out.month = e.month; out.year = e.year;
   } else {
     const mIdx = parts.findIndex((p, i) => !used.has(i) && i > ccIdx && isMonth(p));
     if (mIdx !== -1) out.month = take(mIdx, parts[mIdx].padStart(2, "0"));
@@ -361,6 +362,7 @@ export function parseCardLine(raw: string): ParsedCard | null {
       out.year = take(yIdx, y.length === 4 ? y.slice(2) : y);
     }
   }
+
 
   // 3. CVV — first 3-4 digit chunk after CC that isn't month/year
   const cvvIdx = parts.findIndex((p, i) => !used.has(i) && i > ccIdx && isCVV(p));
