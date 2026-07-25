@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { authApi, setToken, ApiError } from "@/lib/api";
-import { BuildBadge } from "@/components/BuildBadge";
 import { toast } from "sonner";
 import { RefreshCw, X, Loader2, User as UserIcon, Lock, ShieldCheck } from "lucide-react";
 import { getSavedAccounts, removeSavedAccount, type SavedAccount } from "@/lib/accountSwitcher";
@@ -106,7 +105,6 @@ const Auth = () => {
   return (
     <>
       <Seo title="Вход и регистрация | Zoru Shop" description="Вход и регистрация покупателей в Zoru Shop — проверенный маркетплейс." path="/auth" />
-      <BuildBadge />
       <ScorpionAuthShell
         tagline={
           <>

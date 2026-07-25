@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Lock, Loader2, ShieldCheck } from "lucide-react";
-import { BuildBadge } from "@/components/BuildBadge";
 import { ScorpionAuthShell } from "@/components/ScorpionAuthShell";
 
 const ResetPassword = () => {
@@ -39,7 +38,6 @@ const ResetPassword = () => {
 
   return (
     <>
-      <BuildBadge />
       <ScorpionAuthShell
         title="Reset Password"
         tagline={<span className="inline-flex items-center gap-2 text-white/85"><ShieldCheck className="h-4 w-4 text-[#4fc3f7]" /> Choose a new password</span>}

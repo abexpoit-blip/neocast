@@ -3,7 +3,6 @@ import { Link, Navigate, NavLink, useLocation, useNavigate } from "react-router-
 import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { BuildBadge } from "@/components/BuildBadge";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 // Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
@@ -41,7 +40,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       className="min-h-screen bg-white text-[#1a1a1a] flex flex-col"
       style={{ fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif' }}
     >
-      <BuildBadge />
 
       {/* TOP NAV */}
       <header className="bg-[#304156] text-white sticky top-0 z-40">
