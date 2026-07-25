@@ -241,3 +241,17 @@ export const CatalogBrandIcon = ({ brand }: { brand: string }): ReactNode => {
     </div>
   );
 };
+
+/** SVG flag image (emoji flags don't render on Windows/Linux). */
+export const CountryFlagImg = ({ code, className = "h-3.5 w-5" }: { code?: string | null; className?: string }) => {
+  const cc = countryCode(code);
+  if (!cc || cc.length !== 2) return <span className={className} />;
+  return (
+    <img
+      src={`https://flagcdn.com/w40/${cc.toLowerCase()}.png`}
+      alt={cc}
+      loading="lazy"
+      className={`${className} inline-block object-cover align-middle`}
+    />
+  );
+};
