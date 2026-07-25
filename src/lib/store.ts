@@ -375,3 +375,72 @@ export const adminSyncStock = async (productId: string) => {
   await supabase.from("products").update({ stock: count ?? 0 }).eq("id", productId);
   return count ?? 0;
 };
+
+/* ---------------- admin: bulk CSV upload ----------------
+   Format: bin,brand,country,state,city,zip,exp_month,exp_year,price
+--------------------------------------------------------- */
+
+export interface BulkCardRow {
+  bin: string;
+  brand: string;
+  country: string;
+  state: string;
+  city: string;
+  zip: string;
+  exp_month: string;
+  exp_year: string;
+  price: number;
+}
+
+export const parseBulkCards = (text: string): { rows: BulkCardRow[]; errors: string[] } => {
+  const rows: BulkCardRow[] = [];
+  const errors: string[] = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    const raw = line.trim();
+    if (!raw) return;
+    if (/^bin\s*,/i.test(raw)) return; // header
+    const parts = raw.split(",").map((p) => p.trim());
+    if (parts.length < 9) { errors.push(`Строка ${i + 1}: нужно 9 полей`); return; }
+    const [bin, brand, country, state, city, zip, m, y, price] = parts;
+    if (!/^\d{6,8}$/.test(bin)) { errors.push(`Строка ${i + 1}: неверный BIN «${bin}»`); return; }
+    const p = Number(price);
+    if (!Number.isFinite(p) || p < 0) { errors.push(`Строка ${i + 1}: неверная цена «${price}»`); return; }
+    rows.push({
+      bin,
+      brand: (brand || "").toUpperCase(),
+      country: (country || "").toUpperCase(),
+      state: state || "",
+      city: city || "",
+      zip: zip || "",
+      exp_month: String(Number(m) || m).padStart(2, "0").slice(0, 2),
+      exp_year: (y || "").slice(-2),
+      price: p,
+    });
+  });
+  return { rows, errors };
+};
+
+export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: string | null = null) => {
+  if (!rows.length) return 0;
+  const payload = rows.map((r) => ({
+    category_id: categoryId,
+    title: `${r.brand || "CARD"} ${r.bin} · ${r.city || r.state || r.country}`,
+    slug: `${r.bin}-${r.zip || "x"}-${Math.random().toString(36).slice(2, 8)}`,
+    price: r.price,
+    delivery_type: "instant" as DeliveryType,
+    instant_content: `${r.bin} | ${r.exp_month}/${r.exp_year} | ${r.city} ${r.state} ${r.zip} | ${r.country}`,
+    active: true,
+    bin: r.bin,
+    brand: r.brand || null,
+    country: r.country || null,
+    state: r.state || null,
+    city: r.city || null,
+    zip: r.zip || null,
+    exp_month: r.exp_month || null,
+    exp_year: r.exp_year || null,
+  }));
+  const { error } = await supabase.from("products").insert(payload);
+  if (error) throw error;
+  return payload.length;
+};
+

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Search, RotateCcw, Loader2, Copy, CheckCircle2, X } from "lucide-react";
 import { listProducts, purchaseAndDeliver, type Product } from "@/lib/store";
 import { useAuth } from "@/hooks/useAuth";
+import { BrandLogo, detectBrandFromBin, countryFlag, countryCode } from "@/lib/brands";
 
 const Shop = () => {
   const { profile, refresh: refreshProfile } = useAuth();
@@ -215,7 +216,10 @@ const Shop = () => {
                   />
                 </td>
                 <td className="p-2 text-center font-mono text-[#333]">
-                  {c.bin ?? "—"}<span className="text-[#bbb]">********</span>
+                  <span className="inline-flex items-center gap-2">
+                    <BrandLogo brand={c.brand || detectBrandFromBin(c.bin ?? "")} className="h-5 w-8 shrink-0" />
+                    <span>{c.bin ?? "—"}<span className="text-[#bbb]">••••••</span></span>
+                  </span>
                 </td>
                 <td className="p-2 text-center text-[#2196f3]">{c.refundable ? "YES" : "NO"}</td>
                 <td className="p-2 text-center font-mono">{c.exp_month ?? "—"}</td>
@@ -223,7 +227,14 @@ const Shop = () => {
                 <td className="p-2 text-center max-w-[140px] truncate" title={c.city ?? ""}>{c.city ?? "—"}</td>
                 <td className="p-2 text-center">{c.state ?? "—"}</td>
                 <td className="p-2 text-center font-mono">{c.zip ?? "—"}</td>
-                <td className="p-2 text-center">{c.country ?? "—"}</td>
+                <td className="p-2 text-center">
+                  {c.country ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="text-[14px] leading-none">{countryFlag(c.country)}</span>
+                      <span>{countryCode(c.country)}</span>
+                    </span>
+                  ) : "—"}
+                </td>
                 <td className="p-2 text-center">{c.has_phone ? "yes" : "no"}</td>
                 <td className="p-2 text-center">{c.has_email ? "yes" : "no"}</td>
                 <td className="p-2 text-center font-mono">{Number(c.price).toFixed(2)}</td>

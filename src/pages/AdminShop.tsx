@@ -5,6 +5,7 @@ import { Loader2, Plus, Trash2, Edit2, Save, X, Layers, CreditCard, RefreshCw } 
 import {
   listCategories, listProducts, adminSaveProduct, adminDeleteProduct,
   adminSaveCategory, adminDeleteCategory, adminAddKeys, adminSyncStock,
+  parseBulkCards, adminBulkCreateCards,
   slugify, type Category, type Product, type ProductInput, type DeliveryType,
 } from "@/lib/store";
 import { BrandLogo, detectBrandFromBin, COUNTRIES } from "@/lib/brands";
@@ -48,6 +49,29 @@ const AdminShop = () => {
   const [search, setSearch] = useState("");
   const [binInfo, setBinInfo] = useState<BinInfo | null>(null);
   const [binLoading, setBinLoading] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkCat, setBulkCat] = useState<string>("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const bulkPreview = useMemo(() => parseBulkCards(bulkText), [bulkText]);
+
+  const runBulkUpload = async () => {
+    const { rows, errors } = bulkPreview;
+    if (!rows.length) { toast.error("Нет корректных строк"); return; }
+    setBulkBusy(true);
+    try {
+      const n = await adminBulkCreateCards(rows, bulkCat || null);
+      toast.success(`Загружено позиций: ${n}${errors.length ? ` · пропущено: ${errors.length}` : ""}`);
+      setBulkText("");
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+
 
   const [catForm, setCatForm] = useState<{ id?: string; name: string; slug: string; icon: string; sort_order: number; active: boolean }>({
     name: "", slug: "", icon: "", sort_order: 0, active: true,
@@ -325,6 +349,79 @@ const AdminShop = () => {
               </div>
             </div>
           </div>
+
+          {/* BULK UPLOAD (CSV) */}
+          <div className="glass rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="text-sm font-semibold">BULK UPLOAD (CSV)</h2>
+              <code className="text-[11px] text-muted-foreground">
+                bin,brand,country,state,city,zip,exp_month,exp_year,price
+              </code>
+            </div>
+            <textarea
+              className="min-h-[140px] w-full rounded-md border border-border/60 bg-input/40 p-3 font-mono text-xs text-foreground outline-none focus:border-primary/60"
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder={"541865,MASTERCARD,US,PA,Philipsburg,16866,7,26,0.20\n448473,VISA,US,MA,Dorchester,02121,7,26,0.20"}
+            />
+            <div className="flex items-center gap-3 flex-wrap">
+              <select className={`${inputCls} max-w-[220px]`} value={bulkCat} onChange={(e) => setBulkCat(e.target.value)}>
+                <option value="">Без категории</option>
+                {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                Готово к загрузке: <b className="text-foreground">{bulkPreview.rows.length}</b>
+                {bulkPreview.errors.length > 0 && <span className="text-destructive"> · ошибок: {bulkPreview.errors.length}</span>}
+              </span>
+              <button
+                onClick={() => void runBulkUpload()}
+                disabled={bulkBusy || bulkPreview.rows.length === 0}
+                className="ml-auto inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Загрузить
+              </button>
+            </div>
+            {bulkPreview.errors.length > 0 && (
+              <ul className="text-[11px] text-destructive space-y-0.5 max-h-24 overflow-auto">
+                {bulkPreview.errors.slice(0, 20).map((er) => <li key={er}>{er}</li>)}
+              </ul>
+            )}
+            {bulkPreview.rows.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <tr>
+                      {["BIN", "Бренд", "Страна", "State", "City", "ZIP", "MM", "YY", "Цена"].map((h) => (
+                        <th key={h} className="p-2 text-left font-normal">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {bulkPreview.rows.slice(0, 8).map((r, i) => (
+                      <tr key={`${r.bin}-${i}`}>
+                        <td className="p-2 font-mono">
+                          <span className="inline-flex items-center gap-2">
+                            <BrandLogo brand={r.brand || detectBrandFromBin(r.bin)} className="h-5 w-8" />
+                            {r.bin}
+                          </span>
+                        </td>
+                        <td className="p-2">{r.brand || detectBrandFromBin(r.bin)}</td>
+                        <td className="p-2">{toFlag(r.country)} {r.country}</td>
+                        <td className="p-2">{r.state}</td>
+                        <td className="p-2">{r.city}</td>
+                        <td className="p-2 font-mono">{r.zip}</td>
+                        <td className="p-2 font-mono">{r.exp_month}</td>
+                        <td className="p-2 font-mono">{r.exp_year}</td>
+                        <td className="p-2">${r.price.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+
 
           <div className="glass rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-border/30">
