@@ -74,16 +74,18 @@ const Shop = () => {
     }
     setBuying(p.id);
     try {
-      const content = await purchaseProduct(p.id, 1);
+      const { content } = await purchaseAndDeliver(p.id, 1);
       setDelivered({ title: p.title, content: content || "Заказ оформлен. Смотрите раздел «Заказы»." });
       toast.success("Покупка выполнена");
       void load();
+      void refreshProfile?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Ошибка покупки");
     } finally {
       setBuying(null);
     }
   };
+
 
   const reset = () => {
     setCatId(""); setSearch(""); setBin(""); setBrand(""); setCountry("");
