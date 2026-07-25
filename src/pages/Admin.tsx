@@ -586,41 +586,81 @@ const Admin = () => {
         {tab === "cards" && (
           <>
             <Section icon={Upload} title="ADMIN CARD UPLOAD">
-              <p className="text-xs text-muted-foreground mb-3">
-                Paste cards in any format — auto-detects fields, dedupes, and detects brand from BIN.
-                Format: <code className="text-primary-glow">cc|month|year|cvv|name|addr|city|state|zip|country|tel|email</code>
+              <p className="text-xs text-muted-foreground mb-4">
+                Paste cards in any format — fields, brand and dupes are detected automatically.
+                Target: <code className="text-primary-glow">cc|month|year|cvv|name|addr|city|state|zip|country|tel|email</code>
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                <div>
-                  <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Default Price ($)</label>
-                  <Input type="number" step="0.01" value={cardPrice} onChange={e => setCardPrice(e.target.value)} className="bg-input/60 mt-1" />
+
+              {/* SETTINGS + DROPZONE */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Default Price ($)</label>
+                    <Input type="number" step="0.01" value={cardPrice} onChange={e => setCardPrice(e.target.value)} className="bg-input/60 mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refundable</label>
+                    <Select value={cardRefundable ? "yes" : "no"} onValueChange={v => setCardRefundable(v === "yes")}>
+                      <SelectTrigger className="bg-input/60 mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="no">Non-refundable</SelectItem>
+                        <SelectItem value="yes">Refundable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refundable</label>
-                  <Select value={cardRefundable ? "yes" : "no"} onValueChange={v => setCardRefundable(v === "yes")}>
-                    <SelectTrigger className="bg-input/60 mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no">Non-refundable</SelectItem>
-                      <SelectItem value="yes">Refundable</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <label className="cursor-pointer">
+
+                <label
+                  className="lg:col-span-2 cursor-pointer"
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => {
+                    e.preventDefault(); setDragOver(false);
+                    const f = e.dataTransfer.files?.[0];
+                    if (f) f.text().then(t => { setCardRaw(prev => (prev.trim() ? prev.replace(/\s*$/, "\n") + t : t)); toast.success(`Loaded ${f.name}`); });
+                  }}
+                >
                   <input type="file" accept=".txt,.csv,.tsv" className="hidden" onChange={e => {
                     const file = e.target.files?.[0];
-                    if (file) file.text().then(t => setCardRaw(t));
+                    if (file) file.text().then(t => { setCardRaw(prev => (prev.trim() ? prev.replace(/\s*$/, "\n") + t : t)); toast.success(`Loaded ${file.name}`); });
                   }} />
-                  <div className="flex items-center justify-center h-10 mt-5 px-4 rounded-md border-2 border-dashed border-primary/40 hover:border-primary text-sm text-primary-glow hover:bg-primary/5 transition">
-                    <FileText className="h-4 w-4 mr-2" />Drop .txt / .csv file
+                  <div className={`h-full min-h-[132px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-center px-6 transition ${
+                    dragOver ? "border-primary bg-primary/10" : "border-primary/30 hover:border-primary/60 hover:bg-primary/5"
+                  }`}>
+                    <div className="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-primary-glow" />
+                    </div>
+                    <p className="text-sm text-primary-glow">Drop <b>.txt / .csv / .tsv</b> here or click to browse</p>
+                    <p className="text-[11px] text-muted-foreground">Any delimiter · any column order · appends to the editor</p>
                   </div>
                 </label>
               </div>
+
+              {/* LIVE STATS */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                <Chip label="Lines" value={formatPreview.totalLines} tone="muted" />
+                <Chip label="Valid" value={formatPreview.valid} tone="success" />
+                <Chip label="Duplicates" value={formatPreview.dupes} tone="warning" />
+                <Chip label="Unreadable" value={formatPreview.failedCount} tone="danger" />
+              </div>
+
+              {formatPreview.brands.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  {formatPreview.brands.map(([b, n]) => (
+                    <span key={b} className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-secondary/40 px-2.5 py-1 text-[11px] text-muted-foreground">
+                      <BrandLogo brand={b} className="h-4 w-6" /> {b} · <b className="text-foreground">{n}</b>
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <Textarea rows={10} value={cardRaw} onChange={e => setCardRaw(e.target.value)}
                 placeholder="4111111111111111|12|28|123|John Smith|123 Main St|New York|NY|10001|US|+15555551234|john@x.com"
                 className="bg-input/60 font-mono text-xs mb-3" />
-              <div className="flex items-center gap-3 flex-wrap">
-                <Button onClick={publishCards} disabled={uploadBusy} className="bg-gradient-primary shadow-neon">
-                  <Upload className="h-4 w-4 mr-2" />{uploadBusy ? "Publishing…" : "Publish Cards"}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button onClick={publishCards} disabled={uploadBusy || formatPreview.valid === 0} className="bg-gradient-primary shadow-neon">
+                  <Upload className="h-4 w-4 mr-2" />{uploadBusy ? "Publishing…" : `Publish ${formatPreview.valid || ""} Cards`.trim()}
                 </Button>
                 <Button onClick={() => {
                   const { lines, failed } = parseAndFormat(cardRaw);
@@ -629,24 +669,56 @@ const Admin = () => {
                   setCardRaw([...unique.map(toPipeFormat), ...failed].join("\n"));
                   toast.success(`Formatted ${unique.length} cards` + (dropped ? ` · ${dropped} dupes removed` : "") + (failed.length ? ` · ${failed.length} unreadable kept below` : ""));
                 }} variant="outline" className="border-primary/40 text-primary-glow">
-                  <Wand2 className="h-4 w-4 mr-2" />Auto-Format
+                  <Wand2 className="h-4 w-4 mr-2" />Auto-Format & Dedupe
                 </Button>
                 <Button onClick={() => {
-                  const { lines, failed } = parseAndFormat(cardRaw);
-                  const { unique, dropped } = dedupe(lines);
-                  toast.success(`Preview: ${unique.length} valid, ${dropped} dupes, ${failed.length} failed`);
+                  const { lines } = parseAndFormat(cardRaw);
+                  const { unique } = dedupe(lines);
+                  if (!unique.length) return toast.error("Nothing to copy");
+                  void navigator.clipboard.writeText(unique.map(toPipeFormat).join("\n"));
+                  toast.success("Formatted list copied");
                 }} variant="outline" className="border-primary/40 text-primary-glow">
-                  <Wand2 className="h-4 w-4 mr-2" />Preview & Validate
+                  <FileText className="h-4 w-4 mr-2" />Copy formatted
+                </Button>
+                <Button onClick={() => setCardRaw("")} variant="outline" className="ml-auto text-muted-foreground">
+                  <Trash2 className="h-4 w-4 mr-2" />Clear
                 </Button>
               </div>
-              {formatPreview.rows.length > 0 && (
-                <div className="mt-4 rounded-lg border border-border/40 bg-secondary/30 p-3">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
-                    Auto-format preview · {formatPreview.valid} valid · {formatPreview.dupes} dupes · {formatPreview.failedCount} unreadable
+
+              {formatPreview.cards.length > 0 && (
+                <div className="mt-4 rounded-xl border border-border/40 bg-secondary/20 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-border/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Preview · first {Math.min(6, formatPreview.cards.length)} of {formatPreview.valid}
                   </div>
-                  <pre className="text-[11px] font-mono text-primary-glow overflow-x-auto whitespace-pre">{formatPreview.rows.join("\n")}</pre>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="text-[10px] uppercase tracking-wider text-muted-foreground bg-secondary/40">
+                        <tr>
+                          {["Brand", "BIN", "EXP", "CVV", "Name", "City", "State", "ZIP", "Country"].map(h => (
+                            <th key={h} className="p-2 text-left font-normal">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formatPreview.cards.slice(0, 6).map((c, i) => (
+                          <tr key={`${c.cc}-${i}`} className="border-t border-border/30">
+                            <td className="p-2"><BrandLogo brand={detectBrand(c.cc) || detectBrandFromBin(c.cc.slice(0, 6))} className="h-5 w-8" /></td>
+                            <td className="p-2 font-mono text-primary-glow">{c.cc.slice(0, 6)}••••{c.cc.slice(-4)}</td>
+                            <td className="p-2 font-mono">{c.month}/{c.year}</td>
+                            <td className="p-2 font-mono">{c.cvv}</td>
+                            <td className="p-2">{c.name}</td>
+                            <td className="p-2">{c.city}</td>
+                            <td className="p-2">{c.state}</td>
+                            <td className="p-2 font-mono">{c.zip}</td>
+                            <td className="p-2">{c.country}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
+
 
             </Section>
           </>
