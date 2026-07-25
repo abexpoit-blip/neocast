@@ -3,6 +3,9 @@
 # Run as root:  bash setup-supabase.sh
 set -euo pipefail
 
+# Resolve script dir BEFORE any cd
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 DOMAIN_API="${DOMAIN_API:-api.zoru.cc}"
 BASE_DIR="/opt/supabase"
 APP_DIR="/var/www/zoru-cc"
@@ -17,6 +20,9 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+systemctl enable --now docker 2>/dev/null || service docker start || true
+docker info >/dev/null 2>&1 || { echo '!! Docker daemon start hoyni — run: systemctl start docker'; exit 1; }
+
 echo "==> 2/8 Fetching Supabase docker stack"
 mkdir -p "$BASE_DIR"
 if [ ! -d "$BASE_DIR/docker" ]; then
@@ -30,7 +36,7 @@ cd "$BASE_DIR/docker"
 echo "==> 3/8 Generating keys"
 KEYS_FILE="$BASE_DIR/credentials.json"
 if [ ! -f "$KEYS_FILE" ]; then
-  node "$(dirname "$(readlink -f "$0")")/gen-keys.mjs" > "$KEYS_FILE"
+  node "$SCRIPT_DIR/gen-keys.mjs" > "$KEYS_FILE"
 fi
 chmod 600 "$KEYS_FILE"
 
@@ -81,7 +87,7 @@ docker compose up -d
 sleep 25
 
 echo "==> 6/8 Applying Zoru Shop schema"
-SCHEMA="$(dirname "$(readlink -f "$0")")/schema.sql"
+SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
 echo "==> 7/8 Nginx reverse proxy for $DOMAIN_API"
