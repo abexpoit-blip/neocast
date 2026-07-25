@@ -96,6 +96,16 @@ const Admin = () => {
     }
   }, [userSearch]);
 
+  // Users pagination — 25 per page
+  const USERS_PER_PAGE = 25;
+  const [userPage, setUserPage] = useState(1);
+  const userTotalPages = Math.max(1, Math.ceil(users.length / USERS_PER_PAGE));
+  useEffect(() => { setUserPage(1); }, [userSearch, users.length]);
+  const pagedUsers = useMemo(
+    () => users.slice((userPage - 1) * USERS_PER_PAGE, userPage * USERS_PER_PAGE),
+    [users, userPage],
+  );
+
   const dailyRevenue = (stats.dailyRevenue ?? []) as DailyRevenue[];
   const topSellers = (stats.topSellers ?? []) as TopSeller[];
   const recentOrders = (stats.recentOrders ?? []) as RecentOrder[];
