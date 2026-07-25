@@ -117,7 +117,7 @@ export function ScorpionAuthShell({
         </div>
 
         <p className="text-center text-[11px] text-white/60 mt-5 tracking-[0.15em] uppercase">
-          © {new Date().getFullYear()} Scorpion-Shop · All Rights Reserved
+          © {new Date().getFullYear()} Zoru Shop · Все права защищены
         </p>
       </div>
     </main>
