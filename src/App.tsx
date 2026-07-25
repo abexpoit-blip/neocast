@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute, AdminRoute } from "@/components/AppShell";
 import ScrollToTop from "@/components/ScrollToTop";
+import TopProgress from "@/components/TopProgress";
+
 import { LanguageProvider } from "@/lib/i18n";
 
 import Index from "./pages/Index";
@@ -44,6 +46,8 @@ const App = () => (
         <LanguageProvider>
         <AuthProvider>
           <ScrollToTop />
+          <TopProgress />
+
           <Routes>
             {/* Public auth pages */}
             <Route path="/auth" element={<Auth />} />
