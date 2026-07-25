@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { api } from "@/lib/api";
+import { listCategories, adminSaveCategory, adminDeleteCategory, slugify } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,40 +23,56 @@ const AdminCategories = () => {
 
   const load = async () => {
     try {
-      const res = await api.get<{ categories: Category[] }>("/admin/categories");
-      setCategories(res.categories ?? []);
-    } catch { /* ignore */ }
+      const rows = await listCategories(true);
+      setCategories(
+        rows.map((c) => ({
+          id: c.id,
+          name: c.name,
+          icon: c.icon ?? undefined,
+          display_order: c.sort_order ?? 0,
+        })),
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load categories");
+    }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
   const save = async (id?: string) => {
+    const name = (editForm.name ?? "").trim();
+    if (!name) return toast.error("Name is required");
     try {
-      if (id) {
-        await api.patch(`/admin/categories/${id}`, editForm);
-        toast.success("Category updated");
-      } else {
-        await api.post("/admin/categories", editForm);
-        toast.success("Category created");
-        setIsAdding(false);
-      }
+      await adminSaveCategory({
+        id,
+        name,
+        slug: slugify(name),
+        icon: editForm.icon || null,
+        sort_order: Number(editForm.display_order) || 0,
+        active: true,
+      });
+      toast.success(id ? "Category updated" : "Category created");
+      setIsAdding(false);
       setEditingId(null);
       setEditForm({});
       load();
-    } catch (e: any) {
-      toast.error(e.message || "Failed to save");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to save");
     }
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete category? This won't delete items, but they will become uncategorized.")) return;
     try {
-      await api.del(`/admin/categories/${id}`);
+      await adminDeleteCategory(id);
       toast.success("Deleted");
       load();
-    } catch { /* ignore */ }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete");
+    }
   };
+
 
   return (
     <AdminLayout title="Manage Categories">

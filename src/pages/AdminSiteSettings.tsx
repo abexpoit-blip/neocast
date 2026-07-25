@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { siteSettingsApi } from "@/lib/api";
+import { writeSiteSetting } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,13 +28,18 @@ const AdminSiteSettings = () => {
   const save = async () => {
     setSaving(true);
     try {
-      await siteSettingsApi.update({ ...s, updated_at: new Date().toISOString() });
+      await Promise.all(
+        Object.entries(s).map(([k, v]) =>
+          writeSiteSetting(k, typeof v === "string" ? v : JSON.stringify(v)),
+        ),
+      );
       await refreshSiteSettings();
       toast.success("Site settings saved — changes are live");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save");
     } finally { setSaving(false); }
   };
+
 
   const updateTicker = (i: number, v: string) =>
     set("ticker_items", s.ticker_items.map((t, idx) => (idx === i ? v : t)));

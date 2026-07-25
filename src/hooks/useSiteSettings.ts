@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { readSiteSettings } from "@/lib/store";
+
 
 export interface SiteSettings {
   shop_name: string;
@@ -48,15 +49,27 @@ const broadcast = (s: SiteSettings) => {
 
 export const refreshSiteSettings = async (): Promise<SiteSettings> => {
   try {
-    const { settings } = await api.get<{ settings: Record<string, unknown> }>("/site-settings");
-    const row = settings as Partial<SiteSettings> | null;
+    const raw = await readSiteSettings();
+    const row: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (typeof v === "string") {
+        const t = v.trim();
+        if (t.startsWith("[") || t.startsWith("{")) {
+          try { row[k] = JSON.parse(t); continue; } catch { /* keep string */ }
+        }
+        row[k] = /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : v;
+      } else {
+        row[k] = v;
+      }
+    }
     const merged: SiteSettings = {
       ...DEFAULT_SETTINGS,
-      ...(row ?? {}),
-      ticker_items: Array.isArray(row?.ticker_items)
-        ? (row!.ticker_items as string[])
+      ...(row as Partial<SiteSettings>),
+      ticker_items: Array.isArray(row.ticker_items)
+        ? (row.ticker_items as string[])
         : DEFAULT_SETTINGS.ticker_items,
-      min_deposit: (row?.min_deposit != null && Number(row.min_deposit) > 0) ? Number(row.min_deposit) : DEFAULT_SETTINGS.min_deposit,
+      min_deposit: (row.min_deposit != null && Number(row.min_deposit) > 0) ? Number(row.min_deposit) : DEFAULT_SETTINGS.min_deposit,
+
     };
     broadcast(merged);
     return merged;
