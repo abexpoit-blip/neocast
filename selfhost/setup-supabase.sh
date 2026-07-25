@@ -3,6 +3,9 @@
 # Run as root:  bash setup-supabase.sh
 set -euo pipefail
 
+# Resolve script dir BEFORE any cd
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 DOMAIN_API="${DOMAIN_API:-api.zoru.cc}"
 BASE_DIR="/opt/supabase"
 APP_DIR="/var/www/zoru-cc"
@@ -30,7 +33,7 @@ cd "$BASE_DIR/docker"
 echo "==> 3/8 Generating keys"
 KEYS_FILE="$BASE_DIR/credentials.json"
 if [ ! -f "$KEYS_FILE" ]; then
-  node "$(dirname "$(readlink -f "$0")")/gen-keys.mjs" > "$KEYS_FILE"
+  node "$SCRIPT_DIR/gen-keys.mjs" > "$KEYS_FILE"
 fi
 chmod 600 "$KEYS_FILE"
 
@@ -81,7 +84,7 @@ docker compose up -d
 sleep 25
 
 echo "==> 6/8 Applying Zoru Shop schema"
-SCHEMA="$(dirname "$(readlink -f "$0")")/schema.sql"
+SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
 echo "==> 7/8 Nginx reverse proxy for $DOMAIN_API"
