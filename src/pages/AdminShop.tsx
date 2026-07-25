@@ -5,6 +5,7 @@ import { Loader2, Plus, Trash2, Edit2, Save, X, Layers, CreditCard, RefreshCw } 
 import {
   listCategories, listProducts, adminSaveProduct, adminDeleteProduct,
   adminSaveCategory, adminDeleteCategory, adminAddKeys, adminSyncStock,
+  parseBulkCards, adminBulkCreateCards,
   slugify, type Category, type Product, type ProductInput, type DeliveryType,
 } from "@/lib/store";
 import { BrandLogo, detectBrandFromBin, COUNTRIES } from "@/lib/brands";
