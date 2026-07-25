@@ -95,7 +95,7 @@ export const checkDepositStatus = createServerFn({ method: "POST" })
       _invoice_id: dep.invoice_id,
       _status: status,
       _confirmations: confirmations,
-      _txid: txid,
+      _txid: txid ?? undefined,
     });
 
     return { status: (settled as string) ?? status, confirmations, amount: dep.amount };
