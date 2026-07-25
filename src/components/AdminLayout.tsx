@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { NavLink, useLocation } from "react-router-dom";
-import { Shield, LayoutDashboard, Users, CreditCard, Wallet, Undo2, KeyRound, Settings as SettingsIcon, Landmark, Menu, X, Banknote, DollarSign, Package, PackageX, Zap, LayoutGrid } from "lucide-react";
+import { Shield, LayoutDashboard, Users, CreditCard, Undo2, KeyRound, Settings as SettingsIcon, Menu, X, Banknote, DollarSign, Package, PackageX, LayoutGrid } from "lucide-react";
 
 interface Item { to: string; label: string; icon: React.ComponentType<{ className?: string }>; }
 
@@ -9,17 +9,13 @@ const items: Item[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/shop", label: "Shop · Cards", icon: CreditCard },
   { to: "/admin/applications", label: "Applications", icon: Users },
-
-  { to: "/admin/payouts", label: "Payouts & Commission", icon: Wallet },
   { to: "/admin/categories", label: "Categories", icon: LayoutGrid },
   { to: "/admin/cards", label: "Card moderation", icon: CreditCard },
   { to: "/admin/refunds", label: "Refund requests", icon: Undo2 },
-  { to: "/admin/deposit-addresses", label: "Deposit addresses", icon: Landmark },
   { to: "/admin/payments", label: "Payments", icon: DollarSign },
-  { to: "/admin/payment-gateway", label: "Payment Gateway", icon: Banknote },
+  { to: "/admin/payment-gateway", label: "Plisio Payment Gateway", icon: Banknote },
   { to: "/admin/stock-review", label: "Stock Review", icon: Package },
   { to: "/admin/digital-products", label: "Super Shop", icon: PackageX },
-  { to: "/admin/boost", label: "Boost Admin", icon: Zap },
   { to: "/admin/site", label: "Site settings", icon: SettingsIcon },
   { to: "/admin/settings", label: "Credentials", icon: KeyRound },
 ];

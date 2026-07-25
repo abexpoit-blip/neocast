@@ -20,15 +20,15 @@ import Orders from "./pages/Orders";
 import Recharge from "./pages/Recharge";
 import Admin from "./pages/Admin";
 import AdminApplications from "./pages/AdminApplications";
-import AdminPayouts from "./pages/AdminPayouts";
+
 import AdminCards from "./pages/AdminCards";
 import AdminRefunds from "./pages/AdminRefunds";
-import AdminDepositAddresses from "./pages/AdminDepositAddresses";
+
 import AdminPaymentGateway from "./pages/AdminPaymentGateway";
 import AdminPayments from "./pages/AdminPayments";
 import AdminStockReview from "./pages/AdminStockReview";
 import AdminDigitalProducts from "./pages/AdminDigitalProducts";
-import AdminBoost from "./pages/AdminBoost";
+
 import AdminCategories from "./pages/AdminCategories";
 import AdminShop from "./pages/AdminShop";
 import NotFound from "./pages/NotFound";
@@ -55,15 +55,15 @@ const App = () => (
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/site" element={<AdminRoute><AdminSiteSettings /></AdminRoute>} />
             <Route path="/admin/applications" element={<AdminRoute><AdminApplications /></AdminRoute>} />
-            <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+            
             <Route path="/admin/cards" element={<AdminRoute><AdminCards /></AdminRoute>} />
             <Route path="/admin/refunds" element={<AdminRoute><AdminRefunds /></AdminRoute>} />
-            <Route path="/admin/deposit-addresses" element={<AdminRoute><AdminDepositAddresses /></AdminRoute>} />
+            
             <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
             <Route path="/admin/payment-gateway" element={<AdminRoute><AdminPaymentGateway /></AdminRoute>} />
             <Route path="/admin/stock-review" element={<AdminRoute><AdminStockReview /></AdminRoute>} />
             <Route path="/admin/digital-products" element={<AdminRoute><AdminDigitalProducts /></AdminRoute>} />
-            <Route path="/admin/boost" element={<AdminRoute><AdminBoost /></AdminRoute>} />
+            
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/shop" element={<AdminRoute><AdminShop /></AdminRoute>} />
 
