@@ -279,6 +279,12 @@ const Recharge = () => {
                 <div className="text-center border border-[#e6e6e6] bg-[#fafafa] p-3">
                   <p className="text-[11px] uppercase tracking-wider text-[#888]">Сумма пополнения</p>
                   <p className="text-[24px] font-semibold text-[#2196f3] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
+                  {activeInvoice.charged_amount ? (
+                    <p className="text-[11px] text-[#888] font-mono">
+                      к оплате ${activeInvoice.charged_amount.toFixed(2)} (комиссия 2%)
+                    </p>
+                  ) : null}
+
                 </div>
                 <div className={`flex justify-center ${isExpired ? "opacity-25 pointer-events-none" : ""}`}>
                   <div className="p-3 bg-white border border-[#e6e6e6]">
