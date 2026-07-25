@@ -107,8 +107,18 @@ export const listCategories = async (includeInactive = false): Promise<Category[
   return (data ?? []) as Category[];
 };
 
-export const listProducts = async (opts: { categoryId?: string | null; search?: string; includeInactive?: boolean } = {}) => {
-  let q = supabase.from("products").select("*").order("created_at", { ascending: false });
+/** Hard cap so a huge stock table can never freeze the browser / blow up the response. */
+export const PRODUCT_FETCH_LIMIT = 3000;
+
+export const listProducts = async (
+  opts: { categoryId?: string | null; search?: string; includeInactive?: boolean; limit?: number } = {},
+) => {
+  const limit = Math.min(opts.limit ?? PRODUCT_FETCH_LIMIT, PRODUCT_FETCH_LIMIT);
+  let q = supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (!opts.includeInactive) q = q.eq("active", true);
   if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts.search?.trim()) q = q.ilike("title", `%${opts.search.trim()}%`);
@@ -116,6 +126,7 @@ export const listProducts = async (opts: { categoryId?: string | null; search?: 
   if (error) throw error;
   return (data ?? []).map((p) => ({ ...p, price: num(p.price), compare_at_price: p.compare_at_price == null ? null : num(p.compare_at_price) })) as Product[];
 };
+
 
 export const purchaseProduct = async (productId: string, quantity: number) => {
   const { data, error } = await supabase.rpc("purchase_product", { _product_id: productId, _quantity: quantity });
