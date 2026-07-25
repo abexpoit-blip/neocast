@@ -804,7 +804,39 @@ const Admin = () => {
           </>
         )}
       </div>
+
+      {/* Manual balance modal */}
+      {balanceUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !balanceBusy && setBalanceUser(null)}>
+          <div className="w-full max-w-sm rounded-lg border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="h-4 w-4 text-primary-glow" />
+              <h3 className="font-semibold">Manual balance</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              {balanceUser.username} · current ${Number(balanceUser.balance ?? 0).toFixed(2)}
+            </p>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Amount (USD)</label>
+            <Input
+              autoFocus type="number" min="0" step="0.01" value={balanceAmount}
+              onChange={e => setBalanceAmount(e.target.value)} placeholder="10.00" className="bg-input/60 mt-1 mb-3"
+            />
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Note (optional)</label>
+            <Input value={balanceNote} onChange={e => setBalanceNote(e.target.value)} placeholder="Reason…" className="bg-input/60 mt-1 mb-4" />
+            <div className="flex gap-2">
+              <Button className="flex-1" disabled={balanceBusy} onClick={() => submitBalance(1)}>
+                <ArrowUpRight className="h-3.5 w-3.5 mr-1" /> Add
+              </Button>
+              <Button className="flex-1" variant="destructive" disabled={balanceBusy} onClick={() => submitBalance(-1)}>
+                <ArrowDownRight className="h-3.5 w-3.5 mr-1" /> Remove
+              </Button>
+            </div>
+            <Button variant="ghost" className="w-full mt-2 h-8 text-xs" disabled={balanceBusy} onClick={() => setBalanceUser(null)}>Cancel</Button>
+          </div>
+        </div>
+      )}
     </AdminLayout>
+
   );
 };
 
