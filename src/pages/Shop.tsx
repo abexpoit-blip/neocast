@@ -2,279 +2,292 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Copy, CheckCircle2, X, Search } from "lucide-react";
-import { listCategories, listProducts, purchaseAndDeliver, type Category, type Product } from "@/lib/store";
-import { BrandLogo } from "@/lib/brands";
-import { toFlag, countryName } from "@/lib/countryFlag";
+import { Search, RotateCcw, Loader2, Copy, CheckCircle2, X } from "lucide-react";
+import { listProducts, purchaseAndDeliver, type Product } from "@/lib/store";
 import { useAuth } from "@/hooks/useAuth";
-
-const money = (n: number) => `$${Number(n || 0).toFixed(2)}`;
-const BRAND_TABS = ["", "VISA", "MASTERCARD", "AMEX", "DISCOVER"] as const;
 
 const Shop = () => {
   const { profile, refresh: refreshProfile } = useAuth();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [catId, setCatId] = useState("");
-  const [search, setSearch] = useState("");
-  const [bin, setBin] = useState("");
-  const [brand, setBrand] = useState<string>("");
-  const [country, setCountry] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [inStockOnly, setInStockOnly] = useState(false);
+  const [all, setAll] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [buying, setBuying] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
+  const [buying, setBuying] = useState(false);
   const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
 
+  const [bin, setBin] = useState("");
+  const [base, setBase] = useState("all");
+  const [country, setCountry] = useState("");
+  const [zip, setZip] = useState("");
+  const [lastBin, setLastBin] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const [q, setQ] = useState({ bin: "", base: "all", country: "", zip: "" });
 
   const load = async () => {
     setLoading(true);
     try {
-      const [cats, prods] = await Promise.all([listCategories(), listProducts({ categoryId: catId || null })]);
-      setCategories(cats);
-      setProducts(prods);
+      setAll(await listProducts());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+      setAll([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void load(); }, [catId]);
+  useEffect(() => { void load(); }, []);
 
-  const countries = useMemo(
-    () => [...new Set(products.map((p) => p.country).filter(Boolean) as string[])].sort(),
-    [products],
+  const bases = useMemo(
+    () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
+    [all],
   );
 
-  const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const binQ = bin.replace(/\D/g, "");
-    const lo = minPrice ? Number(minPrice) : null;
-    const hi = maxPrice ? Number(maxPrice) : null;
-    return products.filter((p) => {
-      if (q && !`${p.title} ${p.short_description ?? ""} ${p.base ?? ""}`.toLowerCase().includes(q)) return false;
-      if (binQ && !(p.bin ?? "").startsWith(binQ)) return false;
-      if (brand && (p.brand ?? "").toUpperCase() !== brand) return false;
-      if (country && (p.country ?? "").toUpperCase() !== country) return false;
-      if (lo !== null && p.price < lo) return false;
-      if (hi !== null && p.price > hi) return false;
-      if (inStockOnly && p.delivery_type === "key" && p.stock <= 0) return false;
+  const cards = useMemo(() => {
+    if (!searched) return [];
+    return all.filter((p) => {
+      if (q.bin && !(p.bin ?? "").startsWith(q.bin)) return false;
+      if (q.base !== "all" && (p.base ?? "") !== q.base) return false;
+      if (q.country && !(p.country ?? "").toUpperCase().includes(q.country.toUpperCase())) return false;
+      if (q.zip && !(p.zip ?? "").startsWith(q.zip)) return false;
       return true;
     });
-  }, [products, search, bin, brand, country, minPrice, maxPrice, inStockOnly]);
+  }, [all, q, searched]);
 
-  const catName = (id: string | null) => categories.find((c) => c.id === id)?.name ?? "—";
+  const runSearch = () => {
+    setQ({ bin, base, country, zip });
+    setLastBin(bin);
+    setSearched(true);
+    setSelected(new Set());
+  };
 
-  const buy = async (p: Product) => {
-    if (Number(profile?.balance ?? 0) < p.price) {
-      toast.error("Недостаточно средств. Пополните баланс.");
-      return;
+  const reset = () => {
+    setBin(""); setBase("all"); setCountry(""); setZip("");
+    setQ({ bin: "", base: "all", country: "", zip: "" });
+    setSearched(false); setLastBin(""); setSelected(new Set());
+  };
+
+  useEffect(() => {
+    if (bin.length >= 6) {
+      const t = setTimeout(() => { setQ({ bin, base, country, zip }); setLastBin(bin); setSearched(true); }, 350);
+      return () => clearTimeout(t);
     }
-    setBuying(p.id);
+  }, [bin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggle = (id: string) =>
+    setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleAll = () =>
+    setSelected((s) => (s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id))));
+
+  const buyMany = async (ids: string[]) => {
+    if (!ids.length) return toast.error("Выберите карты");
+    const total = all.filter((p) => ids.includes(p.id)).reduce((s, p) => s + p.price, 0);
+    if (Number(profile?.balance ?? 0) < total) return toast.error("Недостаточно средств. Пополните баланс.");
+    setBuying(true);
+    const parts: string[] = [];
     try {
-      const { content } = await purchaseAndDeliver(p.id, 1);
-      setDelivered({ title: p.title, content: content || "Заказ оформлен. Смотрите раздел «Заказы»." });
+      for (const id of ids) {
+        const p = all.find((x) => x.id === id);
+        if (!p) continue;
+        const { content } = await purchaseAndDeliver(p.id, 1);
+        parts.push(`${p.title}\n${content || "—"}`);
+      }
+      setDelivered({ title: ids.length > 1 ? `Куплено карт: ${ids.length}` : parts[0]?.split("\n")[0] ?? "Заказ", content: parts.join("\n\n") });
+      setSelected(new Set());
       toast.success("Покупка выполнена");
       void load();
       void refreshProfile?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Ошибка покупки");
     } finally {
-      setBuying(null);
+      setBuying(false);
     }
   };
 
-
-  const reset = () => {
-    setCatId(""); setSearch(""); setBin(""); setBrand(""); setCountry("");
-    setMinPrice(""); setMaxPrice(""); setInStockOnly(false);
-  };
-
-  const inputCls = "h-9 border border-[#dcdfe6] px-2 text-[13px] text-[#303133] bg-white focus:border-[#2196f3] outline-none";
+  const noResults = !loading && searched && cards.length === 0;
 
   return (
     <AppShell>
       <Seo
-        title="Магазин подарочных карт | Zoru Shop"
-        description="Подарочные и предоплаченные карты Walmart, Visa, Mastercard, Amex — поиск по BIN, база и страна, мгновенная выдача."
+        title="Магазин | Zoru Shop"
+        description="Живой сток. Поиск по BIN, базе, стране и ZIP."
         path="/shop"
       />
 
-      <div className="bg-white border border-[#e6e6e6] mb-4">
-        <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center justify-between gap-3">
-          <h1 className="text-[15px] font-semibold text-[#303133]">Магазин · Подарочные и предоплаченные карты</h1>
-          <button onClick={() => void load()} className="inline-flex items-center gap-1.5 text-[12px] text-[#2196f3] hover:underline">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Обновить
+      {/* FILTER BAR */}
+      <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px]">
+        <Field label="BIN">
+          <input
+            value={bin}
+            onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 16))}
+            onKeyDown={(e) => e.key === "Enter" && runSearch()}
+            placeholder="Please enter the card number"
+            className="h-8 w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
+          />
+        </Field>
+        <Field label="BASE">
+          <select
+            value={base}
+            onChange={(e) => setBase(e.target.value)}
+            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
+          >
+            <option value="all">base</option>
+            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </Field>
+        <Field label="COUNTRY">
+          <input
+            value={country}
+            onChange={(e) => setCountry(e.target.value.toUpperCase())}
+            onKeyDown={(e) => e.key === "Enter" && runSearch()}
+            placeholder="Please enter country"
+            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
+          />
+        </Field>
+        <Field label="ZIP">
+          <input
+            value={zip}
+            onChange={(e) => setZip(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && runSearch()}
+            placeholder="Please enter your zip code"
+            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
+          />
+        </Field>
+        <div className="flex items-center gap-2 ml-auto">
+          <button
+            onClick={runSearch}
+            className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5 transition"
+          >
+            <Search className="h-3.5 w-3.5" /> search
           </button>
-        </div>
-
-        {/* BIN search bar */}
-        <div className="px-4 pt-4 flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[240px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c0c4cc]" />
-            <input
-              value={bin}
-              onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 8))}
-              placeholder="Поиск по BIN — например 414720"
-              inputMode="numeric"
-              className="h-10 w-full border border-[#dcdfe6] pl-9 pr-3 text-[14px] font-mono tracking-wider text-[#303133] bg-white focus:border-[#2196f3] outline-none"
-            />
-          </div>
-          <div className="flex items-center gap-1.5">
-            {BRAND_TABS.map((b) => (
-              <button
-                key={b || "all"}
-                onClick={() => setBrand(b)}
-                className={`h-10 px-3 border text-[12px] flex items-center gap-2 transition ${
-                  brand === b ? "border-[#2196f3] bg-[#f0f8ff] text-[#2196f3]" : "border-[#dcdfe6] text-[#606266] hover:border-[#2196f3]"
-                }`}
-              >
-                {b ? <BrandLogo brand={b} className="h-5" /> : "ВСЕ"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-4 flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] text-[#909399]">Категория</span>
-            <select value={catId} onChange={(e) => setCatId(e.target.value)} className={`${inputCls} min-w-[180px]`}>
-              <option value="">Все категории</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] text-[#909399]">Страна</span>
-            <select value={country} onChange={(e) => setCountry(e.target.value)} className={`${inputCls} min-w-[160px]`}>
-              <option value="">Все страны</option>
-              {countries.map((c) => <option key={c} value={c}>{toFlag(c)} {countryName(c)}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] text-[#909399]">Бренд / база / номинал</span>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Walmart, BASE…" className={`${inputCls} min-w-[190px]`} />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] text-[#909399]">Цена от</span>
-            <input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} inputMode="decimal" placeholder="0" className={`${inputCls} w-[100px]`} />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] text-[#909399]">Цена до</span>
-            <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} inputMode="decimal" placeholder="500" className={`${inputCls} w-[100px]`} />
-          </div>
-
-          <label className="flex items-center gap-2 h-9 text-[13px] text-[#606266] cursor-pointer">
-            <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} className="accent-[#2196f3]" />
-            Только в наличии
-          </label>
-
-          <button onClick={reset} className="h-9 px-4 border border-[#dcdfe6] text-[13px] text-[#606266] hover:border-[#2196f3] hover:text-[#2196f3] transition">
-            Сбросить
+          <button
+            onClick={reset}
+            className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center gap-1.5 transition"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> reset
           </button>
         </div>
       </div>
 
-      <div className="bg-white border border-[#e6e6e6]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px] min-w-[1000px]">
-            <thead>
-              <tr className="bg-[#fafafa] text-[#909399] text-left">
-                <th className="px-4 py-3 font-medium">Бренд</th>
-                <th className="px-4 py-3 font-medium">BIN</th>
-                <th className="px-4 py-3 font-medium">Товар</th>
-                <th className="px-4 py-3 font-medium">BASE</th>
-                <th className="px-4 py-3 font-medium">Страна</th>
-                <th className="px-4 py-3 font-medium">Категория</th>
-                <th className="px-4 py-3 font-medium">Наличие</th>
-                <th className="px-4 py-3 font-medium text-right">Цена</th>
-                <th className="px-4 py-3 font-medium text-right">Действие</th>
+      {/* BATCH ADD BUTTON */}
+      <div className="mt-3 flex items-center justify-between">
+        <button
+          onClick={() => void buyMany(Array.from(selected))}
+          disabled={selected.size === 0 || buying}
+          className="h-7 px-3 bg-[#e8f5e9] hover:bg-[#dcedc8] border border-[#c8e6c9] text-[#2e7d32] text-[12px] transition disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
+        </button>
+        <div className="text-[12px] text-[#888]">{cards.length > 0 ? `${cards.length} results` : ""}</div>
+      </div>
+
+      {/* TABLE */}
+      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
+        <table className="w-full text-[13px] border-collapse">
+          <thead>
+            <tr className="bg-[#fafafa] text-[#555] text-[12px]">
+              <th className="p-2 w-8 border-b border-[#eee]">
+                <input
+                  type="checkbox"
+                  checked={cards.length > 0 && selected.size === cards.length}
+                  onChange={toggleAll}
+                  className="cursor-pointer accent-[#2196f3]"
+                />
+              </th>
+              {["BIN","refund","month","year","city","state","zip","country","tel","email","prices","base","operation"].map((h) => (
+                <th key={h} className="p-2 text-center font-normal border-b border-[#eee]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading && Array.from({ length: 6 }).map((_, i) => (
+              <tr key={i} className="border-b border-[#f0f0f0]">
+                <td colSpan={14} className="p-3"><div className="h-4 bg-[#f5f5f5] animate-pulse" /></td>
               </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr><td colSpan={9} className="px-4 py-10 text-center text-[#909399]">
-                  <Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Загрузка…
-                </td></tr>
-              )}
-              {!loading && rows.length === 0 && (
-                <tr><td colSpan={9} className="px-4 py-10 text-center text-[#909399]">Товары не найдены</td></tr>
-              )}
-              {!loading && rows.map((p) => {
-                const unlimited = p.delivery_type !== "key";
-                const out = !unlimited && p.stock <= 0;
-                return (
-                  <tr key={p.id} className="border-t border-[#f0f0f0] hover:bg-[#fafcff]">
-                    <td className="px-4 py-3">
-                      {p.brand ? <BrandLogo brand={p.brand} className="h-7" /> : <span className="text-[#c0c4cc]">—</span>}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-[13px] text-[#303133] tracking-wider">{p.bin ?? "—"}</td>
-                    <td className="px-4 py-3">
-                      <div className="text-[#303133] font-medium">{p.title}</div>
-                      {p.short_description && <div className="text-[11px] text-[#909399] truncate max-w-[220px]">{p.short_description}</div>}
-                      {p.featured && <span className="text-[10px] text-[#e6a23c]">ХИТ ПРОДАЖ</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      {p.base
-                        ? <span className="inline-block bg-[#f4f4f5] border border-[#e9e9eb] text-[#606266] px-2 py-0.5 text-[11px] font-medium">{p.base}</span>
-                        : <span className="text-[#c0c4cc]">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-[#606266] whitespace-nowrap">
-                      {p.country ? <span title={countryName(p.country)}>{toFlag(p.country)} {p.country.toUpperCase()}</span> : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[#606266]">{catName(p.category_id)}</td>
-                    <td className="px-4 py-3">
-                      {unlimited
-                        ? <span className="text-[#2fb344]">∞</span>
-                        : <span className={out ? "text-[#f56c6c]" : "text-[#2fb344]"}>{out ? "Нет" : p.stock}</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-[#303133] font-semibold">{money(p.price)}</span>
-                      {p.compare_at_price && p.compare_at_price > p.price && (
-                        <span className="ml-2 text-[11px] text-[#c0c4cc] line-through">{money(p.compare_at_price)}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        disabled={out || buying === p.id}
-                        onClick={() => void buy(p)}
-                        className="h-8 px-4 text-[12px] text-white bg-[#2fb344] hover:bg-[#28a03c] disabled:opacity-40 disabled:cursor-not-allowed transition"
-                      >
-                        {buying === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Купить"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div className="px-4 py-3 border-t border-[#f0f0f0] text-[12px] text-[#909399]">
-          Показано {rows.length} из {products.length} позиций
-        </div>
+            ))}
+            {!loading && cards.map((c) => (
+              <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
+                <td className="p-2 text-center">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(c.id)}
+                    onChange={() => toggle(c.id)}
+                    className="cursor-pointer accent-[#2196f3]"
+                  />
+                </td>
+                <td className="p-2 text-center font-mono text-[#333]">
+                  {c.bin ?? "—"}<span className="text-[#bbb]">********</span>
+                </td>
+                <td className="p-2 text-center text-[#2196f3]">{c.refundable ? "YES" : "NO"}</td>
+                <td className="p-2 text-center font-mono">{c.exp_month ?? "—"}</td>
+                <td className="p-2 text-center font-mono">{c.exp_year ?? "—"}</td>
+                <td className="p-2 text-center max-w-[140px] truncate" title={c.city ?? ""}>{c.city ?? "—"}</td>
+                <td className="p-2 text-center">{c.state ?? "—"}</td>
+                <td className="p-2 text-center font-mono">{c.zip ?? "—"}</td>
+                <td className="p-2 text-center">{c.country ?? "—"}</td>
+                <td className="p-2 text-center">{c.has_phone ? "yes" : "no"}</td>
+                <td className="p-2 text-center">{c.has_email ? "yes" : "no"}</td>
+                <td className="p-2 text-center font-mono">{Number(c.price).toFixed(2)}</td>
+                <td className="p-2 text-center text-[11px] text-[#666] max-w-[180px]">
+                  <span className="whitespace-pre-line break-words">{c.base ?? "—"}</span>
+                </td>
+                <td className="p-2 text-center">
+                  {c.delivery_type === "key" && c.stock <= 0 ? (
+                    <span className="text-[#bbb] text-[12px]">out of stock</span>
+                  ) : (
+                    <button
+                      onClick={() => void buyMany([c.id])}
+                      disabled={buying}
+                      className="text-[#2196f3] hover:underline text-[12px] disabled:opacity-50"
+                    >
+                      Add to cart
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {!loading && noResults && (
+              <tr>
+                <td colSpan={14} className="p-10 text-center text-[#888] text-[13px]">
+                  {lastBin
+                    ? <>No cards match BIN prefix <code className="px-1 bg-[#f5f5f5] font-mono">{lastBin}</code>.</>
+                    : "No cards match your filters."}
+                  <div className="mt-2">
+                    <button onClick={reset} className="text-[#2196f3] hover:underline">Clear search</button>
+                  </div>
+                </td>
+              </tr>
+            )}
+            {!loading && !searched && (
+              <tr>
+                <td colSpan={14} className="p-10 text-center text-[#888] text-[13px]">
+                  Search for a BIN above to find cards in stock.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {buying && (
+        <div className="mt-3 text-[12px] text-[#888] inline-flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Обработка…
+        </div>
+      )}
 
       {delivered && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setDelivered(null)}>
-          <div className="bg-white w-full max-w-lg border border-[#e6e6e6]" onClick={(e) => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[#2fb344] text-[14px] font-semibold">
-                <CheckCircle2 className="h-4 w-4" /> Заказ выполнен
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDelivered(null)}>
+          <div className="w-full max-w-lg bg-white border border-[#e6e6e6]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[#f0f0f0] px-4 py-3">
+              <div className="flex items-center gap-2 text-[14px] text-[#303133]">
+                <CheckCircle2 className="h-4 w-4 text-[#4caf50]" /> {delivered.title}
               </div>
               <button onClick={() => setDelivered(null)} className="text-[#909399] hover:text-[#303133]"><X className="h-4 w-4" /></button>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="text-[13px] text-[#606266]">{delivered.title}</div>
-              <pre className="bg-[#fafafa] border border-[#eee] p-3 text-[13px] text-[#303133] whitespace-pre-wrap break-all">{delivered.content}</pre>
+            <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap break-all p-4 font-mono text-[12px] text-[#303133]">{delivered.content}</pre>
+            <div className="border-t border-[#f0f0f0] px-4 py-3 text-right">
               <button
                 onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Скопировано"); }}
-                className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] text-white bg-[#2196f3] hover:bg-[#1e88e5] transition"
+                className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5"
               >
                 <Copy className="h-3.5 w-3.5" /> Копировать
               </button>
@@ -285,5 +298,14 @@ const Shop = () => {
     </AppShell>
   );
 };
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[#888] text-[11px] tracking-wider">{label}</span>
+      {children}
+    </div>
+  );
+}
 
 export default Shop;
