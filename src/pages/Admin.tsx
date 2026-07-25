@@ -51,6 +51,7 @@ const Admin = () => {
   const [cardPrice, setCardPrice] = useState("1.50");
   const [cardRefundable, setCardRefundable] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const formatPreview = useMemo(() => {
@@ -241,12 +242,14 @@ const Admin = () => {
         };
       });
 
-      const count = await adminPublishFullCards(rows);
+      const count = await adminPublishFullCards(rows, (done, total) => setUploadProgress({ done, total }));
       toast.success(`Published ${count} cards` + (dropped > 0 ? ` (${dropped} dupes removed)` : "") + (failed.length > 0 ? ` · ${failed.length} unparseable` : ""));
       setCardRaw(""); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Publish failed"); }
+    setUploadProgress(null);
     setUploadBusy(false);
   };
+
 
   // Broadcast
   const postNews = async () => {
@@ -682,7 +685,7 @@ const Admin = () => {
 
               <div className="flex items-center gap-2 flex-wrap">
                 <Button onClick={publishCards} disabled={uploadBusy || formatPreview.valid === 0} className="bg-gradient-primary shadow-neon">
-                  <Upload className="h-4 w-4 mr-2" />{uploadBusy ? "Publishing…" : `Publish ${formatPreview.valid || ""} Cards`.trim()}
+                  <Upload className="h-4 w-4 mr-2" />{uploadBusy ? (uploadProgress ? `Publishing ${uploadProgress.done}/${uploadProgress.total}…` : "Publishing…") : `Publish ${formatPreview.valid || ""} Cards`.trim()}
                 </Button>
                 <Button onClick={() => {
                   const { lines, failed } = parseAndFormat(cardRaw);

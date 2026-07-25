@@ -107,8 +107,18 @@ export const listCategories = async (includeInactive = false): Promise<Category[
   return (data ?? []) as Category[];
 };
 
-export const listProducts = async (opts: { categoryId?: string | null; search?: string; includeInactive?: boolean } = {}) => {
-  let q = supabase.from("products").select("*").order("created_at", { ascending: false });
+/** Hard cap so a huge stock table can never freeze the browser / blow up the response. */
+export const PRODUCT_FETCH_LIMIT = 3000;
+
+export const listProducts = async (
+  opts: { categoryId?: string | null; search?: string; includeInactive?: boolean; limit?: number } = {},
+) => {
+  const limit = Math.min(opts.limit ?? PRODUCT_FETCH_LIMIT, PRODUCT_FETCH_LIMIT);
+  let q = supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (!opts.includeInactive) q = q.eq("active", true);
   if (opts.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts.search?.trim()) q = q.ilike("title", `%${opts.search.trim()}%`);
@@ -116,6 +126,7 @@ export const listProducts = async (opts: { categoryId?: string | null; search?: 
   if (error) throw error;
   return (data ?? []).map((p) => ({ ...p, price: num(p.price), compare_at_price: p.compare_at_price == null ? null : num(p.compare_at_price) })) as Product[];
 };
+
 
 export const purchaseProduct = async (productId: string, quantity: number) => {
   const { data, error } = await supabase.rpc("purchase_product", { _product_id: productId, _quantity: quantity });
@@ -429,6 +440,24 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
 
 const CHUNK = 200;
 
+/** Retries a chunk on transient network / timeout failures so a big upload never dies half-way silently. */
+const withRetry = async <T,>(fn: () => Promise<T>, attempts = 3): Promise<T> => {
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      const msg = e instanceof Error ? e.message.toLowerCase() : "";
+      const transient = msg.includes("fetch") || msg.includes("network") || msg.includes("timeout") || msg.includes("504") || msg.includes("502");
+      if (!transient || i === attempts - 1) throw e;
+      await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+    }
+  }
+  throw last;
+};
+
+
 export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: string | null = null) => {
   if (!rows.length) return 0;
   const payload = rows.map((r) => ({
@@ -482,7 +511,10 @@ export interface FullCardInput {
   category_id?: string | null;
 }
 
-export const adminPublishFullCards = async (cards: FullCardInput[]) => {
+export const adminPublishFullCards = async (
+  cards: FullCardInput[],
+  onProgress?: (done: number, total: number) => void,
+) => {
   if (!cards.length) return 0;
   const clean = (s: string) => (!s || s.toLowerCase() === "null" ? "" : s);
   const stamp = Date.now().toString(36);
@@ -520,7 +552,9 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
   let created = 0;
 
   for (const part of chunk(products, CHUNK)) {
-    const { data, error } = await supabase.from("products").insert(part).select("id, slug");
+    const { data, error } = await withRetry(async () =>
+      await supabase.from("products").insert(part).select("id, slug"),
+    );
     if (error) throw error;
     const keys = (data ?? [])
       .map((row) => {
@@ -529,11 +563,13 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
       })
       .filter(Boolean) as { product_id: string; content: string }[];
     if (keys.length) {
-      const { error: kerr } = await supabase.from("product_keys").insert(keys);
+      const { error: kerr } = await withRetry(async () => await supabase.from("product_keys").insert(keys));
       if (kerr) throw kerr;
     }
     created += data?.length ?? 0;
+    onProgress?.(created, products.length);
   }
+
 
   return created;
 };
@@ -775,15 +811,21 @@ export const adminUpdateCards = async (
   patch: { price?: number; active?: boolean; category_id?: string | null },
 ) => {
   if (ids.length === 0) return;
-  const { error } = await supabase.from("products").update(patch).in("id", ids);
-  if (error) throw error;
+  // Chunked: a single .in() with thousands of ids overflows the request URL.
+  for (const part of chunk(ids, 200)) {
+    const { error } = await supabase.from("products").update(patch).in("id", part);
+    if (error) throw error;
+  }
 };
 
 export const adminDeleteCards = async (ids: string[]) => {
   if (ids.length === 0) return;
-  const { error } = await supabase.from("products").delete().in("id", ids);
-  if (error) throw error;
+  for (const part of chunk(ids, 200)) {
+    const { error } = await supabase.from("products").delete().in("id", part);
+    if (error) throw error;
+  }
 };
+
 
 /** Hides every card whose expiry month has passed. Returns how many were hidden. */
 export const adminHideExpiredCards = async () => {
