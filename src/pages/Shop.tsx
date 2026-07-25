@@ -26,7 +26,10 @@ const Shop = () => {
 
   const [q, setQ] = useState({ bin: "", base: "all", country: "", zip: "" });
 
-  const load = async () => {
+  const lastLoad = useRef(0);
+  const load = async (force = false) => {
+    if (!force && Date.now() - lastLoad.current < 60_000) return;
+    lastLoad.current = Date.now();
     setLoading(true);
     try {
       setAll(await listProducts());
@@ -39,15 +42,13 @@ const Shop = () => {
   };
 
   useEffect(() => {
-    void load();
-    const onFocus = () => { if (document.visibilityState === "visible") void load(); };
-    document.addEventListener("visibilitychange", onFocus);
-    window.addEventListener("focus", onFocus);
-    return () => {
-      document.removeEventListener("visibilitychange", onFocus);
-      window.removeEventListener("focus", onFocus);
-    };
+    void load(true);
+    // Refresh stock when the tab becomes visible again, but at most once a minute.
+    const onVisible = () => { if (document.visibilityState === "visible") void load(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
+
 
   const bases = useMemo(
     () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
