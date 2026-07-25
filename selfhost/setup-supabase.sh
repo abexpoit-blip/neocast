@@ -256,18 +256,21 @@ server {
 }
 NGINX
   ln -sf /etc/nginx/sites-available/supabase.conf /etc/nginx/sites-enabled/supabase.conf
-  nginx -t && (systemctl reload nginx || systemctl restart nginx)
+  systemctl enable --now nginx 2>/dev/null || true
+  nginx -t && (systemctl reload nginx || systemctl restart nginx) || {
+    echo "!! host nginx start failed (port 80 probably taken by a container)"; return 1; }
   apt-get install -y certbot python3-certbot-nginx
   certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@zoru.cc --redirect \
     || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
 }
 
-if docker ps --format '{{.Names}}' | grep -q '^nexus_nginx$' && [ -d "$NEXUS_CONF_DIR" ]; then
-  echo "-- nexus_nginx detected (owns ports 80/443) -> adding vhost there"
-  setup_nexus_nginx || echo "!! nexus_nginx vhost setup had errors, check above"
+if [ -n "$NGINX_CT" ] && [ -n "$NEXUS_CONF_DIR" ] && [ -d "$NEXUS_CONF_DIR" ]; then
+  echo "-- nginx container '$NGINX_CT' owns ports 80/443 -> adding vhost in $NEXUS_CONF_DIR"
+  setup_nexus_nginx || echo "!! container nginx vhost setup had errors, check above"
 else
   setup_host_nginx || echo "!! host nginx setup had errors, check above"
 fi
+
 
 
 echo "==> 8/8 Writing app env at $APP_DIR/.env"
