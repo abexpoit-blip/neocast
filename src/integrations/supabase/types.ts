@@ -304,8 +304,12 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          base: string | null
+          bin: string | null
+          brand: string | null
           category_id: string | null
           compare_at_price: number | null
+          country: string | null
           created_at: string
           delivery_type: string
           description: string | null
@@ -324,8 +328,12 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          base?: string | null
+          bin?: string | null
+          brand?: string | null
           category_id?: string | null
           compare_at_price?: number | null
+          country?: string | null
           created_at?: string
           delivery_type?: string
           description?: string | null
@@ -344,8 +352,12 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          base?: string | null
+          bin?: string | null
+          brand?: string | null
           category_id?: string | null
           compare_at_price?: number | null
+          country?: string | null
           created_at?: string
           delivery_type?: string
           description?: string | null
