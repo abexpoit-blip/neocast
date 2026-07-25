@@ -74,9 +74,7 @@ const App = () => (
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
 
-            <Route path="/seller/apply" element={<ProtectedRoute><SellerApply /></ProtectedRoute>} />
-            <Route path="/seller/format" element={<ProtectedRoute><SellerFormat /></ProtectedRoute>} />
-            <Route path="/seller/:id" element={<ProtectedRoute><SellerProfile /></ProtectedRoute>} />
+
 
             <Route path="*" element={<NotFound />} />
           </Routes>
