@@ -253,10 +253,22 @@ export function parseCardLine(raw: string): ParsedCard | null {
   if (!line) return null;
 
   // Skip header lines
-  if (/^(base|cc|card|number)\b/i.test(line)) return null;
+  if (/^(base|cc|card|number)\s*[|,;\t]/i.test(line)) return null;
+  if (/^\s*(cc|card)?\s*number\b.*\b(cvv|exp)/i.test(line) && !/\d{12}/.test(line)) return null;
+
+  // Strategy 1: labeled "Key: value" input
+  const labeled = parseLabeled(line);
+  if (labeled) return labeled;
 
   let parts = splitLine(line).filter((p) => p.length > 0);
   if (parts.length === 0) return null;
+
+  // Strategy 2: no usable delimiters — space separated free text
+  if (parts.length < 3) {
+    const loose = parseLoose(line);
+    if (loose) return loose;
+  }
+
 
   // Handle prefix format: base|prices|cc|month|year|cvv|...
   if (parts.length >= 3 && /[_$]/.test(parts[0]) && !isCC(parts[0].replace(/\s|-/g, ""))) {
