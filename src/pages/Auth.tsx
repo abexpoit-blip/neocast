@@ -105,7 +105,7 @@ const Auth = () => {
 
   return (
     <>
-      <Seo title="Sign In or Create Account | Scorpion-Shop" description="Buyer sign in and registration for Scorpion-Shop — verified marketplace." path="/auth" />
+      <Seo title="Sign In or Create Account | Zoru Shop" description="Buyer sign in and registration for Zoru Shop — verified marketplace." path="/auth" />
       <BuildBadge />
       <ScorpionAuthShell
         tagline={
