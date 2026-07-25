@@ -47,13 +47,31 @@ const Admin = () => {
   const [cardPrice, setCardPrice] = useState("1.50");
   const [cardRefundable, setCardRefundable] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const formatPreview = useMemo(() => {
-    if (!cardRaw.trim()) return { rows: [] as string[], valid: 0, dupes: 0, failedCount: 0 };
+    if (!cardRaw.trim()) {
+      return { cards: [] as ReturnType<typeof parseAndFormat>["lines"], rows: [] as string[], valid: 0, dupes: 0, failedCount: 0, totalLines: 0, brands: [] as [string, number][] };
+    }
+    const totalLines = cardRaw.split("\n").filter(l => l.trim()).length;
     const { lines, failed } = parseAndFormat(cardRaw);
     const { unique, dropped } = dedupe(lines);
-    return { rows: unique.slice(0, 5).map(toPipeFormat), valid: unique.length, dupes: dropped, failedCount: failed.length };
+    const counter = new Map<string, number>();
+    unique.forEach(c => {
+      const b = detectBrand(c.cc) || "UNKNOWN";
+      counter.set(b, (counter.get(b) ?? 0) + 1);
+    });
+    return {
+      cards: unique,
+      rows: unique.slice(0, 5).map(toPipeFormat),
+      valid: unique.length,
+      dupes: dropped,
+      failedCount: failed.length,
+      totalLines,
+      brands: [...counter.entries()].sort((a, b) => b[1] - a[1]),
+    };
   }, [cardRaw]);
+
 
   // Active tab
   const [tab, setTab] = useState<"overview" | "users" | "cards" | "broadcast">("overview");
