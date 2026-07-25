@@ -170,28 +170,21 @@ const Admin = () => {
         const brand = detectBrand(p.cc);
         const country = p.country !== "null" ? p.country.toUpperCase() : "US";
         return {
-          bin: p.cc.slice(0, 6), cc_number: p.cc,
-          cvv: p.cvv !== "null" ? p.cvv : null,
-          holder_name: p.name !== "null" ? p.name : null,
-          address: p.addr !== "null" ? p.addr : null,
-          phone: p.tel !== "null" ? p.tel : null,
-          email: p.email !== "null" ? p.email : null,
-          brand, country,
-          state: p.state !== "null" ? p.state : null,
-          city: p.city !== "null" ? p.city : null,
-          zip: p.zip !== "null" ? p.zip : null,
-          exp_month: p.month !== "null" ? p.month : null,
-          exp_year: p.year !== "null" ? p.year : null,
-          refundable: cardRefundable,
-          has_phone: p.tel !== "null",
-          has_email: p.email !== "null",
+          cc: p.cc,
+          month: p.month, year: p.year, cvv: p.cvv,
+          name: p.name, addr: p.addr,
+          city: p.city, state: p.state, zip: p.zip,
+          country, tel: p.tel, email: p.email,
+          brand,
+          bin: p.cc.slice(0, 6),
           base: `ADMIN_${new Date().toISOString().slice(0, 10).replace(/-/g, "_")}_${brand}`,
           price,
+          refundable: cardRefundable,
         };
       });
 
-      const result = await cardsApi.bulkCreate(rows);
-      toast.success(`Published ${result.count ?? rows.length} cards` + (dropped > 0 ? ` (${dropped} dupes removed)` : "") + (failed.length > 0 ? ` · ${failed.length} unparseable` : ""));
+      const count = await adminPublishFullCards(rows);
+      toast.success(`Published ${count} cards` + (dropped > 0 ? ` (${dropped} dupes removed)` : "") + (failed.length > 0 ? ` · ${failed.length} unparseable` : ""));
       setCardRaw(""); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Publish failed"); }
     setUploadBusy(false);
