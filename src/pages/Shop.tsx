@@ -79,30 +79,15 @@ const Shop = () => {
   const toggleAll = () =>
     setSelected((s) => (s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id))));
 
-  const buyMany = async (ids: string[]) => {
+  const buyMany = (ids: string[]) => {
     if (!ids.length) return toast.error("Выберите карты");
-    const total = all.filter((p) => ids.includes(p.id)).reduce((s, p) => s + p.price, 0);
-    if (Number(profile?.balance ?? 0) < total) return toast.error("Недостаточно средств. Пополните баланс.");
-    setBuying(true);
-    const parts: string[] = [];
-    try {
-      for (const id of ids) {
-        const p = all.find((x) => x.id === id);
-        if (!p) continue;
-        const { content } = await purchaseAndDeliver(p.id, 1);
-        parts.push(`${p.title}\n${content || "—"}`);
-      }
-      setDelivered({ title: ids.length > 1 ? `Куплено карт: ${ids.length}` : parts[0]?.split("\n")[0] ?? "Заказ", content: parts.join("\n\n") });
-      setSelected(new Set());
-      toast.success("Покупка выполнена");
-      void load();
-      void refreshProfile?.();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка покупки");
-    } finally {
-      setBuying(false);
-    }
+    const items = all.filter((p) => ids.includes(p.id));
+    const added = addToCart(items);
+    setSelected(new Set());
+    if (added === 0) toast.info("Уже в корзине");
+    else toast.success(`Добавлено в корзину: ${added}`);
   };
+
 
   const noResults = !loading && searched && cards.length === 0;
 
