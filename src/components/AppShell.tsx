@@ -108,10 +108,11 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           </span>
           <Link
             to="/recharge"
-            className="px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium"
+            className="px-2 sm:px-3 py-1.5 border border-[#e6e6e6] text-[#2fb344] hover:bg-[#f4fbf5] transition font-medium whitespace-nowrap"
           >
             $ {balance}
           </Link>
+
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
