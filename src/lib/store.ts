@@ -29,7 +29,12 @@ export interface Product {
   sold_count: number;
   stock: number;
   created_at: string;
+  bin: string | null;
+  brand: string | null;
+  country: string | null;
+  base: string | null;
 }
+
 
 export interface OrderItem {
   id: string;
