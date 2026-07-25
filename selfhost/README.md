@@ -32,6 +32,16 @@ cd /var/www/zoru-cc/selfhost && chmod +x setup-supabase.sh && bash setup-supabas
 cat /opt/supabase/credentials.json
 ```
 
+### যদি `supabase-db is unhealthy` আসে
+প্রথম ইনস্টল মাঝপথে `Ctrl+C` করলে DB init partial/corrupt হতে পারে। যেহেতু তখনো live data নেই, একবার clean reset দিয়ে আবার চালাও:
+
+```bash
+cd /opt/supabase/docker && docker compose down -v --remove-orphans && rm -rf volumes/db/data
+cd /var/www/zoru-cc/selfhost && bash setup-supabase.sh
+```
+
+> Warning: live data থাকলে এই reset চালাবে না — আগে backup নিতে হবে।
+
 ## ধাপ ৩ — অ্যাডমিন + ডেমো ইউজার বানাও
 ```bash
 cd /var/www/zoru-cc/selfhost
