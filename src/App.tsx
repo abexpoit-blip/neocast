@@ -36,6 +36,7 @@ import AdminStockReview from "./pages/AdminStockReview";
 import AdminDigitalProducts from "./pages/AdminDigitalProducts";
 import AdminBoost from "./pages/AdminBoost";
 import AdminCategories from "./pages/AdminCategories";
+import AdminShop from "./pages/AdminShop";
 import SellerPriceRules from "./pages/SellerPriceRules";
 import NotFound from "./pages/NotFound";
 
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/admin/digital-products" element={<AdminRoute><AdminDigitalProducts /></AdminRoute>} />
             <Route path="/admin/boost" element={<AdminRoute><AdminBoost /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+            <Route path="/admin/shop" element={<AdminRoute><AdminShop /></AdminRoute>} />
 
             {/* Buyer routes — Scorpion-style: only 5 nav pages */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
