@@ -137,7 +137,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </div>
 
-      <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-5">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-[1400px] px-3 sm:px-6 py-4 sm:py-5">{children}</main>
 
       {/* ПОДВАЛ */}
       <footer className="bg-[#304156] text-white/70 mt-6">
