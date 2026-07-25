@@ -88,7 +88,8 @@ const Shop = () => {
     setBin(""); setBase("all"); setCountry(""); setZip("");
     setQ({ bin: "", base: "all", country: "", zip: "" });
     setSearched(true); setLastBin(""); setSelected(new Set());
-    void load();
+    void load(true);
+
   };
 
   useEffect(() => {
