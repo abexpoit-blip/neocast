@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { ordersApi, cardsApi } from "@/lib/api";
+import { listMyOrders } from "@/lib/store";
 import { useAuth } from "@/hooks/useAuth";
 import { Download, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,8 +28,23 @@ const Orders = () => {
     if (!user) return;
     (async () => {
       try {
-        const { orders: data } = await ordersApi.mine();
-        setOrders((data ?? []) as unknown as Order[]);
+        const data = await listMyOrders();
+        setOrders(
+          data.map((o) => ({
+            id: o.id,
+            total: Number(o.total ?? 0),
+            status: o.status,
+            created_at: o.created_at,
+            order_items: (o.order_items ?? []).map((it) => ({
+              id: it.id,
+              price: Number(it.unit_price ?? 0) * Number(it.quantity ?? 1),
+              digital_product_id: it.product_id ?? it.id,
+              product_title: it.title,
+              product_type: "DIGITAL",
+              product_text_content: it.delivered_content ?? undefined,
+            })),
+          })),
+        );
       } catch { setOrders([]); }
     })();
   }, [user]);
@@ -44,17 +59,7 @@ const Orders = () => {
     setDownloading(o.id);
     try {
       // Fetch full card data for each item via reveal endpoint
-      const revealedCards = await Promise.all(
-        items.map(async (it) => {
-          try {
-            if (it.card_id) {
-              const { card } = await cardsApi.reveal(it.card_id);
-              return { ...it, revealed: card };
-            }
-          } catch { /* card may be deleted, use snapshot */ }
-          return { ...it, revealed: null };
-        })
-      );
+      const revealedCards = items.map((it) => ({ ...it, revealed: null as Record<string, unknown> | null }));
 
       const lines = [
         `Order: ${o.id}`,
