@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { NavLink, useLocation } from "react-router-dom";
-import { Shield, LayoutDashboard, Users, CreditCard, KeyRound, Settings as SettingsIcon, Menu, X, Banknote, DollarSign, LayoutGrid } from "lucide-react";
+import { Shield, LayoutDashboard, CreditCard, KeyRound, Settings as SettingsIcon, Menu, X, Banknote, DollarSign, LayoutGrid } from "lucide-react";
 
 interface Item { to: string; label: string; icon: React.ComponentType<{ className?: string }>; }
 
@@ -11,7 +11,7 @@ const items: Item[] = [
   { to: "/admin/categories", label: "Categories", icon: LayoutGrid },
   { to: "/admin/cards", label: "Card moderation", icon: CreditCard },
   { to: "/admin/payments", label: "Payments · Deposits", icon: DollarSign },
-  { to: "/admin/payments", label: "Payments", icon: DollarSign },
+
   { to: "/admin/payment-gateway", label: "Plisio Payment Gateway", icon: Banknote },
   { to: "/admin/site", label: "Site settings", icon: SettingsIcon },
   { to: "/admin/settings", label: "Credentials", icon: KeyRound },
