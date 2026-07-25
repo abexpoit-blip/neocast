@@ -21,7 +21,7 @@ apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 systemctl enable --now docker 2>/dev/null || service docker start || true
-docker info >/dev/null 2>&1 || { echo "!! Docker daemon চালু হয়নি — `systemctl start docker` চালাও"; exit 1; }
+docker info >/dev/null 2>&1 || { echo '!! Docker daemon start hoyni — run: systemctl start docker'; exit 1; }
 
 echo "==> 2/8 Fetching Supabase docker stack"
 mkdir -p "$BASE_DIR"
