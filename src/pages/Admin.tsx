@@ -241,12 +241,14 @@ const Admin = () => {
         };
       });
 
-      const count = await adminPublishFullCards(rows);
+      const count = await adminPublishFullCards(rows, (done, total) => setUploadProgress({ done, total }));
       toast.success(`Published ${count} cards` + (dropped > 0 ? ` (${dropped} dupes removed)` : "") + (failed.length > 0 ? ` · ${failed.length} unparseable` : ""));
       setCardRaw(""); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Publish failed"); }
+    setUploadProgress(null);
     setUploadBusy(false);
   };
+
 
   // Broadcast
   const postNews = async () => {
