@@ -10,6 +10,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 const buyerNav = [
   { to: "/", label: "ГЛАВНАЯ", end: true },
   { to: "/shop", label: "МАГАЗИН" },
+  { to: "/cart", label: "КОРЗИНА" },
   { to: "/orders", label: "ЗАКАЗЫ" },
   { to: "/recharge", label: "ПОПОЛНЕНИЕ" },
 ];
