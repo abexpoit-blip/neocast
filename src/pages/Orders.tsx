@@ -25,10 +25,12 @@ const Orders = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
+      setLoading(true);
       try {
         const data = await listMyOrders();
         setOrders(
@@ -46,7 +48,7 @@ const Orders = () => {
             })),
           })),
         );
-      } catch { setOrders([]); }
+      } catch { setOrders([]); } finally { setLoading(false); }
     })();
   }, [user]);
 
@@ -234,7 +236,16 @@ const Orders = () => {
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && (
+              {loading && Array.from({ length: 5 }).map((_, i) => (
+                <tr key={`sk-${i}`} className="border-b border-[#f0f0f0]">
+                  {Array.from({ length: 4 }).map((__, j) => (
+                    <td key={j} className="p-3">
+                      <div className="h-3 w-full bg-[#f0f0f0] animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+              {!loading && rows.length === 0 && (
                 <tr><td colSpan={4} className="p-12 text-center text-[#909399]">Нет заказов</td></tr>
               )}
             </tbody>

@@ -12,6 +12,7 @@ import Seo from "@/components/Seo";
 const Index = () => {
   const [news, setNews] = useState<{ id: string; label: string; count: number }[]>([]);
   const [anns, setAnns] = useState<{ id: string; title: string; body: string }[]>([]);
+  const [loading, setLoading] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadNews = useCallback(async () => {
@@ -30,6 +31,7 @@ const Index = () => {
       ]);
       if (a.status === "fulfilled" && a.value)
         setAnns((a.value.announcements ?? []) as typeof anns);
+      setLoading(false);
     })();
   }, [loadNews]);
 
@@ -46,10 +48,17 @@ const Index = () => {
         {/* НОВОСТИ И ОБНОВЛЕНИЯ */}
         <Panel title="Новости и обновления">
           <div className="max-h-[420px] overflow-y-auto py-3 text-center font-mono text-[15px] leading-[2.1] text-[#d32f2f]">
-            {news.length === 0 && (
+            {loading && (
+              <div className="space-y-3 px-6 py-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-3 bg-[#f0f0f0] animate-pulse" style={{ width: `${60 + (i % 3) * 12}%`, marginInline: "auto" }} />
+                ))}
+              </div>
+            )}
+            {!loading && news.length === 0 && (
               <div className="text-[#888] font-sans text-sm py-6">Пока нет обновлений.</div>
             )}
-            {news.map((n) => (
+            {!loading && news.map((n) => (
               <div key={n.id}>
                 {n.label}
                 {n.count ? `,КОЛ-ВО:${n.count}` : ""}
