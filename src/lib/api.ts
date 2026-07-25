@@ -175,6 +175,26 @@ async function requireRole(userId: string, role: "seller" | "admin"): Promise<bo
   return Boolean(data);
 }
 
+/** Turn raw auth errors into clear Russian messages for the login/signup screens. */
+function authMessage(raw: string): string {
+  const m = raw.toLowerCase();
+  if (m.includes("weak") || m.includes("pwned"))
+    return "Слишком простой пароль. Используйте длинный пароль с цифрами и символами.";
+  if (m.includes("invalid login") || m.includes("invalid credentials"))
+    return "Неверное имя пользователя или пароль.";
+  if (m.includes("already registered") || m.includes("already been registered") || m.includes("user already"))
+    return "Такое имя пользователя уже занято.";
+  if (m.includes("at least") && m.includes("characters"))
+    return "Пароль должен содержать минимум 6 символов.";
+  if (m.includes("email not confirmed"))
+    return "Аккаунт не подтверждён. Свяжитесь с поддержкой.";
+  if (m.includes("rate limit") || m.includes("too many"))
+    return "Слишком много попыток. Повторите через минуту.";
+  if (m.includes("failed to fetch") || m.includes("networkerror"))
+    return "Нет связи с сервером. Проверьте интернет и повторите.";
+  return raw;
+}
+
 export const authApi = {
   signup: async (data: { email: string; username: string; password: string }): Promise<AuthResult> => {
     const email = toAuthEmail(data.username); // username-based auth email
@@ -186,8 +206,8 @@ export const authApi = {
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
-    if (error) throw new ApiError(400, error.message);
-    if (!res.user) throw new ApiError(400, "Signup failed");
+    if (error) throw new ApiError(400, authMessage(error.message));
+    if (!res.user) throw new ApiError(400, "Не удалось создать аккаунт");
     const user = await loadRolesAndProfile(res.user.id);
     return { token: res.session?.access_token ?? "", user };
   },
@@ -198,11 +218,12 @@ export const authApi = {
       email,
       password: data.password,
     });
-    if (error) throw new ApiError(401, error.message);
-    if (!res.user) throw new ApiError(401, "Login failed");
+    if (error) throw new ApiError(401, authMessage(error.message));
+    if (!res.user) throw new ApiError(401, "Не удалось войти");
     const user = await loadRolesAndProfile(res.user.id);
     return { token: res.session?.access_token ?? "", user };
   },
+
 
   sellerLogin: async (data: { identifier: string; password: string }): Promise<AuthResult> => {
     const result = await authApi.login(data);
