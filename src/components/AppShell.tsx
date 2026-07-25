@@ -10,11 +10,11 @@ import { cartApi } from "@/lib/api";
 
 // Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
 const buyerNav = [
-  { to: "/", label: "HOME", end: true },
-  { to: "/shop", label: "SHOP" },
-  { to: "/cart", label: "CAR" },
-  { to: "/orders", label: "ORDER" },
-  { to: "/recharge", label: "RECHARGE CENTER" },
+  { to: "/", label: "ГЛАВНАЯ", end: true },
+  { to: "/shop", label: "МАГАЗИН" },
+  { to: "/cart", label: "КОРЗИНА" },
+  { to: "/orders", label: "ЗАКАЗЫ" },
+  { to: "/recharge", label: "ПОПОЛНЕНИЕ" },
 ];
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
@@ -49,7 +49,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const balance = Number(profile?.balance ?? 0).toFixed(2);
-  const uname = profile?.username ?? "member";
+  const uname = profile?.username ?? "пользователь";
 
   return (
     <div
@@ -88,7 +88,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             className="lg:hidden p-2 -ml-2 text-white"
-            aria-label="Menu"
+            aria-label="Меню"
           >
             {drawerOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -145,7 +145,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                   onClick={async () => { setMenuOpen(false); await signOut(); nav("/auth"); }}
                   className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[#333]"
                 >
-                  <LogOut className="h-3.5 w-3.5" /> Log out
+                  <LogOut className="h-3.5 w-3.5" /> Выйти
                 </button>
               </div>
             )}
@@ -162,15 +162,15 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, profile, loading, signOut, profileError } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
-  if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-[#666]">Loading…</div>;
+  if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-[#666]">Загрузка…</div>;
   if (!user) return <Navigate to="/auth" replace state={{ from: loc }} />;
   if (profile?.banned) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-white">
         <div className="border border-[#e6e6e6] rounded-md p-8 max-w-md bg-white shadow-sm">
-          <h2 className="text-2xl font-semibold text-[#d32f2f] mb-2">Account Suspended</h2>
-          <p className="text-[#666] text-sm mb-6">Your account has been banned. Contact support if you believe this is a mistake.</p>
-          <Button onClick={async () => { await signOut(); nav("/auth"); }} variant="outline">Sign out</Button>
+          <h2 className="text-2xl font-semibold text-[#d32f2f] mb-2">Аккаунт заблокирован</h2>
+          <p className="text-[#666] text-sm mb-6">Ваш аккаунт заблокирован. Свяжитесь с поддержкой, если считаете это ошибкой.</p>
+          <Button onClick={async () => { await signOut(); nav("/auth"); }} variant="outline">Выйти</Button>
         </div>
       </div>
     );
@@ -182,7 +182,7 @@ export const AdminRoute = ({ children }: { children: ReactNode }) => {
   const { profile, loading, user, profileError } = useAuth();
   const loc = useLocation();
   if (loading && !profileError) {
-    return <div className="min-h-screen flex items-center justify-center text-[#666]">Loading…</div>;
+    return <div className="min-h-screen flex items-center justify-center text-[#666]">Загрузка…</div>;
   }
   if (!user) return <Navigate to="/crzr-x9k2-panel" replace state={{ from: loc }} />;
   if (profile?.role !== "admin") {
