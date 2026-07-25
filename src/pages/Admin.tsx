@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandLogo, detectBrandFromBin, BRANDS } from "@/lib/brands";
-import { parseAndFormat, dedupe, detectBrand } from "@/lib/cardFormatter";
+import { parseAndFormat, dedupe, detectBrand, toPipeFormat } from "@/lib/cardFormatter";
 import { adminPublishFullCards } from "@/lib/store";
 import { toast } from "sonner";
 import {
@@ -47,6 +47,13 @@ const Admin = () => {
   const [cardPrice, setCardPrice] = useState("1.50");
   const [cardRefundable, setCardRefundable] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+
+  const formatPreview = useMemo(() => {
+    if (!cardRaw.trim()) return { rows: [] as string[], valid: 0, dupes: 0, failedCount: 0 };
+    const { lines, failed } = parseAndFormat(cardRaw);
+    const { unique, dropped } = dedupe(lines);
+    return { rows: unique.slice(0, 5).map(toPipeFormat), valid: unique.length, dupes: dropped, failedCount: failed.length };
+  }, [cardRaw]);
 
   // Active tab
   const [tab, setTab] = useState<"overview" | "users" | "cards" | "broadcast">("overview");
