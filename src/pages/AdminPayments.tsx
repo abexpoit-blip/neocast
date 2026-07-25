@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { depositsApi } from "@/lib/api";
+import { adminListDeposits, adminSetDepositStatus } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -52,11 +52,13 @@ const AdminPayments = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params: { status?: string; search?: string } = {};
-      if (filter !== "all") params.status = filter;
-      if (search.trim()) params.search = search.trim();
-      const res = await depositsApi.all(params);
-      setDeposits((res.deposits ?? []) as unknown as Deposit[]);
+      const rows = (await adminListDeposits()) as unknown as Deposit[];
+      const needle = search.trim().toLowerCase();
+      setDeposits(rows.filter(d => {
+        if (filter !== "all" && d.status !== filter) return false;
+        if (!needle) return true;
+        return [d.user_username, d.user_email, d.txid, d.id].some(v => (v ?? "").toLowerCase().includes(needle));
+      }));
     } catch {
       toast.error("Failed to load deposits");
     } finally {
@@ -79,7 +81,7 @@ const AdminPayments = () => {
   const handleApprove = async (id: string) => {
     setActionLoading(id);
     try {
-      await depositsApi.approve(id, "Manually approved by admin");
+      await adminSetDepositStatus(id, "approved", "Manually approved by admin");
       toast.success("Deposit approved & credited");
       load();
     } catch (e: any) {
@@ -92,7 +94,7 @@ const AdminPayments = () => {
   const handleReject = async (id: string) => {
     setActionLoading(id);
     try {
-      await depositsApi.reject(id, "Rejected by admin");
+      await adminSetDepositStatus(id, "rejected", "Rejected by admin");
       toast.success("Deposit rejected");
       load();
     } catch (e: any) {
