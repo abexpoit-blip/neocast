@@ -35,18 +35,173 @@ export function detectBrand(cc: string): string {
 
 /** Strip common label prefixes like "Address:", "City:", etc. */
 function stripLabel(s: string): string {
-  return s.replace(/^(address|addr|city|state|zip|zipcode|country|phone|tel|email|name|holder)\s*:\s*/i, "").trim();
+  return s.replace(/^(address|addr|street|city|town|state|province|zip|zipcode|postal ?code|country|phone|tel|mobile|email|mail|name|holder|fullname|full name|cardholder|cc|card|number|cardnumber|exp|expiry|expiration|month|mm|year|yy|yyyy|cvv|cvc|cvv2|code)\s*[:=]\s*/i, "").trim();
+}
+
+const COUNTRY_MAP: Record<string, string> = {
+  "united states": "US", "united states of america": "US", usa: "US", "u.s.a": "US", america: "US",
+  "united kingdom": "GB", uk: "GB", england: "GB", britain: "GB", "great britain": "GB",
+  canada: "CA", australia: "AU", germany: "DE", deutschland: "DE", france: "FR", spain: "ES",
+  italy: "IT", netherlands: "NL", holland: "NL", belgium: "BE", sweden: "SE", norway: "NO",
+  denmark: "DK", finland: "FI", ireland: "IE", poland: "PL", portugal: "PT", austria: "AT",
+  switzerland: "CH", mexico: "MX", brazil: "BR", japan: "JP", china: "CN", india: "IN",
+  russia: "RU", turkey: "TR", "south africa": "ZA", "new zealand": "NZ", singapore: "SG",
+  "united arab emirates": "AE", uae: "AE", bangladesh: "BD", pakistan: "PK", indonesia: "ID",
+  philippines: "PH", thailand: "TH", vietnam: "VN", malaysia: "MY", romania: "RO", greece: "GR",
+  "czech republic": "CZ", hungary: "HU", ukraine: "UA", israel: "IL", "saudi arabia": "SA",
+  argentina: "AR", chile: "CL", colombia: "CO", peru: "PE",
+};
+
+/** Normalise country names/codes to ISO-2 when possible. */
+export function normCountry(v: string): string {
+  const s = v.trim();
+  if (!s || s.toLowerCase() === "null") return "null";
+  if (/^[A-Za-z]{2}$/.test(s)) return s.toUpperCase();
+  const hit = COUNTRY_MAP[s.toLowerCase().replace(/\./g, "")];
+  return hit ?? s.toUpperCase();
+}
+
+/** Normalise expiry pieces: accepts 1, 01, 2028, 28, 1228, 122028. */
+function normExp(month: string, year: string): { month: string; year: string } {
+  let m = month.replace(/\D/g, "");
+  let y = year.replace(/\D/g, "");
+  if (!y && (m.length === 4 || m.length === 6)) { y = m.slice(2); m = m.slice(0, 2); }
+  if (y.length === 4) y = y.slice(2);
+  if (y.length === 1) y = "0" + y;
+  if (m.length === 1) m = "0" + m;
+  return { month: m || "null", year: y || "null" };
+}
+
+/** "12/28", "1228", "12-2028", "122028" → month + year */
+function parseExpBlob(s: string): { month: string; year: string } | null {
+  const t = s.trim();
+  const sep = t.match(/^(\d{1,2})\s*[\/\-.\s]\s*(\d{2}|\d{4})$/);
+  if (sep) return normExp(sep[1], sep[2]);
+  const digits = t.replace(/\D/g, "");
+  if ((digits.length === 4 || digits.length === 6) && /^(0?[1-9]|1[0-2])/.test(digits)) {
+    return normExp(digits.slice(0, 2), digits.slice(2));
+  }
+  return null;
+}
+
+const LABEL_KEYS: Record<string, keyof ParsedCard> = {
+  cc: "cc", card: "cc", number: "cc", cardnumber: "cc", "card number": "cc", pan: "cc",
+  cvv: "cvv", cvc: "cvv", cvv2: "cvv", code: "cvv", seccode: "cvv",
+  name: "name", holder: "name", cardholder: "name", fullname: "name", "full name": "name",
+  address: "addr", addr: "addr", street: "addr",
+  city: "city", town: "city",
+  state: "state", province: "state", region: "state",
+  zip: "zip", zipcode: "zip", "zip code": "zip", postal: "zip", "postal code": "zip", postcode: "zip",
+  country: "country",
+  phone: "tel", tel: "tel", mobile: "tel", telephone: "tel",
+  email: "email", mail: "email", "e-mail": "email",
+  month: "month", mm: "month", exp_month: "month",
+  year: "year", yy: "year", yyyy: "year", exp_year: "year",
+};
+
+/** Parse "Key: value" style lines (space, comma or pipe separated pairs). */
+function parseLabeled(line: string): ParsedCard | null {
+  const re = /([A-Za-z][A-Za-z _-]{1,14})\s*[:=]\s*([^|,;\n]*?)(?=\s+[A-Za-z][A-Za-z _-]{1,14}\s*[:=]|[|,;]|$)/g;
+  const out: ParsedCard = {
+    cc: "null", month: "null", year: "null", cvv: "null", name: "null", addr: "null",
+    city: "null", state: "null", zip: "null", country: "null", tel: "null", email: "null",
+  };
+  let hits = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(line))) {
+    const rawKey = m[1].trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+    const value = m[2].trim();
+    if (!value) continue;
+    if (/^(exp|expiry|expiration|expires|exp date|valid|valid thru)$/.test(rawKey)) {
+      const e = parseExpBlob(value);
+      if (e) { out.month = e.month; out.year = e.year; hits++; }
+      continue;
+    }
+    const key = LABEL_KEYS[rawKey] ?? LABEL_KEYS[rawKey.replace(/\s/g, "")];
+    if (!key) continue;
+    out[key] = norm(value);
+    hits++;
+  }
+  if (hits < 3 || out.cc === "null") return null;
+  out.cc = out.cc.replace(/[\s-]/g, "");
+  if (!isCC(out.cc)) return null;
+  if (out.month !== "null" || out.year !== "null") {
+    const e = normExp(out.month === "null" ? "" : out.month, out.year === "null" ? "" : out.year);
+    out.month = e.month; out.year = e.year;
+  }
+  out.country = normCountry(out.country);
+  return out;
+}
+
+/** Whitespace-only lines: extract by regex, leftovers become name/addr/city. */
+function parseLoose(line: string): ParsedCard | null {
+  let s = ` ${line.trim()} `;
+  const out: ParsedCard = {
+    cc: "null", month: "null", year: "null", cvv: "null", name: "null", addr: "null",
+    city: "null", state: "null", zip: "null", country: "null", tel: "null", email: "null",
+  };
+  const grab = (re: RegExp): string | null => {
+    const m = s.match(re);
+    if (!m) return null;
+    s = s.replace(m[0], " ");
+    return m[0].trim();
+  };
+
+  const email = grab(/[^\s@|,;]+@[^\s@|,;]+\.[A-Za-z]{2,}/);
+  if (email) out.email = email;
+
+  const cc = grab(/(?<![\d-])(?:\d[ -]?){12,19}(?![\d-])/);
+  if (!cc) return null;
+  out.cc = cc.replace(/[\s-]/g, "");
+  if (!isCC(out.cc)) return null;
+
+  const exp = grab(/(?<!\d)(0?[1-9]|1[0-2])\s*[\/\-.]\s*(\d{4}|\d{2})(?!\d)/) ?? grab(/(?<!\d)(0[1-9]|1[0-2])(\d{2}|20\d{2})(?!\d)/);
+  if (exp) {
+    const e = parseExpBlob(exp);
+    if (e) { out.month = e.month; out.year = e.year; }
+  }
+
+  const tel = grab(/(?<![\d@.])(?:\+\d[\d\s().-]{8,}|\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})(?![\d])/);
+  if (tel) out.tel = tel;
+
+  const cvv = grab(/(?<!\d)\d{3,4}(?!\d)/);
+  if (cvv) out.cvv = cvv;
+
+  const zip = grab(/(?<![\w-])\d{5}(?:-\d{4})?(?![\w-])/);
+  if (zip) out.zip = zip;
+
+  const tokens = s.trim().split(/\s+/).filter(Boolean);
+  // Trailing country
+  if (tokens.length) {
+    const last = tokens[tokens.length - 1];
+    if (/^[A-Za-z]{2}$/.test(last) || COUNTRY_MAP[last.toLowerCase()]) {
+      out.country = normCountry(last); tokens.pop();
+    } else if (tokens.length >= 2 && COUNTRY_MAP[`${tokens[tokens.length - 2]} ${last}`.toLowerCase()]) {
+      out.country = normCountry(`${tokens[tokens.length - 2]} ${last}`); tokens.pop(); tokens.pop();
+    }
+  }
+  // Trailing state (2-letter upper)
+  if (tokens.length && /^[A-Za-z]{2}$/.test(tokens[tokens.length - 1])) {
+    out.state = tokens.pop()!.toUpperCase();
+  }
+  // Remaining: name (first 2 words) | address (middle) | city (last word)
+  if (tokens.length >= 2) out.name = `${tokens.shift()} ${tokens.shift()}`;
+  else if (tokens.length === 1) out.name = tokens.shift()!;
+  if (tokens.length >= 2) out.city = tokens.pop()!;
+  if (tokens.length) out.addr = tokens.join(" ");
+  return out;
 }
 
 /** Split a single line by the most likely delimiter. */
 function splitLine(line: string): string[] {
-  for (const d of ["|", "\t", ";", ","]) {
+  for (const d of ["|", "\t", ";", ",", ":"]) {
     if (line.includes(d)) {
       return line.split(d).map((s) => stripLabel(s.trim()));
     }
   }
   return line.trim().split(/\s{2,}/).map((s) => stripLabel(s.trim()));
 }
+
 
 /**
  * Smart parser that handles:
