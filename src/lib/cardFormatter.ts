@@ -16,7 +16,7 @@ const isCC = (s: string) => /^\d{12,19}$/.test(s.replace(/[\s-]/g, ""));
 const isCVV = (s: string) => /^\d{3,4}$/.test(s.trim());
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
 const isPhone = (s: string) => /^[+(]?[\d][\d\s\-().]{7,}$/.test(s.trim()) && digitsOnly(s).length >= 7;
-const isZip = (s: string) => /^\d{4,6}(-\d{4})?$/.test(s.trim()) || /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i.test(s.trim());
+const isZip = (s: string) => /^\d{4,6}(-\d{4})?$/.test(s.trim()) || /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i.test(s.trim()) || /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(s.trim());
 const isAlpha2 = (s: string) => /^[A-Za-z]{2}$/.test(s.trim());
 
 const US_STATES = new Set(("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC PR").split(" "));
@@ -122,7 +122,7 @@ function finalize(out: ParsedCard): ParsedCard | null {
 
 /** Strategy 1 — labeled "Key: value" input. */
 function parseLabeled(line: string): ParsedCard | null {
-  const re = /([A-Za-z][A-Za-z _-]{1,16}?)\s*[:=]\s*([^|,;\n]*?)(?=\s{0,3}[A-Za-z][A-Za-z _-]{1,16}?\s*[:=]|[|,;]|$)/g;
+  const re = /(?:^|[|,;\s])([A-Za-z][A-Za-z_-]{1,16})\s*[:=]\s*([^|,;\n]*?)(?=\s+[A-Za-z][A-Za-z_-]{1,16}\s*[:=]|[|,;]|$)/g;
   const out = emptyCard();
   let hits = 0;
   let m: RegExpExecArray | null;
@@ -158,7 +158,7 @@ function parseLoose(line: string): ParsedCard | null {
   const email = grab(/[^\s@|,;]+@[^\s@|,;]+\.[A-Za-z]{2,}/);
   if (email) out.email = email;
 
-  const cc = grab(/(?<![\d-])(?:\d[ -]?){12,19}(?![\d-])/);
+  const cc = grab(/(?<![\d-])\d{4}[ -]\d{4}[ -]\d{4}(?:[ -]\d{1,4})?(?![\d-])/) ?? grab(/(?<!\d)\d{12,19}(?!\d)/);
   if (!cc || !isCC(cc)) return null;
   out.cc = cc.replace(/[\s-]/g, "");
 
