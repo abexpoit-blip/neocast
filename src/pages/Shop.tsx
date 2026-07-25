@@ -3,7 +3,9 @@ import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
 import { toast } from "sonner";
 import { Search, RotateCcw, Loader2, Copy, CheckCircle2, X } from "lucide-react";
-import { listProducts, purchaseAndDeliver, type Product } from "@/lib/store";
+import { listProducts, type Product } from "@/lib/store";
+import { addToCart, cartCount, onCartChange } from "@/lib/cart";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { BrandLogo, detectBrandFromBin, CountryFlagImg, countryCode } from "@/lib/brands";
 
