@@ -107,7 +107,8 @@ const Shop = () => {
 
     setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleAll = () =>
-    setSelected((s) => (s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id))));
+    setSelected((s) => (s.size === pageCards.length ? new Set() : new Set(pageCards.map((c) => c.id))));
+
 
   const buyMany = (ids: string[]) => {
     if (!ids.length) return toast.error("Выберите карты");
