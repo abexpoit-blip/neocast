@@ -19,7 +19,7 @@ const accentBar: Record<NonNullable<Props["accent"]>, string> = {
 
 export function ScorpionAuthShell({
   children,
-  title = "Scorpion-Shop",
+  title = "Zoru Shop",
   tagline,
   accent = "blue",
 }: Props) {
