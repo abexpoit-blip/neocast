@@ -162,8 +162,11 @@ const Recharge = () => {
         qr_data: inv.wallet_address || "",
         status: "pending",
         confirmations: 0,
-        usd_amount: amtNum,
+        usd_amount: inv.usd_amount ?? amtNum,
+        fee_amount: inv.fee_amount,
+        charged_amount: inv.charged_amount,
         expires_ms: inv.expires_ms || Date.now() + INVOICE_TTL_SEC * 1000,
+
       });
       startPolling(inv.deposit_id);
       toast.success("Заявка создана — отправьте LTC на адрес ниже.");
