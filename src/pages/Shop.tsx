@@ -371,6 +371,18 @@ const Shop = () => {
   );
 };
 
+function pageNumbers(page: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  const start = Math.max(2, page - 1);
+  const end = Math.min(total - 1, page + 1);
+  if (start > 2) out.push("…");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("…");
+  out.push(total);
+  return out;
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
