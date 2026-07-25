@@ -64,8 +64,8 @@ const Auth = () => {
     e.preventDefault();
     setStatusBanner(null);
     if (!captchaOk) {
-      setStatusBanner({ title: "Verification code is incorrect", hint: "Re-enter the answer shown." });
-      return toast.error("Verification code is incorrect");
+      setStatusBanner({ title: "Неверный проверочный код", hint: "Введите ответ, показанный на кнопке." });
+      return toast.error("Неверный проверочный код");
     }
     setLoading(true);
     try {
@@ -74,7 +74,7 @@ const Auth = () => {
         const result = await authApi.signup({ email: fakeEmail, username, password });
         setToken(result.token);
         await refresh();
-        toast.success("Account created");
+        toast.success("Аккаунт создан");
         nav("/shop", { replace: true });
       } else {
         const result = await authApi.login({ identifier: username.trim(), password });
@@ -82,21 +82,21 @@ const Auth = () => {
         await refresh();
         const destination = safeFrom
           ?? (result.user.role === "seller" || result.user.role === "admin" ? "/seller" : "/shop");
-        toast.success("Welcome back");
+        toast.success("С возвращением");
         nav(destination, { replace: true });
       }
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         if (err.status === 403 && err.message === "Use admin login") {
           sessionStorage.setItem("cruzercc.prefillAdminEmail", username.trim());
-          toast.error("Admin-only account. Redirecting…");
+          toast.error("Только для администраторов. Перенаправление…");
           nav("/crzr-x9k2-panel", { replace: true });
           return;
         }
         setStatusBanner({ title: err.message, hint: `HTTP ${err.status}` });
         toast.error(err.message);
       } else {
-        const msg = err instanceof Error ? err.message : "Login failed";
+        const msg = err instanceof Error ? err.message : "Ошибка входа";
         setStatusBanner({ title: msg });
         toast.error(msg);
       }
@@ -105,12 +105,12 @@ const Auth = () => {
 
   return (
     <>
-      <Seo title="Sign In or Create Account | Zoru Shop" description="Buyer sign in and registration for Zoru Shop — verified marketplace." path="/auth" />
+      <Seo title="Вход и регистрация | Zoru Shop" description="Вход и регистрация покупателей в Zoru Shop — проверенный маркетплейс." path="/auth" />
       <BuildBadge />
       <ScorpionAuthShell
         tagline={
           <>
-            Connect to our Telegram channel tg:{" "}
+            Наш Telegram-канал:{" "}
             <a href="https://t.me/scorpionccstore02" className="text-[#ffd54f] font-semibold hover:underline">
               @scorpionccstore02
             </a>
@@ -130,7 +130,7 @@ const Auth = () => {
                   : "text-white/60 hover:text-white/90"
               }`}
             >
-              {m === "login" ? "Sign In" : "Register"}
+              {m === "login" ? "Вход" : "Регистрация"}
             </button>
           ))}
         </div>
@@ -138,7 +138,7 @@ const Auth = () => {
         {savedAccounts.length > 0 && mode === "login" && (
           <div className="mb-5">
             <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb300]/80 font-semibold mb-2">
-              Switch account
+              Сменить аккаунт
             </div>
             <div className="space-y-1.5">
               {savedAccounts.map((acc) => (
@@ -161,7 +161,7 @@ const Auth = () => {
                     onClick={(e) => removeAccount(e, acc.email)}
                     onKeyDown={(e) => { if (e.key === "Enter") removeAccount(e as unknown as React.MouseEvent, acc.email); }}
                     className="opacity-0 group-hover:opacity-100 text-white/60 hover:text-white p-1 transition"
-                    aria-label="Remove saved account"
+                    aria-label="Удалить сохранённый аккаунт"
                   >
                     <X className="h-3.5 w-3.5" />
                   </span>
@@ -186,7 +186,7 @@ const Auth = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Username"
+              placeholder="Имя пользователя"
               className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
             />
           </div>
@@ -198,7 +198,7 @@ const Auth = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email (optional)"
+                placeholder="Email (необязательно)"
                 className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
               />
             </div>
@@ -213,7 +213,7 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              placeholder="Password"
+              placeholder="Пароль"
               className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
             />
           </div>
@@ -226,7 +226,7 @@ const Auth = () => {
                 inputMode="numeric"
                 value={captcha}
                 onChange={(e) => setCaptcha(e.target.value)}
-                placeholder="Code"
+                placeholder="Код"
                 className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
               />
             </div>
@@ -234,7 +234,7 @@ const Auth = () => {
               type="button"
               onClick={() => { setCaptcha(""); setCaptchaSeed((s) => s + 1); }}
               className="min-w-[115px] px-3 rounded-lg bg-gradient-to-br from-[#1a0505]/60 to-[#3a0a0a]/60 border border-[#ffb300]/30 flex items-center justify-center gap-2 hover:border-[#ffb300]/60 hover:shadow-[0_0_15px_rgba(255,179,0,0.2)] transition-all backdrop-blur-sm"
-              aria-label="Refresh challenge"
+              aria-label="Обновить код"
             >
               <span
                 className="text-base font-bold tracking-wider text-[#ffd54f] select-none"
@@ -254,7 +254,7 @@ const Auth = () => {
                 onChange={(e) => setRemember(e.target.checked)}
                 className="h-3.5 w-3.5 accent-[#ffb300]"
               />
-              Remember me
+              Запомнить меня
             </label>
             {mode === "login" && (
               <button
@@ -262,7 +262,7 @@ const Auth = () => {
                 onClick={() => setForgotOpen(true)}
                 className="text-[12px] text-white/70 hover:text-[#ffb300] transition"
               >
-                Forgot password?
+                Забыли пароль?
               </button>
             )}
           </div>
@@ -283,7 +283,7 @@ const Auth = () => {
             />
             <span className="relative flex items-center gap-2">
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {loading ? "Signing in…" : mode === "login" ? "Sign In" : "Create Account"}
+              {loading ? "Выполняется вход…" : mode === "login" ? "Войти" : "Создать аккаунт"}
             </span>
           </button>
         </form>
@@ -295,9 +295,9 @@ const Auth = () => {
             className="text-[12px] text-white/60 hover:text-[#ffb300] transition tracking-wide"
           >
             {mode === "login" ? (
-              <>Don't have an account? <span className="text-[#ffb300] font-semibold">Register now</span></>
+              <>Нет аккаунта? <span className="text-[#ffb300] font-semibold">Зарегистрироваться</span></>
             ) : (
-              <>Have an account? <span className="text-[#ffb300] font-semibold">Sign in</span></>
+              <>Уже есть аккаунт? <span className="text-[#ffb300] font-semibold">Войти</span></>
             )}
           </button>
         </div>
