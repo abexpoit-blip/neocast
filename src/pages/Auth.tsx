@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { authApi, setToken, ApiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -10,6 +10,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { ScorpionAuthShell } from "@/components/ScorpionAuthShell";
 import { useLanguage } from "@/lib/i18n";
 
+/** Simple human check: only + and - with a non-negative answer. */
+function makeChallenge() {
+  const ai = Math.floor(Math.random() * 9) + 1;
+  const bi = Math.floor(Math.random() * 9) + 1;
+  const op = Math.random() < 0.5 ? "+" : "-";
+  const [x, y] = op === "-" && bi > ai ? [bi, ai] : [ai, bi];
+  return { a: x, b: y, op, expected: op === "+" ? x + y : x - y };
+}
+
+
+
 const Auth = () => {
   const { lang, setLang } = useLanguage();
   const nav = useNavigate();
@@ -20,7 +31,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [captcha, setCaptcha] = useState("");
-  const [captchaSeed, setCaptchaSeed] = useState(0);
+
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [statusBanner, setStatusBanner] = useState<{ title: string; hint?: string } | null>(null);
@@ -29,16 +40,10 @@ const Auth = () => {
   const fromPath = (loc.state as { from?: { pathname?: string } } | null)?.from?.pathname;
   const safeFrom = fromPath && fromPath !== "/auth" ? fromPath : null;
 
-  const { a, b, op, expected } = useMemo(() => {
-    const ops = ["+", "-", "*"] as const;
-    const ai = Math.floor(Math.random() * 9) + 1;
-    const bi = Math.floor(Math.random() * 9) + 1;
-    const oi = ops[Math.floor(Math.random() * 3)];
-    const ex = oi === "+" ? ai + bi : oi === "-" ? ai - bi : ai * bi;
-    return { a: ai, b: bi, op: oi, expected: ex };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [captchaSeed]);
+  const [challenge, setChallenge] = useState(() => makeChallenge());
+  const { a, b, op, expected } = challenge;
   const captchaOk = captcha.trim() !== "" && Number(captcha) === expected;
+
 
   useEffect(() => {
     setSavedAccounts(getSavedAccounts());
@@ -241,7 +246,7 @@ const Auth = () => {
             </div>
             <button
               type="button"
-              onClick={() => { setCaptcha(""); setCaptchaSeed((s) => s + 1); }}
+              onClick={() => { setCaptcha(""); setChallenge(makeChallenge()); }}
               className="min-w-[115px] px-3 rounded-lg bg-gradient-to-br from-[#1a0505]/60 to-[#3a0a0a]/60 border border-[#ffb300]/30 flex items-center justify-center gap-2 hover:border-[#ffb300]/60 hover:shadow-[0_0_15px_rgba(255,179,0,0.2)] transition-all backdrop-blur-sm"
               aria-label="Обновить код"
             >
