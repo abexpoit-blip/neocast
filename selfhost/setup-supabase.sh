@@ -35,7 +35,12 @@ cd "$BASE_DIR/docker"
 
 echo "==> 3/8 Generating keys"
 KEYS_FILE="$BASE_DIR/credentials.json"
-if [ ! -f "$KEYS_FILE" ]; then
+if [ -f "$KEYS_FILE" ] && ! jq -e type "$KEYS_FILE" >/dev/null 2>&1; then
+  BROKEN_KEYS_FILE="$KEYS_FILE.broken-$(date +%Y%m%d%H%M%S)"
+  echo "!! Existing credentials.json is empty/corrupt — backing up to $BROKEN_KEYS_FILE and regenerating"
+  mv "$KEYS_FILE" "$BROKEN_KEYS_FILE"
+fi
+if [ ! -s "$KEYS_FILE" ]; then
   node "$SCRIPT_DIR/gen-keys.mjs" > "$KEYS_FILE"
 fi
 chmod 600 "$KEYS_FILE"
