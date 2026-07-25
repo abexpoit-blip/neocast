@@ -44,6 +44,8 @@ const App = () => (
         <LanguageProvider>
         <AuthProvider>
           <ScrollToTop />
+          <TopProgress />
+
           <Routes>
             {/* Public auth pages */}
             <Route path="/auth" element={<Auth />} />
