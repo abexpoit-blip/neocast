@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicDepositCallbackRouteImport } from './routes/api/public/deposit-callback'
 import { Route as ApiPublicBinBinRouteImport } from './routes/api/public/bin.$bin'
 
 const SplatRoute = SplatRouteImport.update({
@@ -23,6 +24,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDepositCallbackRoute =
+  ApiPublicDepositCallbackRouteImport.update({
+    id: '/api/public/deposit-callback',
+    path: '/api/public/deposit-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicBinBinRoute = ApiPublicBinBinRouteImport.update({
   id: '/api/public/bin/$bin',
   path: '/api/public/bin/$bin',
@@ -32,30 +39,43 @@ const ApiPublicBinBinRoute = ApiPublicBinBinRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/api/public/deposit-callback': typeof ApiPublicDepositCallbackRoute
   '/api/public/bin/$bin': typeof ApiPublicBinBinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/api/public/deposit-callback': typeof ApiPublicDepositCallbackRoute
   '/api/public/bin/$bin': typeof ApiPublicBinBinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/api/public/deposit-callback': typeof ApiPublicDepositCallbackRoute
   '/api/public/bin/$bin': typeof ApiPublicBinBinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/api/public/bin/$bin'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/api/public/deposit-callback'
+    | '/api/public/bin/$bin'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/api/public/bin/$bin'
-  id: '__root__' | '/' | '/$' | '/api/public/bin/$bin'
+  to: '/' | '/$' | '/api/public/deposit-callback' | '/api/public/bin/$bin'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/api/public/deposit-callback'
+    | '/api/public/bin/$bin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  ApiPublicDepositCallbackRoute: typeof ApiPublicDepositCallbackRoute
   ApiPublicBinBinRoute: typeof ApiPublicBinBinRoute
 }
 
@@ -75,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/deposit-callback': {
+      id: '/api/public/deposit-callback'
+      path: '/api/public/deposit-callback'
+      fullPath: '/api/public/deposit-callback'
+      preLoaderRoute: typeof ApiPublicDepositCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bin/$bin': {
       id: '/api/public/bin/$bin'
       path: '/api/public/bin/$bin'
@@ -88,6 +115,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  ApiPublicDepositCallbackRoute: ApiPublicDepositCallbackRoute,
   ApiPublicBinBinRoute: ApiPublicBinBinRoute,
 }
 export const routeTree = rootRouteImport

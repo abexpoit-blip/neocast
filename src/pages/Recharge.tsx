@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
-import { depositsApi, plisioApi, walletApi } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
+import { createCryptoInvoice, checkDepositStatus } from "@/lib/plisio.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import {
@@ -68,17 +69,24 @@ const Recharge = () => {
   const [countdown, setCountdown] = useState<number>(-1);
 
   const loadHistory = async () => {
-    try { const d = await depositsApi.mine(); setHistory((d.deposits ?? []) as unknown as Deposit[]); } catch { /* ignore */ }
+    try {
+      const { data } = await supabase.from("deposits").select("*").order("created_at", { ascending: false }).limit(20);
+      setHistory((data ?? []) as unknown as Deposit[]);
+    } catch { /* ignore */ }
   };
   const loadTransactions = async () => {
-    try { const t = await walletApi.transactions(); setTransactions((t.transactions ?? []) as unknown as Transaction[]); } catch { /* ignore */ }
+    try {
+      const { data } = await supabase.from("balance_transactions").select("*").order("created_at", { ascending: false }).limit(20);
+      setTransactions(((data ?? []) as Array<{ id: string; kind: string; amount: number; description: string | null; created_at: string }>)
+        .map((t) => ({ id: t.id, type: t.kind, amount: Number(t.amount), note: t.description ?? undefined, created_at: t.created_at })));
+    } catch { /* ignore */ }
   };
 
   const startPolling = useCallback((depositId: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
       try {
-        const s = await plisioApi.status(depositId);
+        const s = await checkDepositStatus({ data: { deposit_id: depositId } });
         setActiveInvoice(prev => prev ? { ...prev, status: s.status, confirmations: s.confirmations ?? 0 } : prev);
         if (s.status === "approved") {
           toast.success(`$${s.amount} зачислено на баланс!`);
@@ -143,17 +151,17 @@ const Recharge = () => {
     if (!amtNum || amtNum < MIN_DEPOSIT) return toast.error(`Минимальная сумма пополнения — $${MIN_DEPOSIT}.`);
     setBusy(true);
     try {
-      const inv = await plisioApi.createInvoice({ amount: amtNum, currency: "LTC" });
+      const inv = await createCryptoInvoice({ data: { amount: amtNum } });
       setActiveInvoice({
         deposit_id: inv.deposit_id,
-        wallet_address: inv.wallet_address || inv.qr_data || "",
+        wallet_address: inv.wallet_address || "",
         crypto_amount: inv.crypto_amount,
         currency: "LTC",
-        qr_data: inv.qr_data || inv.wallet_address || "",
+        qr_data: inv.wallet_address || "",
         status: "pending",
         confirmations: 0,
         usd_amount: amtNum,
-        expires_ms: Date.now() + INVOICE_TTL_SEC * 1000,
+        expires_ms: inv.expires_ms || Date.now() + INVOICE_TTL_SEC * 1000,
       });
       startPolling(inv.deposit_id);
       toast.success("Заявка создана — отправьте LTC на адрес ниже.");

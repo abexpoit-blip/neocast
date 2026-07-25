@@ -114,35 +114,56 @@ export type Database = {
         Row: {
           admin_note: string | null
           amount: number
+          confirmations: number
           created_at: string
+          crypto_amount: string | null
+          crypto_currency: string | null
+          expires_at: string | null
           id: string
+          invoice_id: string | null
           method: string
           reference: string | null
           status: string
+          txid: string | null
           updated_at: string
           user_id: string
+          wallet_address: string | null
         }
         Insert: {
           admin_note?: string | null
           amount: number
+          confirmations?: number
           created_at?: string
+          crypto_amount?: string | null
+          crypto_currency?: string | null
+          expires_at?: string | null
           id?: string
+          invoice_id?: string | null
           method?: string
           reference?: string | null
           status?: string
+          txid?: string | null
           updated_at?: string
           user_id: string
+          wallet_address?: string | null
         }
         Update: {
           admin_note?: string | null
           amount?: number
+          confirmations?: number
           created_at?: string
+          crypto_amount?: string | null
+          crypto_currency?: string | null
+          expires_at?: string | null
           id?: string
+          invoice_id?: string | null
           method?: string
           reference?: string | null
           status?: string
+          txid?: string | null
           updated_at?: string
           user_id?: string
+          wallet_address?: string | null
         }
         Relationships: []
       }
@@ -513,6 +534,15 @@ export type Database = {
       }
       purchase_product: {
         Args: { _product_id: string; _quantity?: number }
+        Returns: string
+      }
+      settle_crypto_deposit: {
+        Args: {
+          _confirmations?: number
+          _invoice_id: string
+          _status: string
+          _txid?: string
+        }
         Returns: string
       }
     }
