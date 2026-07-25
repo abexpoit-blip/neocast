@@ -40,9 +40,8 @@ const Orders = () => {
             order_items: (o.order_items ?? []).map((it) => ({
               id: it.id,
               price: Number(it.unit_price ?? 0) * Number(it.quantity ?? 1),
-              digital_product_id: it.product_id ?? it.id,
+              product_id: it.product_id ?? undefined,
               product_title: it.title,
-              product_type: "DIGITAL",
               product_text_content: it.delivered_content ?? undefined,
             })),
           })),
@@ -51,31 +50,54 @@ const Orders = () => {
     })();
   }, [user]);
 
+  // Product catalogue for enriching exported lines (base, bin, city, zip…)
+  const [catalog, setCatalog] = useState<Record<string, Product>>({});
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const list = await listProducts({ includeInactive: true });
+        setCatalog(Object.fromEntries(list.map((p) => [p.id, p])));
+      } catch { /* optional enrichment */ }
+    })();
+  }, [user]);
+
   const buildLines = (o: Order) => {
-    const items = o.order_items ?? [];
     const lines: string[] = [];
-    for (const it of items) {
-      const c = (it.card_snapshot ?? {}) as Record<string, any>;
-      if (it.product_text_content) {
-        lines.push(...String(it.product_text_content).split("\n").filter(Boolean));
-      } else if (c.cc_number || c.cc_data) {
-        const month = c.exp_month != null ? String(c.exp_month).padStart(2, "0") : "null";
-        const year = c.exp_year != null ? String(c.exp_year) : "null";
-        lines.push(
-          [c.base ?? "N/A", c.cc_number ?? c.cc_data, `${month}/${year}`, c.cvv ?? "null",
-           c.holder_name ?? "null", c.address ?? "null", c.city ?? "null", c.state ?? "null",
-           c.zip ?? "null", c.country ?? "null", c.phone ?? "null", c.email ?? "null",
-           `$${Number(it.price).toFixed(2)}`].join("|"),
-        );
-      } else if (it.product_title) {
-        lines.push(`${it.product_title} | $${Number(it.price).toFixed(2)}`);
+    for (const it of o.order_items ?? []) {
+      const p = it.product_id ? catalog[it.product_id] : undefined;
+      const raw = (it.product_text_content ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+
+      if (raw.length && raw.every(isPipeLine)) {
+        // Admin already supplied full pipe-delimited card data.
+        lines.push(...raw);
+        continue;
       }
+
+      lines.push(
+        formatCardTxtLine({
+          base: p?.base ?? it.product_title,
+          price: it.price,
+          cc: raw.join(" ") || p?.bin || "",
+          month: p?.exp_month ?? "",
+          year: p?.exp_year ?? "",
+          cvv: "",
+          name: "",
+          addr: "",
+          city: p?.city ?? "",
+          state: p?.state ?? "",
+          zip: p?.zip ?? "",
+          country: p?.country ?? "",
+          tel: "",
+          email: "",
+        }),
+      );
     }
     return lines;
   };
 
   const downloadTxt = (name: string, lines: string[]) => {
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([[CARD_TXT_HEADER, ...lines].join("\n")], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = name; a.click();
@@ -98,6 +120,7 @@ const Orders = () => {
     const lines = chosen.flatMap((o) => buildLines(o));
     if (!lines.length) { toast.error("Нет данных для скачивания"); return; }
     downloadTxt(`orders-${Date.now()}.txt`, lines);
+
     toast.success("Скачано");
   };
 
