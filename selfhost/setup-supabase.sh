@@ -169,14 +169,18 @@ fi
 
 
 setup_nexus_nginx() {
-  # Existing nexus_nginx container owns host ports 80/443 -> add our vhost there.
-  mkdir -p "$NEXUS_WEBROOT"
+  # Existing nginx container owns host ports 80/443 -> add our vhost there.
+  ACME_LOC="location /.well-known/acme-challenge/ { proxy_pass http://$HOST_IP:8899; }"
+  if [ -n "$NEXUS_WEBROOT" ]; then
+    mkdir -p "$NEXUS_WEBROOT/.well-known/acme-challenge"
+    ACME_LOC="location /.well-known/acme-challenge/ { root /var/www/certbot; }"
+  fi
   cat > "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
 server {
     listen 80;
     server_name $DOMAIN_API;
     client_max_body_size 50m;
-    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    $ACME_LOC
     location / {
         proxy_pass http://$HOST_IP:8000;
         proxy_http_version 1.1;
@@ -189,14 +193,22 @@ server {
     }
 }
 NGINX
-  docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+  docker exec "$NGINX_CT" nginx -t && docker exec "$NGINX_CT" nginx -s reload
 
   if [ ! -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
     apt-get install -y certbot
-    certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
-      --non-interactive --agree-tos -m admin@zoru.cc \
-      || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    if [ -n "$NEXUS_WEBROOT" ]; then
+      certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
+        --non-interactive --agree-tos -m admin@zoru.cc \
+        || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    else
+      # No shared webroot mount: serve ACME from a temp local http server on 8899
+      certbot certonly --standalone --http-01-port 8899 -d "$DOMAIN_API" \
+        --non-interactive --agree-tos -m admin@zoru.cc \
+        || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
+    fi
   fi
+
 
   if [ -f "/etc/letsencrypt/live/$DOMAIN_API/fullchain.pem" ]; then
     cat >> "$NEXUS_CONF_DIR/$DOMAIN_API.conf" <<NGINX
