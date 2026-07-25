@@ -511,7 +511,10 @@ export interface FullCardInput {
   category_id?: string | null;
 }
 
-export const adminPublishFullCards = async (cards: FullCardInput[]) => {
+export const adminPublishFullCards = async (
+  cards: FullCardInput[],
+  onProgress?: (done: number, total: number) => void,
+) => {
   if (!cards.length) return 0;
   const clean = (s: string) => (!s || s.toLowerCase() === "null" ? "" : s);
   const stamp = Date.now().toString(36);
@@ -549,8 +552,8 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
   let created = 0;
 
   for (const part of chunk(products, CHUNK)) {
-    const { data, error } = await withRetry(() =>
-      supabase.from("products").insert(part).select("id, slug"),
+    const { data, error } = await withRetry(async () =>
+      await supabase.from("products").insert(part).select("id, slug"),
     );
     if (error) throw error;
     const keys = (data ?? [])
@@ -560,7 +563,7 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
       })
       .filter(Boolean) as { product_id: string; content: string }[];
     if (keys.length) {
-      const { error: kerr } = await withRetry(() => supabase.from("product_keys").insert(keys));
+      const { error: kerr } = await withRetry(async () => await supabase.from("product_keys").insert(keys));
       if (kerr) throw kerr;
     }
     created += data?.length ?? 0;
