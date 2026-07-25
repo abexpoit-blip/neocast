@@ -10,7 +10,7 @@ const items: Item[] = [
   { to: "/admin/shop", label: "Shop · Cards", icon: CreditCard },
   { to: "/admin/categories", label: "Categories", icon: LayoutGrid },
   { to: "/admin/cards", label: "Card moderation", icon: CreditCard },
-  { to: "/admin/users", label: "Users · Balance", icon: Users },
+  { to: "/admin/payments", label: "Payments · Deposits", icon: DollarSign },
   { to: "/admin/payments", label: "Payments", icon: DollarSign },
   { to: "/admin/payment-gateway", label: "Plisio Payment Gateway", icon: Banknote },
   { to: "/admin/site", label: "Site settings", icon: SettingsIcon },
