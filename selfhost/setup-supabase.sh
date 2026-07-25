@@ -233,7 +233,7 @@ server {
     }
 }
 NGINX
-    docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload
+    docker exec "$NGINX_CT" nginx -t && docker exec "$NGINX_CT" nginx -s reload
   fi
 }
 
