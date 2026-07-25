@@ -13,7 +13,7 @@ const Shop = () => {
   const { profile, refresh: refreshProfile } = useAuth();
   const [all, setAll] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
+  const [searched, setSearched] = useState(true);
   const [buying, setBuying] = useState(false);
   const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
 
