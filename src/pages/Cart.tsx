@@ -1,154 +1,136 @@
 import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
-import { cartApi } from "@/lib/api";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Trash2, ShoppingBag, CreditCard } from "lucide-react";
-import { BrandLogo, countryFlag } from "@/lib/brands";
+import Seo from "@/components/Seo";
 import { toast } from "sonner";
-
-interface Card { id: string; bin: string; brand: string; country: string; price: number; base: string; exp_month: string | null; exp_year: string | null; }
-interface DigitalProduct { id: string; title: string; price: number; type: string; }
-interface Item { 
-  id: string; 
-  card?: Card; 
-  digital_product_id?: string;
-  product?: DigitalProduct;
-}
+import { Trash2, Loader2 } from "lucide-react";
+import { getCart, removeFromCart, clearCart, onCartChange, type CartLine } from "@/lib/cart";
+import { purchaseProduct } from "@/lib/store";
+import { useAuth } from "@/hooks/useAuth";
+import { BrandLogo, detectBrandFromBin, CountryFlagImg, countryCode } from "@/lib/brands";
 
 const Cart = () => {
-  const { user, profile, refresh } = useAuth();
-  const [items, setItems] = useState<Item[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const { profile, refresh } = useAuth();
+  const nav = useNavigate();
+  const [items, setItems] = useState<CartLine[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    if (!user) return;
-    try {
-      const { items: raw } = await cartApi.list();
-      const list: Item[] = (raw ?? []).map((r) => ({ 
-        id: r.id, 
-        card: r.card as unknown as Card,
-        digital_product_id: r.digital_product_id,
-        product: r.product as unknown as DigitalProduct
-      }));
-      setItems(list);
-      setSelected(new Set(list.map((i) => i.id)));
-    } catch { setItems([]); }
-  };
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => {
+    setItems(getCart());
+    return onCartChange(() => setItems(getCart()));
+  }, []);
 
-  const remove = async (id: string) => {
-    try { await cartApi.remove(id); } catch { /* ignore */ }
-    setItems((arr) => arr.filter((i) => i.id !== id));
-    setSelected((s) => { const n = new Set(s); n.delete(id); return n; });
-    window.dispatchEvent(new Event("cart-updated"));
-  };
+  const total = items.reduce((s, i) => s + Number(i.price), 0);
 
-  const toggle = (id: string) =>
-    setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
-
-  const selectedItems = items.filter((i) => selected.has(i.id));
-  const total = selectedItems.reduce((s, i) => s + Number(i.card?.price ?? i.product?.price ?? 0), 0);
-
-  const checkout = async () => {
-    if (!user || !profile) return;
-    if (selectedItems.length === 0) return toast.error("Select at least one item");
-    if (Number(profile.balance) < total) return toast.error("Insufficient balance — please recharge");
+  const buyNow = async () => {
+    if (!items.length) return toast.error("Корзина пуста");
+    if (Number(profile?.balance ?? 0) < total)
+      return toast.error("Недостаточно средств. Пополните баланс.");
     setBusy(true);
+    let ok = 0;
+    const failed: string[] = [];
     try {
-      const card_ids = selectedItems.filter(i => i.card).map((i) => i.card!.id);
-      const digital_product_ids = selectedItems.filter(i => i.product).map(i => i.product!.id);
-      
-      await cartApi.checkout({ card_ids, digital_product_ids });
-      toast.success(`Order placed — $${total.toFixed(2)}`);
-      window.dispatchEvent(new Event("cart-updated"));
-      await refresh();
-      load();
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Checkout failed");
-    } finally { setBusy(false); }
+      for (const it of items) {
+        try {
+          await purchaseProduct(it.id, 1);
+          removeFromCart(it.id);
+          ok++;
+        } catch (e) {
+          failed.push(it.bin ?? it.title);
+        }
+      }
+      void refresh?.();
+      if (ok > 0) {
+        toast.success(`Куплено: ${ok}`);
+        nav("/orders");
+      }
+      if (failed.length) toast.error(`Не удалось: ${failed.join(", ")}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <AppShell>
-      <div className="space-y-5">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="font-display text-3xl font-black neon-text">CART</h1>
-            <p className="text-sm text-muted-foreground mt-1">{items.length} item(s) · {selectedItems.length} selected</p>
-          </div>
-          <div className="glass-neon rounded-xl px-4 py-3 flex items-center gap-4">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Selected total</p>
-              <p className="font-display text-2xl font-bold neon-text">${total.toFixed(2)}</p>
-            </div>
-            <Button onClick={checkout} disabled={busy || total === 0} className="bg-gradient-primary shadow-neon">
-              <CreditCard className="h-4 w-4 mr-2" />Pay all
-            </Button>
-          </div>
-        </div>
+      <Seo title="Корзина | Zoru Shop" description="Ваша корзина покупок." path="/cart" />
 
-        {items.length === 0 ? (
-          <div className="glass rounded-2xl p-16 text-center">
-            <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">Your cart is empty. Browse the Shop to add cards.</p>
-          </div>
-        ) : (
-          <div className="glass rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/60 text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="p-3 w-10"></th>
-                  <th className="p-3 text-left">Item</th>
-                  <th className="p-3 text-left">Details</th>
-                  <th className="p-3 text-right">Price</th>
-                  <th className="p-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((it) => (
-                  <tr key={it.id} className="border-t border-border/40 hover:bg-secondary/30 transition">
-                    <td className="p-3">
-                      <input type="checkbox" checked={selected.has(it.id)} onChange={() => toggle(it.id)}
-                        className="accent-primary h-4 w-4" />
-                    </td>
-                    <td className="p-3">
-                      {it.card ? (
-                        <div className="flex items-center gap-2">
-                          <BrandLogo brand={it.card.brand} />
-                          <span className="font-mono">{it.card.bin}••••</span>
-                        </div>
-                      ) : (
-                        <div className="font-semibold">{it.product?.title}</div>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      {it.card ? (
-                        <div className="flex gap-4 text-xs text-muted-foreground">
-                          <span>{countryFlag(it.card.country)} {it.card.country}</span>
-                          <span>{it.card.exp_month}/{it.card.exp_year}</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs uppercase tracking-wider bg-primary/20 text-primary-glow px-2 py-0.5 rounded">
-                          {it.product?.type}
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3 text-right font-display font-bold text-primary-glow">
-                      ${Number(it.card?.price ?? it.product?.price ?? 0).toFixed(2)}
-                    </td>
-                    <td className="p-3 text-right">
-                      <button onClick={() => remove(it.id)} className="text-muted-foreground hover:text-destructive transition">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-3 text-[13px]">
+        <span className="font-medium text-[#333]">Корзина</span>
+        <span className="text-[#888]">Позиций: {items.length}</span>
+        <span className="text-[#888]">Итого: <span className="font-mono text-[#2e7d32]">${total.toFixed(2)}</span></span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => { clearCart(); toast.success("Корзина очищена"); }}
+            disabled={!items.length || busy}
+            className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] transition disabled:opacity-50"
+          >
+            Очистить
+          </button>
+          <button
+            onClick={() => void buyNow()}
+            disabled={!items.length || busy}
+            className="h-8 px-5 bg-[#e8f5e9] hover:bg-[#dcedc8] border border-[#c8e6c9] text-[#2e7d32] text-[13px] transition disabled:opacity-60 inline-flex items-center gap-2"
+          >
+            {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Купить сейчас
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
+        <table className="w-full text-[13px] border-collapse">
+          <thead>
+            <tr className="bg-[#fafafa] text-[#555] text-[12px]">
+              {["BIN", "month", "year", "city", "state", "zip", "country", "prices", "base", "operation"].map((h) => (
+                <th key={h} className="p-2 text-center font-normal border-b border-[#eee]">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((c) => (
+              <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
+                <td className="p-2 text-center font-mono text-[#333]">
+                  <span className="inline-flex items-center gap-2">
+                    <BrandLogo brand={c.brand || detectBrandFromBin(c.bin ?? "")} className="h-5 w-8 shrink-0" />
+                    <span>{c.bin ?? "—"}<span className="text-[#bbb]">••••••</span></span>
+                  </span>
+                </td>
+                <td className="p-2 text-center font-mono">{c.exp_month ?? "—"}</td>
+                <td className="p-2 text-center font-mono">{c.exp_year ?? "—"}</td>
+                <td className="p-2 text-center max-w-[140px] truncate" title={c.city ?? ""}>{c.city ?? "—"}</td>
+                <td className="p-2 text-center">{c.state ?? "—"}</td>
+                <td className="p-2 text-center font-mono">{c.zip ?? "—"}</td>
+                <td className="p-2 text-center">
+                  {c.country ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <CountryFlagImg code={c.country} className="h-3.5 w-5" />
+                      <span>{countryCode(c.country)}</span>
+                    </span>
+                  ) : "—"}
+                </td>
+                <td className="p-2 text-center font-mono">{Number(c.price).toFixed(2)}</td>
+                <td className="p-2 text-center text-[11px] text-[#666] max-w-[180px]">
+                  <span className="whitespace-pre-line break-words">{c.base ?? "—"}</span>
+                </td>
+                <td className="p-2 text-center">
+                  <button
+                    onClick={() => removeFromCart(c.id)}
+                    disabled={busy}
+                    className="text-[#f56c6c] hover:underline text-[12px] inline-flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3 w-3" /> Удалить
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {items.length === 0 && (
+              <tr>
+                <td colSpan={10} className="p-10 text-center text-[#888] text-[13px]">
+                  Корзина пуста. <Link to="/shop" className="text-[#2196f3] hover:underline">Перейти в магазин</Link>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </AppShell>
   );
