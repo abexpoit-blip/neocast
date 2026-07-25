@@ -2,16 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-
-export const SESSION_START_KEY = "zoru.session.start";
-export const SESSION_MINUTES = 30;
-
-export function markSessionStart() {
-  try { localStorage.setItem(SESSION_START_KEY, String(Date.now())); } catch { /* ignore */ }
-}
-export function clearSessionStart() {
-  try { localStorage.removeItem(SESSION_START_KEY); } catch { /* ignore */ }
-}
+import { SESSION_MINUTES, SESSION_START_KEY, clearSessionStart, markSessionStart } from "@/lib/session";
 
 /**
  * 30-minute session limit for regular users (admins are exempt).
