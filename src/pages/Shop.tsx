@@ -47,6 +47,22 @@ const Shop = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { void load(); }, [catId]);
 
+  // Accurate BIN lookup (external providers via /api/public/bin)
+  useEffect(() => {
+    const digits = bin.replace(/\D/g, "");
+    if (digits.length < 6) { setBinInfo(null); setBinLoading(false); return; }
+    let alive = true;
+    setBinLoading(true);
+    const t = setTimeout(async () => {
+      const info = await lookupBin(digits);
+      if (!alive) return;
+      setBinInfo(info);
+      setBinLoading(false);
+    }, 350);
+    return () => { alive = false; clearTimeout(t); };
+  }, [bin]);
+
+
   const countries = useMemo(
     () => [...new Set(products.map((p) => p.country).filter(Boolean) as string[])].sort(),
     [products],
