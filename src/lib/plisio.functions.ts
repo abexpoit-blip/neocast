@@ -142,3 +142,8 @@ export const checkDepositStatus = createServerFn({ method: "POST" })
       amount: dep.amount,
     };
   });
+
+/** Reports whether the Plisio API key is configured on the server (never returns the key). */
+export const plisioKeyStatus = createServerFn({ method: "GET" }).handler(async () => ({
+  configured: Boolean(process.env.PLISIO_API_KEY),
+}));
