@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandLogo, detectBrandFromBin, BRANDS } from "@/lib/brands";
-import { parseAndFormat, dedupe, detectBrand } from "@/lib/cardFormatter";
+import { parseAndFormat, dedupe, detectBrand, toPipeFormat } from "@/lib/cardFormatter";
 import { adminPublishFullCards } from "@/lib/store";
 import { toast } from "sonner";
 import {
@@ -47,6 +47,13 @@ const Admin = () => {
   const [cardPrice, setCardPrice] = useState("1.50");
   const [cardRefundable, setCardRefundable] = useState(false);
   const [uploadBusy, setUploadBusy] = useState(false);
+
+  const formatPreview = useMemo(() => {
+    if (!cardRaw.trim()) return { rows: [] as string[], valid: 0, dupes: 0, failedCount: 0 };
+    const { lines, failed } = parseAndFormat(cardRaw);
+    const { unique, dropped } = dedupe(lines);
+    return { rows: unique.slice(0, 5).map(toPipeFormat), valid: unique.length, dupes: dropped, failedCount: failed.length };
+  }, [cardRaw]);
 
   // Active tab
   const [tab, setTab] = useState<"overview" | "users" | "cards" | "broadcast">("overview");
@@ -571,9 +578,18 @@ const Admin = () => {
               <Textarea rows={10} value={cardRaw} onChange={e => setCardRaw(e.target.value)}
                 placeholder="4111111111111111|12|28|123|John Smith|123 Main St|New York|NY|10001|US|+15555551234|john@x.com"
                 className="bg-input/60 font-mono text-xs mb-3" />
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Button onClick={publishCards} disabled={uploadBusy} className="bg-gradient-primary shadow-neon">
                   <Upload className="h-4 w-4 mr-2" />{uploadBusy ? "Publishing…" : "Publish Cards"}
+                </Button>
+                <Button onClick={() => {
+                  const { lines, failed } = parseAndFormat(cardRaw);
+                  const { unique, dropped } = dedupe(lines);
+                  if (!unique.length) return toast.error("No valid cards detected");
+                  setCardRaw([...unique.map(toPipeFormat), ...failed].join("\n"));
+                  toast.success(`Formatted ${unique.length} cards` + (dropped ? ` · ${dropped} dupes removed` : "") + (failed.length ? ` · ${failed.length} unreadable kept below` : ""));
+                }} variant="outline" className="border-primary/40 text-primary-glow">
+                  <Wand2 className="h-4 w-4 mr-2" />Auto-Format
                 </Button>
                 <Button onClick={() => {
                   const { lines, failed } = parseAndFormat(cardRaw);
@@ -583,6 +599,15 @@ const Admin = () => {
                   <Wand2 className="h-4 w-4 mr-2" />Preview & Validate
                 </Button>
               </div>
+              {formatPreview.rows.length > 0 && (
+                <div className="mt-4 rounded-lg border border-border/40 bg-secondary/30 p-3">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                    Auto-format preview · {formatPreview.valid} valid · {formatPreview.dupes} dupes · {formatPreview.failedCount} unreadable
+                  </div>
+                  <pre className="text-[11px] font-mono text-primary-glow overflow-x-auto whitespace-pre">{formatPreview.rows.join("\n")}</pre>
+                </div>
+              )}
+
             </Section>
           </>
         )}
