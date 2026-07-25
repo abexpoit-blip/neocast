@@ -385,10 +385,21 @@ const Recharge = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between text-[12px] text-[#666] mt-4 pt-4 border-t border-[#eee]">
-                  <span>Текущий баланс</span>
-                  <span className="font-mono font-semibold text-[#1f2d3d]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                <div className="text-[12px] text-[#666] mt-4 pt-4 border-t border-[#eee] space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span>Комиссия сети (2%)</span>
+                    <span className="font-mono text-[#1f2d3d]">${(amtNum * 0.02).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>К оплате</span>
+                    <span className="font-mono font-semibold text-[#2196f3]">${(amtNum * 1.02).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Текущий баланс</span>
+                    <span className="font-mono font-semibold text-[#1f2d3d]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
+                  </div>
                 </div>
+
 
                 <button
                   onClick={createInvoice}
