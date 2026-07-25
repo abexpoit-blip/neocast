@@ -420,6 +420,15 @@ export const parseBulkCards = (text: string): { rows: BulkCardRow[]; errors: str
   return { rows, errors };
 };
 
+/** Split a list into fixed-size chunks so big uploads never blow up a single request. */
+const chunk = <T,>(arr: T[], size: number): T[][] => {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
+
+const CHUNK = 200;
+
 export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: string | null = null) => {
   if (!rows.length) return 0;
   const payload = rows.map((r) => ({
@@ -439,8 +448,10 @@ export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: stri
     exp_month: r.exp_month || null,
     exp_year: r.exp_year || null,
   }));
-  const { error } = await supabase.from("products").insert(payload);
-  if (error) throw error;
+  for (const part of chunk(payload, CHUNK)) {
+    const { error } = await supabase.from("products").insert(part);
+    if (error) throw error;
+  }
   return payload.length;
 };
 
@@ -474,14 +485,17 @@ export interface FullCardInput {
 export const adminPublishFullCards = async (cards: FullCardInput[]) => {
   if (!cards.length) return 0;
   const clean = (s: string) => (!s || s.toLowerCase() === "null" ? "" : s);
+  const stamp = Date.now().toString(36);
 
-  const products = cards.map((c) => ({
+  const products = cards.map((c, i) => ({
     category_id: c.category_id ?? null,
     title: `${c.brand} ${c.bin} · ${clean(c.city) || clean(c.state) || clean(c.country) || "—"}`,
-    slug: `${c.bin}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    slug: `${c.bin}-${stamp}-${i}-${Math.random().toString(36).slice(2, 8)}`,
     price: c.price,
     delivery_type: "key" as DeliveryType,
     active: true,
+    // Exactly one key per product, so stock is known up front — no extra round-trips.
+    stock: 1,
     bin: c.bin,
     brand: c.brand || null,
     country: clean(c.country) || null,
@@ -496,27 +510,34 @@ export const adminPublishFullCards = async (cards: FullCardInput[]) => {
     has_email: !!clean(c.email),
   }));
 
-  const { data, error } = await supabase.from("products").insert(products).select("id");
-  if (error) throw error;
-  const ids = (data ?? []).map((r) => r.id as string);
+  const lineFor = (c: FullCardInput) => [
+    c.base, c.price, c.cc, clean(c.month), clean(c.year), clean(c.cvv),
+    clean(c.name), clean(c.addr), clean(c.city), clean(c.state), clean(c.zip),
+    clean(c.country), clean(c.tel), clean(c.email), "", "",
+  ].join("|");
 
-  const keys = ids.map((id, i) => {
-    const c = cards[i];
-    const line = [
-      c.base, c.price, c.cc, clean(c.month), clean(c.year), clean(c.cvv),
-      clean(c.name), clean(c.addr), clean(c.city), clean(c.state), clean(c.zip),
-      clean(c.country), clean(c.tel), clean(c.email), "", "",
-    ].join("|");
-    return { product_id: id, content: line };
-  });
+  const bySlug = new Map(products.map((p, i) => [p.slug, cards[i]]));
+  let created = 0;
 
-  if (keys.length) {
-    const { error: kerr } = await supabase.from("product_keys").insert(keys);
-    if (kerr) throw kerr;
-    await Promise.all(ids.map((id) => adminSyncStock(id)));
+  for (const part of chunk(products, CHUNK)) {
+    const { data, error } = await supabase.from("products").insert(part).select("id, slug");
+    if (error) throw error;
+    const keys = (data ?? [])
+      .map((row) => {
+        const card = bySlug.get(row.slug as string);
+        return card ? { product_id: row.id as string, content: lineFor(card) } : null;
+      })
+      .filter(Boolean) as { product_id: string; content: string }[];
+    if (keys.length) {
+      const { error: kerr } = await supabase.from("product_keys").insert(keys);
+      if (kerr) throw kerr;
+    }
+    created += data?.length ?? 0;
   }
-  return ids.length;
+
+  return created;
 };
+
 
 /* ---------------- admin: overview + announcements (Supabase-backed) ---------------- */
 
