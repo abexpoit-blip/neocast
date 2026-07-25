@@ -444,3 +444,76 @@ export const adminBulkCreateCards = async (rows: BulkCardRow[], categoryId: stri
   return payload.length;
 };
 
+
+/* -------- admin: publish full cards (Admin → Card Upload tab) --------
+   Each parsed card becomes its own product with one product_key holding
+   the full pipe-delimited line that the buyer downloads as .txt.
+--------------------------------------------------------------------- */
+
+export interface FullCardInput {
+  cc: string;
+  month: string;
+  year: string;
+  cvv: string;
+  name: string;
+  addr: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  tel: string;
+  email: string;
+  brand: string;
+  bin: string;
+  base: string;
+  price: number;
+  refundable: boolean;
+  category_id?: string | null;
+}
+
+export const adminPublishFullCards = async (cards: FullCardInput[]) => {
+  if (!cards.length) return 0;
+  const clean = (s: string) => (!s || s.toLowerCase() === "null" ? "" : s);
+
+  const products = cards.map((c) => ({
+    category_id: c.category_id ?? null,
+    title: `${c.brand} ${c.bin} · ${clean(c.city) || clean(c.state) || clean(c.country) || "—"}`,
+    slug: `${c.bin}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    price: c.price,
+    delivery_type: "key" as DeliveryType,
+    active: true,
+    bin: c.bin,
+    brand: c.brand || null,
+    country: clean(c.country) || null,
+    state: clean(c.state) || null,
+    city: clean(c.city) || null,
+    zip: clean(c.zip) || null,
+    exp_month: clean(c.month) || null,
+    exp_year: clean(c.year) || null,
+    base: c.base,
+    refundable: c.refundable,
+    has_phone: !!clean(c.tel),
+    has_email: !!clean(c.email),
+  }));
+
+  const { data, error } = await supabase.from("products").insert(products).select("id");
+  if (error) throw error;
+  const ids = (data ?? []).map((r) => r.id as string);
+
+  const keys = ids.map((id, i) => {
+    const c = cards[i];
+    const line = [
+      c.base, c.price, c.cc, clean(c.month), clean(c.year), clean(c.cvv),
+      clean(c.name), clean(c.addr), clean(c.city), clean(c.state), clean(c.zip),
+      clean(c.country), clean(c.tel), clean(c.email), "", "",
+    ].join("|");
+    return { product_id: id, content: line };
+  });
+
+  if (keys.length) {
+    const { error: kerr } = await supabase.from("product_keys").insert(keys);
+    if (kerr) throw kerr;
+    await Promise.all(ids.map((id) => adminSyncStock(id)));
+  }
+  return ids.length;
+};
