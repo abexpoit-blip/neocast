@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { readSiteSettings } from "@/lib/store";
+
 
 export interface SiteSettings {
   shop_name: string;
