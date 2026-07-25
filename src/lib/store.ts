@@ -689,3 +689,85 @@ export const adminDeleteAnnouncement = async (id: string) => {
   const { error } = await supabase.from("announcements").delete().eq("id", id);
   if (error) throw error;
 };
+
+/* ---------------- admin: card moderation ---------------- */
+
+export interface AdminCardRow {
+  id: string;
+  bin: string;
+  brand: string;
+  country: string;
+  price: number;
+  status: "available" | "sold" | "hidden" | "expired";
+  created_at: string;
+  exp_month?: string;
+  exp_year?: string;
+  category_id: string | null;
+}
+
+const cardStatus = (p: {
+  active: boolean | null; stock: number | null; sold_count: number | null;
+  exp_month: string | null; exp_year: string | null;
+}): AdminCardRow["status"] => {
+  const m = Number(p.exp_month), y = Number(p.exp_year);
+  if (m >= 1 && m <= 12 && y > 0) {
+    const full = y < 100 ? 2000 + y : y;
+    const end = new Date(full, m, 1);
+    if (end.getTime() < Date.now()) return "expired";
+  }
+  if (!p.active) return "hidden";
+  if ((p.stock ?? 0) <= 0) return "sold";
+  return "available";
+};
+
+export const adminListCards = async (opts: {
+  search?: string;
+  status?: "all" | "available" | "sold" | "hidden" | "expired";
+} = {}): Promise<AdminCardRow[]> => {
+  let q = supabase
+    .from("products")
+    .select("id, bin, brand, country, price, active, stock, sold_count, exp_month, exp_year, created_at, category_id")
+    .order("created_at", { ascending: false })
+    .limit(1000);
+  const s = opts.search?.trim();
+  if (s) q = q.or(`bin.ilike.%${s}%,brand.ilike.%${s}%,country.ilike.%${s}%,title.ilike.%${s}%`);
+  const { data, error } = await q;
+  if (error) throw error;
+  const rows: AdminCardRow[] = (data ?? []).map((p) => ({
+    id: p.id,
+    bin: p.bin ?? "—",
+    brand: p.brand ?? "—",
+    country: p.country ?? "—",
+    price: Number(p.price ?? 0),
+    status: cardStatus(p),
+    created_at: p.created_at,
+    exp_month: p.exp_month ?? undefined,
+    exp_year: p.exp_year ?? undefined,
+    category_id: p.category_id ?? null,
+  }));
+  const f = opts.status ?? "all";
+  return f === "all" ? rows : rows.filter((r) => r.status === f);
+};
+
+export const adminUpdateCards = async (
+  ids: string[],
+  patch: { price?: number; active?: boolean; category_id?: string | null },
+) => {
+  if (ids.length === 0) return;
+  const { error } = await supabase.from("products").update(patch).in("id", ids);
+  if (error) throw error;
+};
+
+export const adminDeleteCards = async (ids: string[]) => {
+  if (ids.length === 0) return;
+  const { error } = await supabase.from("products").delete().in("id", ids);
+  if (error) throw error;
+};
+
+/** Hides every card whose expiry month has passed. Returns how many were hidden. */
+export const adminHideExpiredCards = async () => {
+  const rows = await adminListCards({ status: "expired" });
+  const ids = rows.map((r) => r.id);
+  await adminUpdateCards(ids, { active: false });
+  return ids.length;
+};
