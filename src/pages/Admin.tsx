@@ -600,7 +600,7 @@ const Admin = () => {
                     <p className="text-xs text-muted-foreground">Balance: <span className="text-primary-glow font-display">${Number(s.balance ?? 0).toFixed(2)}</span></p>
                     <div className="flex gap-1 mt-2">
                       <Button size="sm" variant="outline" onClick={() => impersonate(s)} className="h-7 text-[10px]"><LogIn className="h-3 w-3 mr-1" />Login as</Button>
-                      <Button size="sm" variant="outline" onClick={() => adjustBalance(s.id, 0)} className="h-7 text-[10px]"><DollarSign className="h-3 w-3 mr-1" />Balance</Button>
+                      <Button size="sm" variant="outline" onClick={() => { setBalanceUser(s); setBalanceAmount(""); setBalanceNote(""); }} className="h-7 text-[10px]"><DollarSign className="h-3 w-3 mr-1" />Balance</Button>
                     </div>
                   </div>
                 ))}
