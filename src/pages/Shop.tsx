@@ -1,376 +1,227 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { cardsApi, cartApi, sellersApi, categoriesApi } from "@/lib/api";
-import { Search, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import Seo from "@/components/Seo";
 import { toast } from "sonner";
+import { Loader2, RefreshCw, Copy, CheckCircle2, X } from "lucide-react";
+import { listCategories, listProducts, purchaseProduct, type Category, type Product } from "@/lib/store";
 import { useAuth } from "@/hooks/useAuth";
 
-import Seo from "@/components/Seo";
-
-interface Card {
-  id: string; bin: string; brand: string; country: string; state: string | null;
-  city: string | null; zip: string | null; exp_month: string | null; exp_year: string | null;
-  refundable: boolean; has_phone: boolean; has_email: boolean; email?: string | null; base: string; price: number;
-  status: string; seller_id: string; created_at: string;
-}
-interface Seller {
-  id: string; username: string; seller_display_name: string | null; display_name: string | null;
-  is_seller_verified: boolean;
-}
+const money = (n: number) => `$${Number(n || 0).toFixed(2)}`;
 
 const Shop = () => {
-  const { user } = useAuth();
-  const nav = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [cards, setCards] = useState<Card[]>([]);
-  const [sellers, setSellers] = useState<Seller[]>([]);
-  const [, setCategories] = useState<any[]>([]);
+  const { profile } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [catId, setCatId] = useState("");
+  const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
-  const [bin, setBin] = useState("");
-  const [base, setBase] = useState("all");
-  const [country, setCountry] = useState("");
-  const [zip, setZip] = useState("");
-  const [seller, setSeller] = useState<string>(searchParams.get("seller") ?? "all");
-  const [categoryId, setCategoryId] = useState<string>(searchParams.get("category") ?? "all");
-  const [cartIds, setCartIds] = useState<Set<string>>(new Set());
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [lastBin, setLastBin] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCards, setTotalCards] = useState(0);
-  const [bases, setBases] = useState<string[]>([]);
+  const [buying, setBuying] = useState<string | null>(null);
+  const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
 
-  const sellerMap = useMemo(() => {
-    const m = new Map<string, Seller>();
-    sellers.forEach((s) => m.set(s.id, s));
-    return m;
-  }, [sellers]);
-
-  useEffect(() => {
-    (async () => {
-      try { const r = await sellersApi.visible(); setSellers((r.sellers ?? []) as any); } catch { /* noop */ }
-      try { const r = await cardsApi.bases(); setBases(r.bases ?? []); } catch { /* noop */ }
-      try { const r = await categoriesApi.list(); setCategories(r.categories ?? []); } catch { /* noop */ }
-    })();
-  }, []);
-
-  const load = useCallback(async (auto = false, p = page) => {
+  const load = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string | number | boolean | undefined> = {
-        per_page: 25, page: p, sort: "expiry_asc",
-      };
-      if (bin) params.bin = bin;
-      if (base !== "all") params.base = base;
-      if (country) params.country = country;
-      if (zip) params.zip = zip;
-      if (seller !== "all") params.seller_id = seller;
-      if (categoryId !== "all") params.category_id = categoryId;
-      const res = await cardsApi.browse(params);
-      setCards((res.cards ?? []) as Card[]);
-      setTotalPages(res.pages ?? 1);
-      setTotalCards(res.total ?? 0);
-    } catch { setCards([]); }
-    setLastBin(bin);
-    setLoading(false);
-    if (!auto) setSearched(true);
-  }, [bin, base, country, zip, seller, categoryId, page]);
-
-  const loadCart = async () => {
-    if (!user) return;
-    try {
-      const { items } = await cartApi.list();
-      setCartIds(new Set((items ?? []).map((c) => c.card_id).filter((x): x is string => !!x)));
-    } catch { /* ignore */ }
-  };
-
-  useEffect(() => { load(true, 1); loadCart(); }, []); // eslint-disable-line
-
-  useEffect(() => {
-    if (seller === "all") searchParams.delete("seller"); else searchParams.set("seller", seller);
-    if (categoryId === "all") searchParams.delete("category"); else searchParams.set("category", categoryId);
-    setSearchParams(searchParams, { replace: true });
-    setPage(1); load(true, 1);
-  }, [seller, categoryId]); // eslint-disable-line
-
-  useEffect(() => { load(true, page); }, [page]); // eslint-disable-line
-
-  useEffect(() => {
-    if (bin.length >= 6) {
-      const t = setTimeout(() => { setPage(1); load(false, 1); }, 350);
-      return () => clearTimeout(t);
+      const [cats, prods] = await Promise.all([listCategories(), listProducts({ categoryId: catId || null })]);
+      setCategories(cats);
+      setProducts(prods);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+    } finally {
+      setLoading(false);
     }
-  }, [bin]); // eslint-disable-line
+  };
 
-  const addToCart = async (cardId: string) => {
-    if (!user) return toast.error("Please log in");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, [catId]);
+
+  const rows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const lo = minPrice ? Number(minPrice) : null;
+    const hi = maxPrice ? Number(maxPrice) : null;
+    return products.filter((p) => {
+      if (q && !`${p.title} ${p.short_description ?? ""}`.toLowerCase().includes(q)) return false;
+      if (lo !== null && p.price < lo) return false;
+      if (hi !== null && p.price > hi) return false;
+      if (inStockOnly && p.delivery_type === "key" && p.stock <= 0) return false;
+      return true;
+    });
+  }, [products, search, minPrice, maxPrice, inStockOnly]);
+
+  const catName = (id: string | null) => categories.find((c) => c.id === id)?.name ?? "—";
+
+  const buy = async (p: Product) => {
+    if (Number(profile?.balance ?? 0) < p.price) {
+      toast.error("Недостаточно средств. Пополните баланс.");
+      return;
+    }
+    setBuying(p.id);
     try {
-      await cartApi.add({ card_id: cardId });
-      setCartIds((s) => new Set(s).add(cardId));
-      window.dispatchEvent(new Event("cart-updated"));
-      toast.success("Added to cart");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+      const content = await purchaseProduct(p.id, 1);
+      setDelivered({ title: p.title, content: content || "Заказ оформлен. Смотрите раздел «Заказы»." });
+      toast.success("Покупка выполнена");
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ошибка покупки");
+    } finally {
+      setBuying(null);
+    }
   };
 
-  const batchAdd = async () => {
-    if (!user) return toast.error("Please log in");
-    if (selected.size === 0) return toast.error("Select cards first");
-    const ids = Array.from(selected).filter((id) => !cartIds.has(id));
-    if (!ids.length) return toast.error("Already in cart");
-    try {
-      await cartApi.addBatch(ids);
-      setCartIds((s) => { const n = new Set(s); ids.forEach((id) => n.add(id)); return n; });
-      setSelected(new Set());
-      window.dispatchEvent(new Event("cart-updated"));
-      toast.success(`Added ${ids.length} to cart`);
-      nav("/cart");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
-  };
+  const reset = () => { setCatId(""); setSearch(""); setMinPrice(""); setMaxPrice(""); setInStockOnly(false); };
 
-  const reset = () => {
-    setBin(""); setBase("all"); setCountry(""); setZip(""); setSeller("all"); setCategoryId("all");
-    setSearched(false); setPage(1); setTimeout(() => load(true, 1), 0);
-  };
-
-  const toggle = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  const toggleAll = () => setSelected((s) => s.size === cards.length ? new Set() : new Set(cards.map((c) => c.id)));
-
-  const noResults = !loading && cards.length === 0 && (searched || bin.length >= 6);
+  const inputCls = "h-9 border border-[#dcdfe6] px-2 text-[13px] text-[#303133] bg-white focus:border-[#2196f3] outline-none";
 
   return (
     <AppShell>
-      <Seo title="Shop — Zoru Shop" description="Browse live stock. Filter by BIN, base, country, ZIP." path="/shop" />
+      <Seo
+        title="Магазин подарочных карт | Zoru Shop"
+        description="Подарочные и предоплаченные карты Walmart, Visa, Vanilla по оптовым ценам с мгновенной выдачей."
+        path="/shop"
+      />
 
-      {/* FILTER BAR */}
-      <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px]">
-        <Field label="BIN">
-          <input
-            value={bin}
-            onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 16))}
-            placeholder="Please enter the card number"
-            className="h-8 w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="BASE">
-          <select
-            value={base}
-            onChange={(e) => { setBase(e.target.value); setPage(1); setTimeout(() => load(true, 1), 0); }}
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
-          >
-            <option value="all">base</option>
-            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </Field>
-        <Field label="COUNTRY">
-          <input
-            value={country}
-            onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            placeholder="Please enter country"
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="ZIP">
-          <input
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            placeholder="Please enter your zip code"
-            className="h-8 w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <div className="flex items-center gap-2 ml-auto">
-          <button
-            onClick={() => { setPage(1); load(false, 1); }}
-            className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5 transition"
-          >
-            <Search className="h-3.5 w-3.5" /> search
-          </button>
-          <button
-            onClick={reset}
-            className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center gap-1.5 transition"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> reset
+      <div className="bg-white border border-[#e6e6e6] mb-4">
+        <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center justify-between gap-3">
+          <h1 className="text-[15px] font-semibold text-[#303133]">Магазин · Подарочные и предоплаченные карты</h1>
+          <button onClick={() => void load()} className="inline-flex items-center gap-1.5 text-[12px] text-[#2196f3] hover:underline">
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Обновить
           </button>
         </div>
-        {/* Optional seller filter (compact) */}
-        {sellers.length > 0 && (
-          <Field label="SELLER">
-            <select
-              value={seller}
-              onChange={(e) => setSeller(e.target.value)}
-              className="h-8 w-[190px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
-            >
-              <option value="all">All sellers</option>
-              {sellers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {(s.seller_display_name || s.display_name || s.username) + (s.is_seller_verified ? " ✓" : "")}
-                </option>
-              ))}
+
+        <div className="p-4 flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] text-[#909399]">Категория</span>
+            <select value={catId} onChange={(e) => setCatId(e.target.value)} className={`${inputCls} min-w-[180px]`}>
+              <option value="">Все категории</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </Field>
-        )}
-      </div>
+          </div>
 
-      {/* BATCH ADD BUTTON */}
-      <div className="mt-3 flex items-center justify-between">
-        <button
-          onClick={batchAdd}
-          disabled={selected.size === 0}
-          className="h-7 px-3 bg-[#e8f5e9] hover:bg-[#dcedc8] border border-[#c8e6c9] text-[#2e7d32] text-[12px] transition disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
-        </button>
-        <div className="text-[12px] text-[#888]">
-          {totalCards > 0 ? `${totalCards} results` : ""}
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] text-[#909399]">Бренд / номинал</span>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Walmart, Visa…" className={`${inputCls} min-w-[190px]`} />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] text-[#909399]">Цена от</span>
+            <input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} inputMode="decimal" placeholder="0" className={`${inputCls} w-[100px]`} />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] text-[#909399]">Цена до</span>
+            <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} inputMode="decimal" placeholder="500" className={`${inputCls} w-[100px]`} />
+          </div>
+
+          <label className="flex items-center gap-2 h-9 text-[13px] text-[#606266] cursor-pointer">
+            <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} className="accent-[#2196f3]" />
+            Только в наличии
+          </label>
+
+          <button onClick={reset} className="h-9 px-4 border border-[#dcdfe6] text-[13px] text-[#606266] hover:border-[#2196f3] hover:text-[#2196f3] transition">
+            Сбросить
+          </button>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="mt-3 border border-[#e6e6e6] bg-white overflow-x-auto">
-        <table className="w-full text-[13px] border-collapse">
-          <thead>
-            <tr className="bg-[#fafafa] text-[#555] text-[12px]">
-              <th className="p-2 w-8 border-b border-[#eee]">
-                <input
-                  type="checkbox"
-                  checked={cards.length > 0 && selected.size === cards.length}
-                  onChange={toggleAll}
-                  className="cursor-pointer accent-[#2196f3]"
-                />
-              </th>
-              {["BIN","refund","month","year","city","state","zip","country","tel","email","prices","base","operation"].map((h) => (
-                <th key={h} className="p-2 text-center font-normal border-b border-[#eee]">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading && Array.from({ length: 8 }).map((_, i) => (
-              <tr key={i} className="border-b border-[#f0f0f0]">
-                <td colSpan={14} className="p-3">
-                  <div className="h-4 bg-[#f5f5f5] animate-pulse" />
-                </td>
+      <div className="bg-white border border-[#e6e6e6]">
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px] min-w-[860px]">
+            <thead>
+              <tr className="bg-[#fafafa] text-[#909399] text-left">
+                <th className="px-4 py-3 font-medium">Товар</th>
+                <th className="px-4 py-3 font-medium">Категория</th>
+                <th className="px-4 py-3 font-medium">Номинал / описание</th>
+                <th className="px-4 py-3 font-medium">Наличие</th>
+                <th className="px-4 py-3 font-medium text-right">Цена</th>
+                <th className="px-4 py-3 font-medium text-right">Действие</th>
               </tr>
-            ))}
-            {!loading && cards.map((c) => (
-              <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
-                <td className="p-2 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(c.id)}
-                    onChange={() => toggle(c.id)}
-                    className="cursor-pointer accent-[#2196f3]"
-                  />
-                </td>
-                <td className="p-2 text-center font-mono text-[#333]">
-                  {c.bin}<span className="text-[#bbb]">********</span>
-                </td>
-                <td className="p-2 text-center text-[#2196f3]">{c.refundable ? "YES" : "NO"}</td>
-                <td className="p-2 text-center font-mono">{c.exp_month ?? "—"}</td>
-                <td className="p-2 text-center font-mono">{c.exp_year ?? "—"}</td>
-                <td className="p-2 text-center max-w-[140px] truncate" title={c.city ?? ""}>{c.city ?? "—"}</td>
-                <td className="p-2 text-center">{c.state ?? "—"}</td>
-                <td className="p-2 text-center font-mono">{c.zip ?? "—"}</td>
-                <td className="p-2 text-center">{c.country ?? "—"}</td>
-                <td className="p-2 text-center">{c.has_phone ? "yes" : "no"}</td>
-                <td className="p-2 text-center">{c.has_email ? "yes" : "no"}</td>
-                <td className="p-2 text-center font-mono">{Number(c.price).toFixed(0)}</td>
-                <td className="p-2 text-center text-[11px] text-[#666] max-w-[180px]">
-                  <span className="whitespace-pre-line break-words">{c.base}</span>
-                </td>
-                <td className="p-2 text-center">
-                  {cartIds.has(c.id) ? (
-                    <span className="text-[#4caf50] text-[12px]">In cart</span>
-                  ) : (
-                    <button
-                      onClick={() => addToCart(c.id)}
-                      className="text-[#2196f3] hover:underline text-[12px]"
-                    >
-                      Add to cart
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {!loading && noResults && (
-              <tr>
-                <td colSpan={14} className="p-10 text-center text-[#888] text-[13px]">
-                  {lastBin
-                    ? <>No cards match BIN prefix <code className="px-1 bg-[#f5f5f5] font-mono">{lastBin}</code>.</>
-                    : "No cards match your filters."}
-                  <div className="mt-2">
-                    <button onClick={reset} className="text-[#2196f3] hover:underline">Clear search</button>
-                  </div>
-                </td>
-              </tr>
-            )}
-            {!loading && !noResults && cards.length === 0 && (
-              <tr>
-                <td colSpan={14} className="p-10 text-center text-[#888] text-[13px]">
-                  Search for a BIN above to find cards in stock.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-[#909399]">
+                  <Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Загрузка…
+                </td></tr>
+              )}
+              {!loading && rows.length === 0 && (
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-[#909399]">Товары не найдены</td></tr>
+              )}
+              {!loading && rows.map((p) => {
+                const unlimited = p.delivery_type !== "key";
+                const out = !unlimited && p.stock <= 0;
+                return (
+                  <tr key={p.id} className="border-t border-[#f0f0f0] hover:bg-[#fafcff]">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {p.image_url ? (
+                          <img src={p.image_url} alt={p.title} className="h-9 w-14 object-cover border border-[#eee]" loading="lazy" />
+                        ) : (
+                          <div className="h-9 w-14 bg-[#304156] text-white text-[10px] flex items-center justify-center">CARD</div>
+                        )}
+                        <div>
+                          <div className="text-[#303133] font-medium">{p.title}</div>
+                          {p.featured && <span className="text-[10px] text-[#e6a23c]">ХИТ ПРОДАЖ</span>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-[#606266]">{catName(p.category_id)}</td>
+                    <td className="px-4 py-3 text-[#606266] max-w-[280px] truncate">{p.short_description ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      {unlimited
+                        ? <span className="text-[#2fb344]">∞</span>
+                        : <span className={out ? "text-[#f56c6c]" : "text-[#2fb344]"}>{out ? "Нет" : p.stock}</span>}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="text-[#303133] font-semibold">{money(p.price)}</span>
+                      {p.compare_at_price && p.compare_at_price > p.price && (
+                        <span className="ml-2 text-[11px] text-[#c0c4cc] line-through">{money(p.compare_at_price)}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        disabled={out || buying === p.id}
+                        onClick={() => void buy(p)}
+                        className="h-8 px-4 text-[12px] text-white bg-[#2fb344] hover:bg-[#28a03c] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                      >
+                        {buying === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Купить"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-4 py-3 border-t border-[#f0f0f0] text-[12px] text-[#909399]">
+          Показано {rows.length} из {products.length} позиций
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-[12px] text-[#666]">
-          <p>Page {page} of {totalPages}</p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-              className="h-7 w-7 border border-[#e0e0e0] flex items-center justify-center hover:bg-[#f7f7f7] disabled:opacity-40"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-              let p: number;
-              if (totalPages <= 7) p = i + 1;
-              else if (page <= 4) p = i + 1;
-              else if (page >= totalPages - 3) p = totalPages - 6 + i;
-              else p = page - 3 + i;
-              return (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`h-7 min-w-[28px] px-2 border text-[12px] font-mono transition ${
-                    page === p
-                      ? "bg-[#2196f3] border-[#2196f3] text-white"
-                      : "border-[#e0e0e0] text-[#555] hover:bg-[#f7f7f7]"
-                  }`}
-                >
-                  {p}
-                </button>
-              );
-            })}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              className="h-7 w-7 border border-[#e0e0e0] flex items-center justify-center hover:bg-[#f7f7f7] disabled:opacity-40"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
+      {delivered && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setDelivered(null)}>
+          <div className="bg-white w-full max-w-lg border border-[#e6e6e6]" onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-[#f0f0f0] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[#2fb344] text-[14px] font-semibold">
+                <CheckCircle2 className="h-4 w-4" /> Заказ выполнен
+              </div>
+              <button onClick={() => setDelivered(null)} className="text-[#909399] hover:text-[#303133]"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="text-[13px] text-[#606266]">{delivered.title}</div>
+              <pre className="bg-[#fafafa] border border-[#eee] p-3 text-[13px] text-[#303133] whitespace-pre-wrap break-all">{delivered.content}</pre>
+              <button
+                onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Скопировано"); }}
+                className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] text-white bg-[#2196f3] hover:bg-[#1e88e5] transition"
+              >
+                <Copy className="h-3.5 w-3.5" /> Копировать
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* keep Link import used for potential future links */}
-      <span className="hidden"><Link to="/">.</Link></span>
     </AppShell>
   );
 };
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[#888] text-[11px] tracking-wider">{label}</span>
-      {children}
-    </div>
-  );
-}
 
 export default Shop;
