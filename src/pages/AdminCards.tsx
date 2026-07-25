@@ -1,56 +1,56 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
-import { cardsApi, categoriesApi } from "@/lib/api";
+import {
+  adminListCards, adminUpdateCards, adminDeleteCards, adminHideExpiredCards,
+  listCategories, type AdminCardRow, type Category,
+} from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CreditCard, Trash2, Search, EyeOff, Eye, DollarSign, Check, X, ChevronLeft, ChevronRight, AlertTriangle, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 
-interface Card {
-  id: string; seller_id: string; bin: string; brand: string; country: string;
-  price: number; status: string; created_at: string; exp_month?: string; exp_year?: string;
-}
+type Card = AdminCardRow;
+const PER_PAGE = 50;
 
 const AdminCards = () => {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [allCards, setAllCards] = useState<Card[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "sold" | "hidden" | "expired">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCards, setTotalCards] = useState(0);
 
-  const load = async (p = page) => {
+  const totalCards = allCards.length;
+  const totalPages = Math.max(1, Math.ceil(totalCards / PER_PAGE));
+  const cards = allCards.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  const load = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string | number | boolean> = { per_page: 50, page: p };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (query) params.q = query;
-      const res = await cardsApi.all(params);
-      setCards((res.cards ?? []) as unknown as Card[]);
-      setTotalPages(res.pages ?? 1);
-      setTotalCards(res.total ?? 0);
-    } catch { /* ignore */ }
+      setAllCards(await adminListCards({ search: query, status: statusFilter }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to load cards");
+    }
     setLoading(false);
   };
 
   useEffect(() => {
     (async () => {
-      const res = await categoriesApi.all();
-      setCategories(res.categories ?? []);
+      try { setCategories(await listCategories(true)); } catch { /* ignore */ }
     })();
   }, []);
 
-  useEffect(() => { setPage(1); load(1); }, [query, statusFilter]); // eslint-disable-line
-  useEffect(() => { load(page); }, [page]); // eslint-disable-line
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(1); load(); }, 250);
+    return () => clearTimeout(t);
+  }, [query, statusFilter]); // eslint-disable-line
 
   const cleanupExpired = async () => {
     try {
-      const res = await cardsApi.cleanupExpired();
-      toast.success(`Marked ${res.expired} expired cards`);
-      load(page);
+      const n = await adminHideExpiredCards();
+      toast.success(`Hid ${n} expired card${n === 1 ? "" : "s"}`);
+      load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
@@ -70,9 +70,9 @@ const AdminCards = () => {
     if (ids.length === 0) return;
     if (!confirm(`Delete ${ids.length} cards?`)) return;
     try {
-      await cardsApi.bulkDelete(ids);
+      await adminDeleteCards(ids);
       toast.success(`Deleted ${ids.length}`);
-      setSelected(new Set()); load(page);
+      setSelected(new Set()); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
@@ -80,9 +80,9 @@ const AdminCards = () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     try {
-      await cardsApi.bulkUpdate(ids, { status });
+      await adminUpdateCards(ids, { active: status === "available" });
       toast.success(`Status → ${status} on ${ids.length} cards`);
-      setSelected(new Set()); load(page);
+      setSelected(new Set()); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
@@ -92,9 +92,9 @@ const AdminCards = () => {
     const p = Number(bulkPrice);
     if (ids.length === 0 || !p || p <= 0) return toast.error("Select cards and enter a valid price");
     try {
-      await cardsApi.bulkUpdate(ids, { price: p });
+      await adminUpdateCards(ids, { price: p });
       toast.success(`Price → $${p.toFixed(2)} on ${ids.length} cards`);
-      setBulkPrice(""); setSelected(new Set()); load(page);
+      setBulkPrice(""); setSelected(new Set()); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
@@ -102,9 +102,9 @@ const AdminCards = () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     try {
-      await cardsApi.bulkUpdate(ids, { category_id: categoryId });
+      await adminUpdateCards(ids, { category_id: categoryId });
       toast.success(`Category updated for ${ids.length} cards`);
-      setSelected(new Set()); load(page);
+      setSelected(new Set()); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
@@ -114,8 +114,8 @@ const AdminCards = () => {
     const p = Number(editPrice);
     if (!p || p <= 0) return toast.error("Invalid price");
     try {
-      await cardsApi.update(id, { price: p });
-      setCards((cs) => cs.map((c) => (c.id === id ? { ...c, price: p } : c)));
+      await adminUpdateCards([id], { price: p });
+      setAllCards((cs) => cs.map((c) => (c.id === id ? { ...c, price: p } : c)));
       setEditingId(null);
       toast.success("Price updated");
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
@@ -124,10 +124,12 @@ const AdminCards = () => {
   const removeOne = async (id: string) => {
     if (!confirm("Delete this card?")) return;
     try {
-      await cardsApi.del(id);
-      setCards((cs) => cs.filter((c) => c.id !== id));
-    } catch { /* ignore */ }
+      await adminDeleteCards([id]);
+      setAllCards((cs) => cs.filter((c) => c.id !== id));
+      toast.success("Deleted");
+    } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
+
 
   return (
     <AdminLayout title="Card Moderation">
