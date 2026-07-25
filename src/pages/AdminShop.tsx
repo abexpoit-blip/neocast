@@ -9,6 +9,7 @@ import {
 } from "@/lib/store";
 import { BrandLogo, detectBrandFromBin, COUNTRIES } from "@/lib/brands";
 import { toFlag } from "@/lib/countryFlag";
+import { lookupBin, type BinInfo } from "@/lib/bin";
 
 const BRANDS = ["VISA", "MASTERCARD", "AMEX", "DISCOVER", "JCB", "DINERS"];
 
@@ -45,6 +46,8 @@ const AdminShop = () => {
   const [form, setForm] = useState(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [binInfo, setBinInfo] = useState<BinInfo | null>(null);
+  const [binLoading, setBinLoading] = useState(false);
 
   const [catForm, setCatForm] = useState<{ id?: string; name: string; slug: string; icon: string; sort_order: number; active: boolean }>({
     name: "", slug: "", icon: "", sort_order: 0, active: true,
@@ -221,10 +224,35 @@ const AdminShop = () => {
                   maxLength={8}
                   onChange={(e) => {
                     const bin = e.target.value.replace(/\D/g, "");
-                    setForm({ ...form, bin, brand: bin.length >= 2 ? detectBrandFromBin(bin) : form.brand });
+                    setForm((f) => ({ ...f, bin, brand: bin.length >= 2 ? detectBrandFromBin(bin) : f.brand }));
+                    if (bin.length >= 6) {
+                      setBinLoading(true);
+                      void lookupBin(bin).then((info) => {
+                        setBinLoading(false);
+                        if (!info) return;
+                        setBinInfo(info);
+                        setForm((f) =>
+                          f.bin === bin
+                            ? {
+                                ...f,
+                                brand: info.brand ?? f.brand,
+                                country: info.country ?? f.country,
+                              }
+                            : f,
+                        );
+                      });
+                    } else {
+                      setBinInfo(null);
+                    }
                   }}
                   placeholder="414720"
                 />
+                <div className="text-[11px] text-muted-foreground min-h-[16px]">
+                  {binLoading && "Проверка BIN…"}
+                  {!binLoading && binInfo && [binInfo.brand, binInfo.type, binInfo.level, binInfo.bank, binInfo.countryName]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <div className={labelCls}>Бренд</div>

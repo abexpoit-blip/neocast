@@ -115,6 +115,25 @@ export const purchaseProduct = async (productId: string, quantity: number) => {
   return data as string;
 };
 
+/** Purchase then return the actually delivered content (keys / link / text). */
+export const purchaseAndDeliver = async (
+  productId: string,
+  quantity = 1,
+): Promise<{ orderId: string; content: string }> => {
+  const orderId = await purchaseProduct(productId, quantity);
+  const { data, error } = await supabase
+    .from("order_items")
+    .select("delivered_content, title")
+    .eq("order_id", orderId);
+  if (error) throw error;
+  const content = (data ?? [])
+    .map((i) => (i.delivered_content ?? "").trim())
+    .filter(Boolean)
+    .join("\n");
+  return { orderId, content };
+};
+
+
 export const translatePurchaseError = (msg: string) => {
   if (msg.includes("insufficient_balance")) return "Недостаточно средств на балансе.";
   if (msg.includes("out_of_stock")) return "Товар закончился.";
