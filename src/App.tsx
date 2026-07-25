@@ -10,7 +10,6 @@ import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 // removed: Landing, Dashboard, News, BuyerRefunds, SuperShop, BoostTool, Tickets, Settings (not part of Scorpion-style nav)
 import Auth from "./pages/Auth";
-import SellerLogin from "./pages/SellerLogin";
 import AdminLogin from "./pages/AdminLogin";
 import ResetPassword from "./pages/ResetPassword";
 import AdminSettings from "./pages/AdminSettings";
@@ -19,11 +18,6 @@ import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import Recharge from "./pages/Recharge";
-import SellerPanel from "./pages/SellerPanel";
-import SellerApply from "./pages/SellerApply";
-import SellerUpload from "./pages/SellerUpload";
-import SellerFormat from "./pages/SellerFormat";
-import SellerProfile from "./pages/SellerProfile";
 import Admin from "./pages/Admin";
 import AdminApplications from "./pages/AdminApplications";
 import AdminPayouts from "./pages/AdminPayouts";
@@ -37,7 +31,6 @@ import AdminDigitalProducts from "./pages/AdminDigitalProducts";
 import AdminBoost from "./pages/AdminBoost";
 import AdminCategories from "./pages/AdminCategories";
 import AdminShop from "./pages/AdminShop";
-import SellerPriceRules from "./pages/SellerPriceRules";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,7 +46,6 @@ const App = () => (
           <Routes>
             {/* Public auth pages */}
             <Route path="/auth" element={<Auth />} />
-            <Route path="/seller-login" element={<SellerLogin />} />
             <Route path="/crzr-x9k2-panel" element={<AdminLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin/reset-password" element={<ResetPassword />} />
@@ -82,12 +74,8 @@ const App = () => (
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
 
-            {/* Seller routes (hidden, still functional for approved sellers) */}
-            <Route path="/seller" element={<ProtectedRoute><SellerPanel /></ProtectedRoute>} />
             <Route path="/seller/apply" element={<ProtectedRoute><SellerApply /></ProtectedRoute>} />
-            <Route path="/seller/upload" element={<ProtectedRoute><SellerUpload /></ProtectedRoute>} />
             <Route path="/seller/format" element={<ProtectedRoute><SellerFormat /></ProtectedRoute>} />
-            <Route path="/seller/price-rules" element={<ProtectedRoute><SellerPriceRules /></ProtectedRoute>} />
             <Route path="/seller/:id" element={<ProtectedRoute><SellerProfile /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
