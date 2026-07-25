@@ -151,17 +151,17 @@ const Recharge = () => {
     if (!amtNum || amtNum < MIN_DEPOSIT) return toast.error(`Минимальная сумма пополнения — $${MIN_DEPOSIT}.`);
     setBusy(true);
     try {
-      const inv = await plisioApi.createInvoice({ amount: amtNum, currency: "LTC" });
+      const inv = await createCryptoInvoice({ data: { amount: amtNum } });
       setActiveInvoice({
         deposit_id: inv.deposit_id,
-        wallet_address: inv.wallet_address || inv.qr_data || "",
+        wallet_address: inv.wallet_address || "",
         crypto_amount: inv.crypto_amount,
         currency: "LTC",
-        qr_data: inv.qr_data || inv.wallet_address || "",
+        qr_data: inv.wallet_address || "",
         status: "pending",
         confirmations: 0,
         usd_amount: amtNum,
-        expires_ms: Date.now() + INVOICE_TTL_SEC * 1000,
+        expires_ms: inv.expires_ms || Date.now() + INVOICE_TTL_SEC * 1000,
       });
       startPolling(inv.deposit_id);
       toast.success("Заявка создана — отправьте LTC на адрес ниже.");
