@@ -15,7 +15,6 @@ const items: Item[] = [
   { to: "/admin/payments", label: "Payments", icon: DollarSign },
   { to: "/admin/payment-gateway", label: "Plisio Payment Gateway", icon: Banknote },
   { to: "/admin/stock-review", label: "Stock Review", icon: Package },
-  { to: "/admin/digital-products", label: "Super Shop", icon: PackageX },
   { to: "/admin/site", label: "Site settings", icon: SettingsIcon },
   { to: "/admin/settings", label: "Credentials", icon: KeyRound },
 ];

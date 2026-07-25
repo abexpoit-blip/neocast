@@ -27,7 +27,6 @@ import AdminRefunds from "./pages/AdminRefunds";
 import AdminPaymentGateway from "./pages/AdminPaymentGateway";
 import AdminPayments from "./pages/AdminPayments";
 import AdminStockReview from "./pages/AdminStockReview";
-import AdminDigitalProducts from "./pages/AdminDigitalProducts";
 
 import AdminCategories from "./pages/AdminCategories";
 import AdminShop from "./pages/AdminShop";
@@ -62,7 +61,6 @@ const App = () => (
             <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
             <Route path="/admin/payment-gateway" element={<AdminRoute><AdminPaymentGateway /></AdminRoute>} />
             <Route path="/admin/stock-review" element={<AdminRoute><AdminStockReview /></AdminRoute>} />
-            <Route path="/admin/digital-products" element={<AdminRoute><AdminDigitalProducts /></AdminRoute>} />
             
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/shop" element={<AdminRoute><AdminShop /></AdminRoute>} />
