@@ -195,7 +195,7 @@ const Shop = () => {
           Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
         </button>
         <div className="flex items-center gap-4 text-[12px] text-[#888]">
-          {cards.length > 0 ? <span>{cards.length} results</span> : null}
+          {cards.length > 0 ? <span>{cards.length} results · стр. {page}/{totalPages}</span> : null}
           <Link to="/cart" className="text-[#2196f3] hover:underline">
             Корзина{count > 0 ? ` (${count})` : ""}
           </Link>
