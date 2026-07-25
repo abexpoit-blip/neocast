@@ -154,6 +154,20 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       </div>
 
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-5">{children}</main>
+
+      {/* ПОДВАЛ */}
+      <footer className="bg-[#304156] text-white/70 mt-6">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-[12px]">
+          <div>© {new Date().getFullYear()} {settings.shop_name}. Все права защищены.</div>
+          <div className="flex items-center gap-4">
+            <span>Поддержка 24/7</span>
+            <span className="hidden md:inline text-white/30">·</span>
+            <span>Мгновенная доставка</span>
+            <span className="hidden md:inline text-white/30">·</span>
+            <span>Безопасные расчёты</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
