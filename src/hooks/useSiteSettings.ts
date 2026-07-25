@@ -17,19 +17,19 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  shop_name: "Scorpion-Shop",
-  shop_tag: "VERIFIED MARKETPLACE",
-  hero_eyebrow: "WELCOME BACK",
-  hero_title: "The verified Scorpion-Shop marketplace.",
+  shop_name: "Zoru Shop",
+  shop_tag: "ПРОВЕРЕННЫЙ МАРКЕТПЛЕЙС",
+  hero_eyebrow: "С ВОЗВРАЩЕНИЕМ",
+  hero_title: "Проверенный маркетплейс Zoru Shop.",
   hero_sub:
-    "Verified inventory, instant delivery, automated replacement, and secure settlement.",
-  hero_cta: "Enter the marketplace",
+    "Проверенный товар, мгновенная доставка, авто-замена и безопасные расчёты.",
+  hero_cta: "Войти в маркетплейс",
   ticker_items: [
-    "● LIVE INVENTORY · FRESH STOCK DAILY",
-    "★ VERIFIED SELLERS · INSTANT DELIVERY",
-    "● 99.4% VALID RATE THIS WEEK",
-    "↗ AUTO REPLACEMENT WITHIN 5 MINUTES",
-    "● SUPPORT 24/7 · @SCORPIONCCSTORE02",
+    "● ЖИВОЙ СКЛАД · СВЕЖИЕ ПОСТУПЛЕНИЯ ЕЖЕДНЕВНО",
+    "★ ПРОВЕРЕННЫЕ ПРОДАВЦЫ · МГНОВЕННАЯ ДОСТАВКА",
+    "● 99.4% ВАЛИДНОСТЬ НА ЭТОЙ НЕДЕЛЕ",
+    "↗ АВТОЗАМЕНА В ТЕЧЕНИЕ 5 МИНУТ",
+    "● ПОДДЕРЖКА 24/7 · TELEGRAM",
   ],
   default_commission_percent: 20,
   min_card_price: 1,

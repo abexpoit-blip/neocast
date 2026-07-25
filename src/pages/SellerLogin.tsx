@@ -57,7 +57,7 @@ const SellerLogin = () => {
 
   return (
     <>
-      <Seo title="Seller Sign In | Scorpion-Shop" description="Approved sellers sign in to manage stock, payouts and orders." path="/seller-login" />
+      <Seo title="Seller Sign In | Zoru Shop" description="Approved sellers sign in to manage stock, payouts and orders." path="/seller-login" />
       <ScorpionAuthShell
         title="Seller Portal"
         accent="gold"
