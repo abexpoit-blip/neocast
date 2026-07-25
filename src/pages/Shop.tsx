@@ -13,7 +13,7 @@ const Shop = () => {
   const { profile, refresh: refreshProfile } = useAuth();
   const [all, setAll] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
+  const [searched, setSearched] = useState(true);
   const [buying, setBuying] = useState(false);
   const [delivered, setDelivered] = useState<{ title: string; content: string } | null>(null);
 
@@ -38,7 +38,16 @@ const Shop = () => {
     }
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+    const onFocus = () => { if (document.visibilityState === "visible") void load(); };
+    document.addEventListener("visibilitychange", onFocus);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", onFocus);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
 
   const bases = useMemo(
     () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
@@ -66,7 +75,8 @@ const Shop = () => {
   const reset = () => {
     setBin(""); setBase("all"); setCountry(""); setZip("");
     setQ({ bin: "", base: "all", country: "", zip: "" });
-    setSearched(false); setLastBin(""); setSelected(new Set());
+    setSearched(true); setLastBin(""); setSelected(new Set());
+    void load();
   };
 
   useEffect(() => {
