@@ -23,7 +23,12 @@ const POSTGRES_PASSWORD = rand(24);
 const DASHBOARD_PASSWORD = rand(12);
 const SECRET_KEY_BASE = rand(32);
 const VAULT_ENC_KEY = rand(16);
+const REALTIME_DB_ENC_KEY = rand(8); // exactly 16 chars
+const PG_META_CRYPTO_KEY = rand(16); // 32 chars
 const LOGFLARE_KEY = rand(16);
+const S3_PROTOCOL_ACCESS_KEY_ID = rand(16);
+const S3_PROTOCOL_ACCESS_KEY_SECRET = rand(32);
+const POOLER_TENANT_ID = `zoru${rand(6)}`;
 
 const ANON_KEY = sign({ role: 'anon', iss: 'supabase', iat, exp }, JWT_SECRET);
 const SERVICE_ROLE_KEY = sign({ role: 'service_role', iss: 'supabase', iat, exp }, JWT_SECRET);
@@ -39,7 +44,12 @@ console.log(
       DASHBOARD_PASSWORD,
       SECRET_KEY_BASE,
       VAULT_ENC_KEY,
+      REALTIME_DB_ENC_KEY,
+      PG_META_CRYPTO_KEY,
       LOGFLARE_KEY,
+      S3_PROTOCOL_ACCESS_KEY_ID,
+      S3_PROTOCOL_ACCESS_KEY_SECRET,
+      POOLER_TENANT_ID,
     },
     null,
     2,

@@ -40,6 +40,29 @@ if [ ! -f "$KEYS_FILE" ]; then
 fi
 chmod 600 "$KEYS_FILE"
 
+# Older installs may have a credentials file generated before new Supabase
+# Docker variables were required. Fill only missing values; never rotate keys.
+node - "$KEYS_FILE" <<'NODE'
+const fs = require('node:fs');
+const crypto = require('node:crypto');
+const file = process.argv[2];
+const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+const rand = (n) => crypto.randomBytes(n).toString('hex');
+const ensure = (key, value) => {
+  if (!data[key] || data[key] === 'null') data[key] = typeof value === 'function' ? value() : value;
+};
+ensure('DASHBOARD_USERNAME', 'zoru');
+ensure('SECRET_KEY_BASE', () => rand(32));
+ensure('VAULT_ENC_KEY', () => rand(16));
+ensure('REALTIME_DB_ENC_KEY', () => rand(8));
+ensure('PG_META_CRYPTO_KEY', () => rand(16));
+ensure('LOGFLARE_KEY', () => rand(16));
+ensure('S3_PROTOCOL_ACCESS_KEY_ID', () => rand(16));
+ensure('S3_PROTOCOL_ACCESS_KEY_SECRET', () => rand(32));
+ensure('POOLER_TENANT_ID', () => `zoru${rand(6)}`);
+fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+NODE
+
 get() { jq -r ".$1" "$KEYS_FILE"; }
 JWT_SECRET=$(get JWT_SECRET)
 ANON_KEY=$(get ANON_KEY)
@@ -49,7 +72,23 @@ DASHBOARD_USERNAME=$(get DASHBOARD_USERNAME)
 DASHBOARD_PASSWORD=$(get DASHBOARD_PASSWORD)
 SECRET_KEY_BASE=$(get SECRET_KEY_BASE)
 VAULT_ENC_KEY=$(get VAULT_ENC_KEY)
+REALTIME_DB_ENC_KEY=$(get REALTIME_DB_ENC_KEY)
+PG_META_CRYPTO_KEY=$(get PG_META_CRYPTO_KEY)
 LOGFLARE_KEY=$(get LOGFLARE_KEY)
+S3_PROTOCOL_ACCESS_KEY_ID=$(get S3_PROTOCOL_ACCESS_KEY_ID)
+S3_PROTOCOL_ACCESS_KEY_SECRET=$(get S3_PROTOCOL_ACCESS_KEY_SECRET)
+POOLER_TENANT_ID=$(get POOLER_TENANT_ID)
+
+print_db_help() {
+  echo
+  echo "!! Supabase DB container healthy hoyni. Nicher log dekho:"
+  docker compose ps || true
+  docker compose logs --tail=120 db || true
+  echo
+  echo "!! Eta first install hole / Ctrl+C diye majhpothe stop kore thakle safe reset:"
+  echo "cd $BASE_DIR/docker && docker compose down -v --remove-orphans && rm -rf volumes/db/data && cd $SCRIPT_DIR && bash setup-supabase.sh"
+  echo "!! WARNING: ei reset existing self-host DB data delete kore. Data thakle age backup nao."
+}
 
 echo "==> 4/8 Writing $BASE_DIR/docker/.env"
 setenv() { # key value
@@ -67,10 +106,14 @@ setenv DASHBOARD_USERNAME "$DASHBOARD_USERNAME"
 setenv DASHBOARD_PASSWORD "$DASHBOARD_PASSWORD"
 setenv SECRET_KEY_BASE "$SECRET_KEY_BASE"
 setenv VAULT_ENC_KEY "$VAULT_ENC_KEY"
+setenv REALTIME_DB_ENC_KEY "$REALTIME_DB_ENC_KEY"
+setenv PG_META_CRYPTO_KEY "$PG_META_CRYPTO_KEY"
 setenv LOGFLARE_PUBLIC_ACCESS_TOKEN "$LOGFLARE_KEY"
 setenv LOGFLARE_PRIVATE_ACCESS_TOKEN "$LOGFLARE_KEY"
+setenv S3_PROTOCOL_ACCESS_KEY_ID "$S3_PROTOCOL_ACCESS_KEY_ID"
+setenv S3_PROTOCOL_ACCESS_KEY_SECRET "$S3_PROTOCOL_ACCESS_KEY_SECRET"
 setenv SITE_URL "https://zoru.cc"
-setenv API_EXTERNAL_URL "https://$DOMAIN_API"
+setenv API_EXTERNAL_URL "https://$DOMAIN_API/auth/v1"
 setenv SUPABASE_PUBLIC_URL "https://$DOMAIN_API"
 setenv ADDITIONAL_REDIRECT_URLS "https://zoru.cc,https://zoru.cc/auth"
 setenv DISABLE_SIGNUP "false"
@@ -78,13 +121,28 @@ setenv ENABLE_EMAIL_AUTOCONFIRM "true"
 setenv ENABLE_EMAIL_SIGNUP "true"
 setenv ENABLE_ANONYMOUS_USERS "false"
 setenv JWT_EXPIRY "3600"
+setenv POSTGRES_HOST "db"
+setenv POSTGRES_DB "postgres"
+setenv POSTGRES_PORT "5432"
 setenv KONG_HTTP_PORT "8000"
 setenv KONG_HTTPS_PORT "8443"
+setenv POOLER_PROXY_PORT_TRANSACTION "6543"
+setenv POOLER_DEFAULT_POOL_SIZE "20"
+setenv POOLER_MAX_CLIENT_CONN "100"
+setenv POOLER_DB_POOL_SIZE "5"
+setenv POOLER_TENANT_ID "$POOLER_TENANT_ID"
+setenv PGRST_DB_SCHEMAS "public,graphql_public"
+setenv PGRST_DB_MAX_ROWS "1000"
+setenv PGRST_DB_EXTRA_SEARCH_PATH "public,extensions"
+setenv STUDIO_DEFAULT_ORGANIZATION "Zoru Shop"
+setenv STUDIO_DEFAULT_PROJECT "Zoru Shop"
+setenv FUNCTIONS_VERIFY_JWT "false"
 
 echo "==> 5/8 Starting Supabase containers"
 docker compose pull
-docker compose up -d
+docker compose up -d || { print_db_help; exit 1; }
 sleep 25
+docker compose ps db | grep -q "healthy" || { print_db_help; exit 1; }
 
 echo "==> 6/8 Applying Zoru Shop schema"
 SCHEMA="$SCRIPT_DIR/schema.sql"
