@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute, AdminRoute } from "@/components/AppShell";
 import ScrollToTop from "@/components/ScrollToTop";
+import { LanguageProvider } from "@/lib/i18n";
 
 import Index from "./pages/Index";
 // removed: Landing, Dashboard, News, BuyerRefunds, SuperShop, BoostTool, Tickets, Settings (not part of Scorpion-style nav)
@@ -40,6 +41,7 @@ const App = () => (
       <Toaster />
       <Sonner theme="light" />
       <BrowserRouter>
+        <LanguageProvider>
         <AuthProvider>
           <ScrollToTop />
           <Routes>
@@ -77,6 +79,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

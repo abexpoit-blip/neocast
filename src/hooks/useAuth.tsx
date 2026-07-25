@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { markSessionStart, clearSessionStart } from "@/lib/session";
+
 
 export interface AppUser {
   id: string;
@@ -86,8 +88,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       const uid = session?.user?.id ?? null;
       const mail = session?.user?.email ?? null;
+      if (_event === "SIGNED_IN") markSessionStart();
+      if (_event === "SIGNED_OUT") clearSessionStart();
       setTimeout(() => { void loadProfile(uid, mail); }, 0);
     });
+
 
     supabase.auth.getSession().then(({ data }) => {
       void loadProfile(data.session?.user?.id ?? null, data.session?.user?.email ?? null);

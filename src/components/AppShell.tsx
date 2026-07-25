@@ -4,6 +4,9 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { LanguageToggle } from "@/lib/i18n";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+
 
 // Scorpion-style navigation. Exactly 5 items, matching scorpionshopcc.su.
 const buyerNav = [
@@ -97,7 +100,9 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       {/* SUB BAR */}
       <div className="bg-white border-b border-[#e6e6e6]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-end gap-3 text-[13px]">
+          <LanguageToggle />
           <span className="px-3 py-1.5 border border-[#e6e6e6] text-[#2196f3]">
+
             {uname}
           </span>
           <Link
@@ -153,7 +158,10 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, profile, loading, signOut, profileError } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
+  // 30-minute session limit — regular users only, admins are exempt.
+  useSessionTimeout(Boolean(user) && profile?.role !== "admin");
   if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-[#666]">Загрузка…</div>;
+
   if (!user) return <Navigate to="/auth" replace state={{ from: loc }} />;
   if (profile?.banned) {
     return (

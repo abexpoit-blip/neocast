@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandLogo, detectBrandFromBin, BRANDS } from "@/lib/brands";
 import { parseAndFormat, dedupe, detectBrand, toPipeFormat } from "@/lib/cardFormatter";
-import { adminPublishFullCards } from "@/lib/store";
+import { adminPublishFullCards, adminListUsers, adminAdjustBalance, adminSetBlocked } from "@/lib/store";
 import { toast } from "sonner";
 import {
   Check, X, Users, Megaphone, CreditCard, Ban, UserCheck, Wallet,
@@ -76,17 +76,41 @@ const Admin = () => {
   // Active tab
   const [tab, setTab] = useState<"overview" | "users" | "cards" | "broadcast">("overview");
 
+  // Manual balance modal
+  const [balanceUser, setBalanceUser] = useState<Profile | null>(null);
+  const [balanceAmount, setBalanceAmount] = useState("");
+  const [balanceNote, setBalanceNote] = useState("");
+  const [balanceBusy, setBalanceBusy] = useState(false);
+
+  const loadUsers = async (q?: string) => {
+    const rows = await adminListUsers();
+    const needle = (q ?? "").trim().toLowerCase();
+    const mapped: Profile[] = rows.map(r => ({
+      id: r.id,
+      username: r.username,
+      email: r.email ?? undefined,
+      balance: Number(r.balance ?? 0),
+      is_seller: (r.roles ?? []).includes("seller"),
+      banned: Boolean(r.blocked),
+      role: (r.roles ?? []).includes("admin") ? "admin" : (r.roles ?? []).includes("seller") ? "seller" : "buyer",
+      created_at: r.created_at,
+    }));
+    return needle
+      ? mapped.filter(m => m.username?.toLowerCase().includes(needle) || (m.email ?? "").toLowerCase().includes(needle))
+      : mapped;
+  };
+
   const load = async () => {
     try {
       const [s, u, d, p, n] = await Promise.allSettled([
         adminApi.stats(),
-        adminApi.users(userSearch || undefined),
+        loadUsers(userSearch),
         depositsApi.all(),
         payoutsApi.all(),
         adminApi.getNews(),
       ]);
       if (s.status === "fulfilled") setStats(s.value);
-      if (u.status === "fulfilled") setUsers((u.value.users ?? []) as unknown as Profile[]);
+      if (u.status === "fulfilled") setUsers(u.value as Profile[]);
       if (d.status === "fulfilled") setDeposits((d.value.deposits ?? []) as unknown as Deposit[]);
       if (p.status === "fulfilled") setPayouts((p.value.payouts ?? []) as unknown as Payout[]);
       if (n.status === "fulfilled") setNews((n.value.news ?? []) as unknown as NewsItem[]);
@@ -109,7 +133,7 @@ const Admin = () => {
   useEffect(() => { load(); adminApi.vpsState().then(setVpsState).catch(() => {}); }, []);
   useEffect(() => {
     if (userSearch.length === 0 || userSearch.length >= 2) {
-      const t = setTimeout(() => { adminApi.users(userSearch || undefined).then(r => setUsers((r.users ?? []) as unknown as Profile[])).catch(() => {}); }, 300);
+      const t = setTimeout(() => { loadUsers(userSearch).then(setUsers).catch(() => {}); }, 300);
       return () => clearTimeout(t);
     }
   }, [userSearch]);
@@ -148,20 +172,24 @@ const Admin = () => {
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
 
-  const adjustBalance = async (id: string, delta: number) => {
-    const customAmount = prompt(`Enter amount (positive to add, negative to deduct):`);
-    if (!customAmount) return;
-    const amount = Number(customAmount);
-    if (isNaN(amount) || amount === 0) return toast.error("Invalid amount");
+  const submitBalance = async (sign: 1 | -1) => {
+    if (!balanceUser) return;
+    const amount = Number(balanceAmount);
+    if (!Number.isFinite(amount) || amount <= 0) return toast.error("Enter a valid amount");
+    setBalanceBusy(true);
     try {
-      await adminApi.adjustBalance(id, amount);
-      toast.success(`Balance adjusted by $${amount.toFixed(2)}`); load();
+      await adminAdjustBalance(balanceUser.id, sign * amount, balanceNote.trim() || (sign > 0 ? "Manual credit by admin" : "Manual debit by admin"));
+      toast.success(`${sign > 0 ? "Added" : "Removed"} $${amount.toFixed(2)} ${sign > 0 ? "to" : "from"} ${balanceUser.username}`);
+      setBalanceUser(null); setBalanceAmount(""); setBalanceNote("");
+      load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBalanceBusy(false); }
   };
 
   const toggleBan = async (u: Profile) => {
+    if (!confirm(`${u.banned ? "Unban" : "Ban"} ${u.username}?`)) return;
     try {
-      await adminApi.toggleBan(u.id);
+      await adminSetBlocked(u.id, !u.banned);
       toast.success(u.banned ? "User unbanned" : "User banned"); load();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Failed"); }
   };
@@ -518,7 +546,7 @@ const Admin = () => {
                         </td>
                         <td className="p-2.5 text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button size="sm" variant="outline" onClick={() => adjustBalance(u.id, 0)} title="Adjust balance" className="h-7 w-7 p-0">
+                            <Button size="sm" variant="outline" onClick={() => { setBalanceUser(u); setBalanceAmount(""); setBalanceNote(""); }} title="Add / remove balance" className="h-7 w-7 p-0">
                               <DollarSign className="h-3 w-3" />
                             </Button>
                             {(u.role !== "seller" && !u.is_seller) && (
@@ -572,7 +600,7 @@ const Admin = () => {
                     <p className="text-xs text-muted-foreground">Balance: <span className="text-primary-glow font-display">${Number(s.balance ?? 0).toFixed(2)}</span></p>
                     <div className="flex gap-1 mt-2">
                       <Button size="sm" variant="outline" onClick={() => impersonate(s)} className="h-7 text-[10px]"><LogIn className="h-3 w-3 mr-1" />Login as</Button>
-                      <Button size="sm" variant="outline" onClick={() => adjustBalance(s.id, 0)} className="h-7 text-[10px]"><DollarSign className="h-3 w-3 mr-1" />Balance</Button>
+                      <Button size="sm" variant="outline" onClick={() => { setBalanceUser(s); setBalanceAmount(""); setBalanceNote(""); }} className="h-7 text-[10px]"><DollarSign className="h-3 w-3 mr-1" />Balance</Button>
                     </div>
                   </div>
                 ))}
@@ -776,7 +804,39 @@ const Admin = () => {
           </>
         )}
       </div>
+
+      {/* Manual balance modal */}
+      {balanceUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => !balanceBusy && setBalanceUser(null)}>
+          <div className="w-full max-w-sm rounded-lg border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="h-4 w-4 text-primary-glow" />
+              <h3 className="font-semibold">Manual balance</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              {balanceUser.username} · current ${Number(balanceUser.balance ?? 0).toFixed(2)}
+            </p>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Amount (USD)</label>
+            <Input
+              autoFocus type="number" min="0" step="0.01" value={balanceAmount}
+              onChange={e => setBalanceAmount(e.target.value)} placeholder="10.00" className="bg-input/60 mt-1 mb-3"
+            />
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Note (optional)</label>
+            <Input value={balanceNote} onChange={e => setBalanceNote(e.target.value)} placeholder="Reason…" className="bg-input/60 mt-1 mb-4" />
+            <div className="flex gap-2">
+              <Button className="flex-1" disabled={balanceBusy} onClick={() => submitBalance(1)}>
+                <ArrowUpRight className="h-3.5 w-3.5 mr-1" /> Add
+              </Button>
+              <Button className="flex-1" variant="destructive" disabled={balanceBusy} onClick={() => submitBalance(-1)}>
+                <ArrowDownRight className="h-3.5 w-3.5 mr-1" /> Remove
+              </Button>
+            </div>
+            <Button variant="ghost" className="w-full mt-2 h-8 text-xs" disabled={balanceBusy} onClick={() => setBalanceUser(null)}>Cancel</Button>
+          </div>
+        </div>
+      )}
     </AdminLayout>
+
   );
 };
 
