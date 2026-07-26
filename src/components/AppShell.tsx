@@ -139,16 +139,55 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-3 sm:px-6 py-4 sm:py-5">{children}</main>
 
-      {/* ПОДВАЛ */}
-      <footer className="bg-[#304156] text-white/70 mt-6">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-[12px]">
-          <div>© {new Date().getFullYear()} {settings.shop_name}. Все права защищены.</div>
-          <div className="flex items-center gap-4">
-            <span>Поддержка 24/7</span>
-            <span className="hidden md:inline text-white/30">·</span>
-            <span>Мгновенная доставка</span>
-            <span className="hidden md:inline text-white/30">·</span>
-            <span>Безопасные расчёты</span>
+      {/* FOOTER */}
+      <footer className="mt-10 bg-[#0b1230] text-white/70 border-t border-white/10">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#22d3ee] text-white flex items-center justify-center text-sm font-extrabold shadow-[0_8px_24px_-8px_rgba(34,211,238,0.7)]">
+                N
+              </span>
+              <span className="text-white text-[15px] font-bold tracking-tight">{settings.shop_name}</span>
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-white/55 max-w-[260px]">
+              A verified marketplace built for speed — vetted stock, instant delivery and secure settlement.
+            </p>
+          </div>
+
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[#67e8f9]/70 font-semibold">Marketplace</div>
+            <ul className="mt-3 space-y-2 text-[13px]">
+              <li><Link to="/shop" className="hover:text-white transition">Shop</Link></li>
+              <li><Link to="/cart" className="hover:text-white transition">Cart</Link></li>
+              <li><Link to="/orders" className="hover:text-white transition">Orders</Link></li>
+              <li><Link to="/recharge" className="hover:text-white transition">Recharge</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[#67e8f9]/70 font-semibold">Account</div>
+            <ul className="mt-3 space-y-2 text-[13px]">
+              <li><Link to="/settings" className="hover:text-white transition">Settings</Link></li>
+              <li><Link to="/tickets" className="hover:text-white transition">Support tickets</Link></li>
+              <li><Link to="/news" className="hover:text-white transition">News &amp; updates</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[#67e8f9]/70 font-semibold">Why NeoCast</div>
+            <ul className="mt-3 space-y-2 text-[13px] text-white/60">
+              <li>24/7 support</li>
+              <li>Instant delivery</li>
+              <li>Secure settlement</li>
+              <li>Auto-replacement</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10">
+          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-[12px] text-white/45">
+            <div>© {new Date().getFullYear()} {settings.shop_name}. All rights reserved.</div>
+            <div className="tracking-[0.2em] uppercase text-[10px]">Encrypted · Verified · Instant</div>
           </div>
         </div>
       </footer>
