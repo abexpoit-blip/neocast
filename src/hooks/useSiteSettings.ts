@@ -18,10 +18,10 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  shop_name: "Zoru Shop",
+  shop_name: "NeoCast",
   shop_tag: "ПРОВЕРЕННЫЙ МАРКЕТПЛЕЙС",
   hero_eyebrow: "С ВОЗВРАЩЕНИЕМ",
-  hero_title: "Проверенный маркетплейс Zoru Shop.",
+  hero_title: "Проверенный маркетплейс NeoCast.",
   hero_sub:
     "Проверенный товар, мгновенная доставка, авто-замена и безопасные расчёты.",
   hero_cta: "Войти в маркетплейс",

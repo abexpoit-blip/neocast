@@ -127,7 +127,7 @@ const Shop = () => {
   return (
     <AppShell>
       <Seo
-        title="Магазин | Zoru Shop"
+        title="Магазин | NeoCast"
         description="Живой сток. Поиск по BIN, базе, стране и ZIP."
         path="/shop"
       />

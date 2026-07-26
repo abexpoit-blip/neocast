@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ArrowRight } from "lucide-react";
 
 /**
- * Public landing page — Zoru Shop style:
+ * Public landing page — NeoCast style:
  * dark navy nav, white/light content, blue #2196f3 primary, teal #4fc3f7 accent.
  */
 export default function Landing() {
@@ -15,8 +15,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-[#1f2d3d]" style={{ fontFamily: '"DM Sans", system-ui, sans-serif' }}>
       <Seo
-        title="Zoru Shop — Verified Marketplace"
-        description="Zoru Shop verified marketplace with instant delivery and secure settlement."
+        title="NeoCast — Verified Marketplace"
+        description="NeoCast verified marketplace with instant delivery and secure settlement."
         path="/"
       />
 
@@ -25,7 +25,7 @@ export default function Landing() {
         <div className="mx-auto max-w-[1400px] px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-[15px] font-semibold tracking-wide">
             <span className="h-2.5 w-2.5 rounded-full bg-[#4fc3f7]" />
-            Zoru Shop
+            NeoCast
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-[13px] text-white/80">
             <a href="#catalog" className="hover:text-[#4fc3f7]">Catalog</a>
@@ -57,7 +57,7 @@ export default function Landing() {
           Fast, secure, and verified delivery.
         </h1>
         <p className="mt-6 text-[15px] text-[#4a5568] max-w-2xl leading-relaxed">
-          Zoru Shop is a curated marketplace. Every seller is vetted, every order delivered
+          NeoCast is a curated marketplace. Every seller is vetted, every order delivered
           the moment payment clears — 40+ countries, sub-30-second fulfillment.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -71,7 +71,7 @@ export default function Landing() {
             href="#trust"
             className="inline-flex items-center px-5 py-3 rounded-sm bg-white border border-[#e6e6e6] text-[#1f2d3d] text-sm font-semibold hover:border-[#2196f3] transition"
           >
-            Why Zoru Shop
+            Why NeoCast
           </a>
         </div>
 
@@ -93,7 +93,7 @@ export default function Landing() {
       {/* TRUST */}
       <section id="trust" className="border-t border-[#e6e6e6] bg-white">
         <div className="mx-auto max-w-[1200px] px-6 py-16">
-          <h2 className="text-2xl font-bold text-[#1f2d3d]">Why Zoru Shop</h2>
+          <h2 className="text-2xl font-bold text-[#1f2d3d]">Why NeoCast</h2>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { t: "Verified sellers", d: "Every seller passes identity, stock and fulfillment checks before listing." },
@@ -113,7 +113,7 @@ export default function Landing() {
       {/* FOOTER */}
       <footer className="border-t border-[#e6e6e6] bg-[#1f2d3d] text-white/70">
         <div className="mx-auto max-w-[1200px] px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-          <div>© {new Date().getFullYear()} Zoru Shop. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} NeoCast. All rights reserved.</div>
           <a
             href="https://t.me/scorpionccstore02"
             target="_blank"

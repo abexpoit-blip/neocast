@@ -111,7 +111,7 @@ const Auth = () => {
 
   return (
     <>
-      <Seo title="Вход и регистрация | Zoru Shop" description="Вход и регистрация покупателей в Zoru Shop — проверенный маркетплейс." path="/auth" />
+      <Seo title="Вход и регистрация | NeoCast" description="Вход и регистрация покупателей в NeoCast — проверенный маркетплейс." path="/auth" />
       <button
         type="button"
         onClick={() => setLang(lang === "en" ? "ru" : "en")}

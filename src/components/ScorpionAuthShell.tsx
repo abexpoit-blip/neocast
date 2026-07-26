@@ -19,7 +19,7 @@ const accentBar: Record<NonNullable<Props["accent"]>, string> = {
 
 export function ScorpionAuthShell({
   children,
-  title = "Zoru Shop",
+  title = "NeoCast",
   tagline,
   accent = "blue",
 }: Props) {
@@ -117,7 +117,7 @@ export function ScorpionAuthShell({
         </div>
 
         <p className="text-center text-[11px] text-white/60 mt-5 tracking-[0.15em] uppercase">
-          © {new Date().getFullYear()} Zoru Shop · Все права защищены
+          © {new Date().getFullYear()} NeoCast · Все права защищены
         </p>
       </div>
     </main>

@@ -52,7 +52,7 @@ const Cart = () => {
 
   return (
     <AppShell>
-      <Seo title="Корзина | Zoru Shop" description="Ваша корзина покупок." path="/cart" />
+      <Seo title="Корзина | NeoCast" description="Ваша корзина покупок." path="/cart" />
 
       <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-3 text-[13px]">
         <span className="font-medium text-[#333]">Корзина</span>

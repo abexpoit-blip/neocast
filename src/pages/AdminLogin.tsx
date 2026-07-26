@@ -26,7 +26,7 @@ const AdminLogin = () => {
     }
   }, [authLoading, user, profile, nav, safeAdminFrom]);
 
-  useEffect(() => { document.title = "Zoru Shop · Админ-консоль"; }, []);
+  useEffect(() => { document.title = "NeoCast · Админ-консоль"; }, []);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("cruzercc.prefillAdminEmail");
