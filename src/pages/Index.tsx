@@ -42,7 +42,7 @@ const Index = () => {
 
   return (
     <AppShell>
-      <Seo title="Zoru Shop — Главная" description="Личный кабинет покупателя, живая лента поступлений и объявления." path="/" />
+      <Seo title="NeoCast — Главная" description="Личный кабинет покупателя, живая лента поступлений и объявления." path="/" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* НОВОСТИ И ОБНОВЛЕНИЯ */}
@@ -74,7 +74,7 @@ const Index = () => {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-[#8e24aa] mb-2">
-                    Добро пожаловать в Zoru Shop
+                    Добро пожаловать в NeoCast
                   </h3>
                   <p className="text-[14px] text-[#333] leading-[1.9]">
                     Следите за официальным каналом, чтобы не пропустить обновления.
@@ -108,7 +108,7 @@ const Index = () => {
 
       {/* ПРАВИЛА + КОНТАКТЫ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-        <Panel title="Правила Zoru Shop">
+        <Panel title="Правила NeoCast">
           <div className="px-6 py-5 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 space-y-2 leading-[1.7]">
             <p>Регистрируясь, вы автоматически соглашаетесь с правилами магазина.</p>
             <p>Правила могут изменяться без уведомления пользователей.</p>
@@ -123,7 +123,7 @@ const Index = () => {
 
         <Panel title="Контактная информация">
           <div className="px-6 py-5 space-y-3 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 leading-[1.7]">
-            <p>Остерегайтесь поддельной поддержки Zoru Shop. По вопросам и предложениям пишите нам в Telegram.</p>
+            <p>Остерегайтесь поддельной поддержки NeoCast. По вопросам и предложениям пишите нам в Telegram.</p>
             <div>
               <div className="text-[#333] mb-1">Telegram:</div>
               <a href="https://t.me/zoru_support" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">

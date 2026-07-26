@@ -70,8 +70,8 @@ const Auth = () => {
     e.preventDefault();
     setStatusBanner(null);
     if (!captchaOk) {
-      setStatusBanner({ title: "Неверный проверочный код", hint: "Введите ответ, показанный на кнопке." });
-      return toast.error("Неверный проверочный код");
+      setStatusBanner({ title: "Invalid verification code", hint: "Enter the answer shown on the button." });
+      return toast.error("Invalid verification code");
     }
     setLoading(true);
     try {
@@ -80,7 +80,7 @@ const Auth = () => {
         const result = await authApi.signup({ email: fakeEmail, username, password });
         setToken(result.token);
         await refresh();
-        toast.success("Аккаунт создан");
+        toast.success("Account created");
         nav("/shop", { replace: true });
       } else {
         const result = await authApi.login({ identifier: username.trim(), password });
@@ -88,21 +88,21 @@ const Auth = () => {
         await refresh();
         const destination = safeFrom ?? (result.user.role === "admin" ? "/admin" : "/shop");
 
-        toast.success("С возвращением");
+        toast.success("Welcome back");
         nav(destination, { replace: true });
       }
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         if (err.status === 403 && err.message === "Use admin login") {
           sessionStorage.setItem("cruzercc.prefillAdminEmail", username.trim());
-          toast.error("Только для администраторов. Перенаправление…");
+          toast.error("Administrators only. Redirecting…");
           nav("/crzr-x9k2-panel", { replace: true });
           return;
         }
         setStatusBanner({ title: err.message, hint: `HTTP ${err.status}` });
         toast.error(err.message);
       } else {
-        const msg = err instanceof Error ? err.message : "Ошибка входа";
+        const msg = err instanceof Error ? err.message : "Sign-in error";
         setStatusBanner({ title: msg });
         toast.error(msg);
       }
@@ -111,20 +111,20 @@ const Auth = () => {
 
   return (
     <>
-      <Seo title="Вход и регистрация | Zoru Shop" description="Вход и регистрация покупателей в Zoru Shop — проверенный маркетплейс." path="/auth" />
+      <Seo title="Sign in | NeoCast" description="Sign in or create your NeoCast account — a verified marketplace with instant delivery." path="/auth" />
       <button
         type="button"
         onClick={() => setLang(lang === "en" ? "ru" : "en")}
-        title={lang === "en" ? "Переключить на русский" : "Change language to English"}
-        className="fixed top-4 right-4 z-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-[0.15em] text-white/80 bg-white/[0.06] border border-white/15 backdrop-blur-md hover:text-white hover:border-[#ffb300]/60 transition"
+        title={lang === "en" ? "Switch to Russian" : "Switch to English"}
+        className="fixed top-4 right-4 z-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-[0.15em] text-white/80 bg-white/[0.06] border border-white/15 backdrop-blur-md hover:text-white hover:border-[#22d3ee]/60 transition"
       >
         {lang === "en" ? "RU" : "EN"}
       </button>
       <ScorpionAuthShell
         tagline={
           <>
-            Наш Telegram-канал:{" "}
-            <a href="https://t.me/scorpionccstore02" className="text-[#ffd54f] font-semibold hover:underline">
+            Our Telegram channel:{" "}
+            <a href="https://t.me/scorpionccstore02" className="text-[#67e8f9] font-semibold hover:underline">
               @scorpionccstore02
             </a>
           </>
@@ -140,19 +140,19 @@ const Auth = () => {
               onClick={() => setMode(m)}
               className={`flex-1 py-2 text-[12px] font-semibold tracking-[0.15em] uppercase rounded-lg transition-all ${
                 mode === m
-                  ? "bg-gradient-to-r from-[#ff2d2d] via-[#ff6b1a] to-[#ffb300] text-white shadow-[0_4px_15px_rgba(255,80,20,0.4)]"
+                  ? "bg-gradient-to-r from-[#4f46e5] via-[#0ea5e9] to-[#22d3ee] text-white shadow-[0_4px_16px_rgba(34,211,238,0.35)]"
                   : "text-white/60 hover:text-white/90"
               }`}
             >
-              {m === "login" ? "Вход" : "Регистрация"}
+              {m === "login" ? "Sign in" : "Sign up"}
             </button>
           ))}
         </div>
 
         {savedAccounts.length > 0 && mode === "login" && (
           <div className="mb-5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb300]/80 font-semibold mb-2">
-              Сменить аккаунт
+            <div className="text-[10px] uppercase tracking-[0.2em] text-[#22d3ee]/80 font-semibold mb-2">
+              Switch account
             </div>
             <div className="space-y-1.5">
               {savedAccounts.map((acc) => (
@@ -160,9 +160,9 @@ const Auth = () => {
                   key={acc.email}
                   type="button"
                   onClick={() => pickAccount(acc)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#ffb300]/50 hover:bg-white/[0.07] transition-all group text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 hover:border-[#22d3ee]/50 hover:bg-white/[0.07] transition-all group text-left"
                 >
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#ff2d2d] to-[#ffb300] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-[0_2px_8px_rgba(255,80,20,0.4)]">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#22d3ee] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-[0_2px_10px_rgba(34,211,238,0.35)]">
                     {acc.username[0]?.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -175,7 +175,7 @@ const Auth = () => {
                     onClick={(e) => removeAccount(e, acc.email)}
                     onKeyDown={(e) => { if (e.key === "Enter") removeAccount(e as unknown as React.MouseEvent, acc.email); }}
                     className="opacity-0 group-hover:opacity-100 text-white/60 hover:text-white p-1 transition"
-                    aria-label="Удалить сохранённый аккаунт"
+                    aria-label="Remove saved account"
                   >
                     <X className="h-3.5 w-3.5" />
                   </span>
@@ -194,32 +194,32 @@ const Auth = () => {
 
         <form onSubmit={submit} className="space-y-3">
           <div className="relative group">
-            <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
+            <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#22d3ee] transition-colors" />
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Имя пользователя"
-              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
+              placeholder="Username"
+              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#22d3ee]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] transition-all backdrop-blur-sm"
             />
           </div>
 
           {mode === "signup" && (
             <div className="relative group">
-              <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
+              <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#22d3ee] transition-colors" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email (необязательно)"
-                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
+                placeholder="Email (optional)"
+                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#22d3ee]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] transition-all backdrop-blur-sm"
               />
             </div>
           )}
 
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#22d3ee] transition-colors" />
             <input
               id="auth-password"
               type="password"
@@ -227,31 +227,31 @@ const Auth = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              placeholder="Пароль"
-              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
+              placeholder="Password"
+              className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#22d3ee]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] transition-all backdrop-blur-sm"
             />
           </div>
 
           <div className="flex gap-2 items-stretch">
             <div className="relative flex-1 group">
-              <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#ffb300] transition-colors" />
+              <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 group-focus-within:text-[#22d3ee] transition-colors" />
               <input
                 type="text"
                 inputMode="numeric"
                 value={captcha}
                 onChange={(e) => setCaptcha(e.target.value)}
-                placeholder="Код"
-                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#ffb300]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(255,179,0,0.1)] transition-all backdrop-blur-sm"
+                placeholder="Code"
+                className="w-full pl-11 pr-3 py-3 rounded-lg bg-white/[0.04] border border-white/10 text-white text-sm placeholder-white/35 focus:outline-none focus:border-[#22d3ee]/60 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(34,211,238,0.12)] transition-all backdrop-blur-sm"
               />
             </div>
             <button
               type="button"
               onClick={() => { setCaptcha(""); setChallenge(makeChallenge()); }}
-              className="min-w-[115px] px-3 rounded-lg bg-gradient-to-br from-[#1a0505]/60 to-[#3a0a0a]/60 border border-[#ffb300]/30 flex items-center justify-center gap-2 hover:border-[#ffb300]/60 hover:shadow-[0_0_15px_rgba(255,179,0,0.2)] transition-all backdrop-blur-sm"
-              aria-label="Обновить код"
+              className="min-w-[115px] px-3 rounded-lg bg-gradient-to-br from-[#111a3a]/70 to-[#0b1230]/70 border border-[#22d3ee]/30 flex items-center justify-center gap-2 hover:border-[#22d3ee]/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.22)] transition-all backdrop-blur-sm"
+              aria-label="Refresh code"
             >
               <span
-                className="text-base font-bold tracking-wider text-[#ffd54f] select-none"
+                className="text-base font-bold tracking-wider text-[#67e8f9] select-none"
                 style={{ fontFamily: '"Space Grotesk", serif', fontStyle: "italic" }}
               >
                 {a}{op}{b}=?
@@ -266,17 +266,17 @@ const Auth = () => {
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="h-3.5 w-3.5 accent-[#ffb300]"
+                className="h-3.5 w-3.5 accent-[#22d3ee]"
               />
-              Запомнить меня
+              Remember me
             </label>
             {mode === "login" && (
               <button
                 type="button"
                 onClick={() => setForgotOpen(true)}
-                className="text-[12px] text-white/70 hover:text-[#ffb300] transition"
+                className="text-[12px] text-white/70 hover:text-[#22d3ee] transition"
               >
-                Забыли пароль?
+                Forgot password?
               </button>
             )}
           </div>
@@ -284,20 +284,20 @@ const Auth = () => {
           <button
             type="submit"
             disabled={loading}
-            className="relative w-full py-3.5 mt-3 rounded-lg text-white text-sm font-bold tracking-[0.2em] uppercase transition-all disabled:opacity-60 flex items-center justify-center gap-2 overflow-hidden group shadow-[0_10px_30px_-5px_rgba(255,45,45,0.5)] hover:shadow-[0_15px_40px_-5px_rgba(255,80,20,0.7)] active:scale-[0.98]"
+            className="relative w-full py-3.5 mt-3 rounded-lg text-white text-sm font-bold tracking-[0.2em] uppercase transition-all disabled:opacity-60 flex items-center justify-center gap-2 overflow-hidden group shadow-[0_12px_34px_-8px_rgba(34,211,238,0.55)] hover:shadow-[0_16px_44px_-8px_rgba(79,70,229,0.7)] active:scale-[0.98]"
             style={{
-              background: "linear-gradient(135deg, #ff2d2d 0%, #ff6b1a 50%, #ffb300 100%)",
+              background: "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 55%, #22d3ee 100%)",
             }}
           >
             <span
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #ffb300 0%, #ff6b1a 50%, #ff2d2d 100%)",
+                background: "linear-gradient(135deg, #22d3ee 0%, #0ea5e9 55%, #4f46e5 100%)",
               }}
             />
             <span className="relative flex items-center gap-2">
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {loading ? "Выполняется вход…" : mode === "login" ? "Войти" : "Создать аккаунт"}
+              {loading ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
             </span>
           </button>
         </form>
@@ -306,12 +306,12 @@ const Auth = () => {
           <button
             type="button"
             onClick={() => setMode(mode === "login" ? "signup" : "login")}
-            className="text-[12px] text-white/60 hover:text-[#ffb300] transition tracking-wide"
+            className="text-[12px] text-white/60 hover:text-[#22d3ee] transition tracking-wide"
           >
             {mode === "login" ? (
-              <>Нет аккаунта? <span className="text-[#ffb300] font-semibold">Зарегистрироваться</span></>
+              <>No account? <span className="text-[#22d3ee] font-semibold">Create one</span></>
             ) : (
-              <>Уже есть аккаунт? <span className="text-[#ffb300] font-semibold">Войти</span></>
+              <>Already have an account? <span className="text-[#22d3ee] font-semibold">Sign in</span></>
             )}
           </button>
         </div>

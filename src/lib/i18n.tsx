@@ -204,8 +204,8 @@ const DICT: Record<string, string> = {
   "Личный кабинет покупателя, живая лента поступлений и объявления.":
     "Buyer dashboard, live restock feed and announcements.",
   "Telegram-канал:": "Telegram channel:",
-  "Остерегайтесь поддельной поддержки Zoru Shop. По вопросам и предложениям пишите нам в Telegram.":
-    "Beware of fake Zoru Shop support. For questions and suggestions write to us on Telegram.",
+  "Остерегайтесь поддельной поддержки NeoCast. По вопросам и предложениям пишите нам в Telegram.":
+    "Beware of fake NeoCast support. For questions and suggestions write to us on Telegram.",
   "Если вы нашли ошибку или уязвимость, сообщите об этом через тикеты.":
     "If you find a bug or vulnerability, report it through tickets.",
   "Владельцы магазина не несут ответственности за то, как вы используете информацию с этого ресурса.":
@@ -271,7 +271,7 @@ const DICT: Record<string, string> = {
 };
 
 const ATTRS = ["placeholder", "title", "aria-label", "alt"];
-let lastLang: Lang = "ru";
+let lastLang: Lang = "en";
 
 function tr(text: string): string | null {
   const trimmed = text.trim();
@@ -307,10 +307,10 @@ function translateNode(root: Node) {
 }
 
 interface LangCtx { lang: Lang; setLang: (l: Lang) => void; toggle: () => void }
-const Ctx = createContext<LangCtx>({ lang: "ru", setLang: () => {}, toggle: () => {} });
+const Ctx = createContext<LangCtx>({ lang: "en", setLang: () => {}, toggle: () => {} });
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLangState] = useState<Lang>("ru");
+  const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
     const saved = (typeof localStorage !== "undefined" ? localStorage.getItem(LS_KEY) : null) as Lang | null;
@@ -359,7 +359,7 @@ export const LanguageToggle = ({ className = "" }: { className?: string }) => {
     <button
       type="button"
       onClick={() => setLang(lang === "en" ? "ru" : "en")}
-      title={lang === "en" ? "Переключить на русский" : "Change language to English"}
+      title={lang === "en" ? "Switch to Russian" : "Switch to English"}
       className={`px-3 py-1.5 border border-[#e6e6e6] text-[#666] hover:text-[#2196f3] hover:border-[#2196f3] transition text-[12px] font-medium tracking-wide ${className}`}
     >
       {lang === "en" ? "RU" : "EN"}
