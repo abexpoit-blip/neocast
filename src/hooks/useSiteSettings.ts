@@ -19,18 +19,18 @@ export interface SiteSettings {
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   shop_name: "NeoCast",
-  shop_tag: "ПРОВЕРЕННЫЙ МАРКЕТПЛЕЙС",
-  hero_eyebrow: "С ВОЗВРАЩЕНИЕМ",
-  hero_title: "Проверенный маркетплейс NeoCast.",
+  shop_tag: "VERIFIED MARKETPLACE",
+  hero_eyebrow: "WELCOME BACK",
+  hero_title: "NeoCast — the verified marketplace.",
   hero_sub:
-    "Проверенный товар, мгновенная доставка, авто-замена и безопасные расчёты.",
-  hero_cta: "Войти в маркетплейс",
+    "Vetted stock, instant delivery, auto-replacement and secure settlement.",
+  hero_cta: "Enter the marketplace",
   ticker_items: [
-    "● ЖИВОЙ СКЛАД · СВЕЖИЕ ПОСТУПЛЕНИЯ ЕЖЕДНЕВНО",
-    "★ ПРОВЕРЕННЫЕ ПРОДАВЦЫ · МГНОВЕННАЯ ДОСТАВКА",
-    "● 99.4% ВАЛИДНОСТЬ НА ЭТОЙ НЕДЕЛЕ",
-    "↗ АВТОЗАМЕНА В ТЕЧЕНИЕ 5 МИНУТ",
-    "● ПОДДЕРЖКА 24/7 · TELEGRAM",
+    "● LIVE STOCK · FRESH DROPS EVERY DAY",
+    "★ VERIFIED SELLERS · INSTANT DELIVERY",
+    "● 99.4% VALIDITY THIS WEEK",
+    "↗ AUTO-REPLACEMENT WITHIN 5 MINUTES",
+    "● 24/7 SUPPORT · TELEGRAM",
   ],
   default_commission_percent: 20,
   min_card_price: 1,
