@@ -167,11 +167,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#67e8f9]/70 font-semibold">Account</div>
             <ul className="mt-3 space-y-2 text-[13px]">
-              <li><Link to="/settings" className="hover:text-white transition">Settings</Link></li>
-              <li><Link to="/tickets" className="hover:text-white transition">Support tickets</Link></li>
-              <li><Link to="/news" className="hover:text-white transition">News &amp; updates</Link></li>
+              <li><Link to="/" className="hover:text-white transition">Dashboard</Link></li>
+              <li><Link to="/orders" className="hover:text-white transition">Order history</Link></li>
+              <li><Link to="/recharge" className="hover:text-white transition">Add funds</Link></li>
             </ul>
           </div>
+
 
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-[#67e8f9]/70 font-semibold">Why NeoCast</div>
