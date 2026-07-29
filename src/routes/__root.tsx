@@ -79,7 +79,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <ScriptOnce>
-          {`try{var t=localStorage.getItem('neocast-theme');if(t==='maroon'){document.documentElement.setAttribute('data-theme','maroon');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#16090d';}}catch(e){}`}
+          {`try{var t=localStorage.getItem('neocast-theme');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#1a0b10';}catch(e){}`}
         </ScriptOnce>
       </head>
       <body>{children}<Scripts /></body>
