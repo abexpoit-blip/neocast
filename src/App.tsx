@@ -44,7 +44,7 @@ const queryClient = new QueryClient({
 });
 
 const RouteFallback = () => (
-  <div className="min-h-[40vh] flex items-center justify-center text-[13px] text-[#888]">Загрузка…</div>
+  <div className="min-h-[40vh] flex items-center justify-center text-[13px] text-[#888]">Loading…</div>
 );
 
 const App = () => (

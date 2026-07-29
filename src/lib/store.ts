@@ -154,11 +154,11 @@ export const purchaseAndDeliver = async (
 
 
 export const translatePurchaseError = (msg: string) => {
-  if (msg.includes("insufficient_balance")) return "Недостаточно средств на балансе.";
-  if (msg.includes("out_of_stock")) return "Товар закончился.";
-  if (msg.includes("product_unavailable")) return "Товар недоступен.";
-  if (msg.includes("invalid_quantity")) return "Некорректное количество.";
-  if (msg.includes("not_authenticated")) return "Войдите в аккаунт.";
+  if (msg.includes("insufficient_balance")) return "Insufficient balance.";
+  if (msg.includes("out_of_stock")) return "Out of stock.";
+  if (msg.includes("product_unavailable")) return "Item unavailable.";
+  if (msg.includes("invalid_quantity")) return "Invalid quantity.";
+  if (msg.includes("not_authenticated")) return "Please sign in.";
   return msg;
 };
 
@@ -191,7 +191,7 @@ export const listMyDeposits = async (): Promise<Deposit[]> => {
 
 export const createDeposit = async (input: { amount: number; method: string; reference: string }) => {
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error("Войдите в аккаунт.");
+  if (!auth.user) throw new Error("Please sign in.");
   const { error } = await supabase.from("deposits").insert({
     user_id: auth.user.id,
     amount: input.amount,
@@ -411,11 +411,11 @@ export const parseBulkCards = (text: string): { rows: BulkCardRow[]; errors: str
     if (!raw) return;
     if (/^bin\s*,/i.test(raw)) return; // header
     const parts = raw.split(",").map((p) => p.trim());
-    if (parts.length < 9) { errors.push(`Строка ${i + 1}: нужно 9 полей`); return; }
+    if (parts.length < 9) { errors.push(`Row ${i + 1}: 9 fields required`); return; }
     const [bin, brand, country, state, city, zip, m, y, price] = parts;
-    if (!/^\d{6,8}$/.test(bin)) { errors.push(`Строка ${i + 1}: неверный BIN «${bin}»`); return; }
+    if (!/^\d{6,8}$/.test(bin)) { errors.push(`Row ${i + 1}: invalid BIN «${bin}»`); return; }
     const p = Number(price);
-    if (!Number.isFinite(p) || p < 0) { errors.push(`Строка ${i + 1}: неверная цена «${price}»`); return; }
+    if (!Number.isFinite(p) || p < 0) { errors.push(`Row ${i + 1}: invalid price «${price}»`); return; }
     rows.push({
       bin,
       brand: (brand || "").toUpperCase(),
