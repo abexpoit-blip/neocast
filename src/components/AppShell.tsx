@@ -94,17 +94,16 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 end={(n as any).end}
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
-                  `group relative overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-semibold tracking-[0.12em] border transition-all duration-200 active:translate-y-[2px] ${
+                  `relative rounded-full px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] transition-all duration-300 ${
                     isActive
-                      ? "text-white border-[var(--nc-accent)]/80 bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_4px_rgba(0,0,0,0.35),0_4px_0_-1px_rgba(0,0,0,0.55),0_10px_20px_-10px_rgba(var(--nc-accent-rgb),0.85)]"
-                      : "text-white/70 border-white/12 bg-gradient-to-b from-white/[0.10] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_3px_0_-1px_rgba(0,0,0,0.5)] hover:text-white hover:border-[var(--nc-accent)]/60 hover:from-[var(--nc-accent)]/30 hover:to-[var(--nc-accent)]/10"
+                      ? "text-white bg-[linear-gradient(180deg,rgba(var(--nc-accent-rgb),0.95),rgba(var(--nc-accent-rgb),0.55))] ring-1 ring-[var(--nc-accent-soft)]/50"
+                      : "text-white/65 ring-1 ring-white/8 hover:text-white hover:bg-white/[0.06]"
                   }`
                 }
               >
-                <span className="pointer-events-none absolute inset-x-1 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/20 to-transparent opacity-70" />
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)]">{n.label}</span>
+                {n.label}
               </NavLink>
+
 
             ))}
           </div>
