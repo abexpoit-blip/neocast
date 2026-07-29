@@ -19,7 +19,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
           className="absolute left-1/2 top-1/2 h-[126px] w-[126px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70 neocast-spin"
           style={{
             background:
-              "conic-gradient(from 0deg, transparent 0deg, rgba(var(--nc-accent-rgb),0.75) 90deg, rgba(129,140,248,0.55) 190deg, transparent 300deg)",
+              "conic-gradient(from 0deg, transparent 0deg, rgba(var(--nc-accent-rgb),0.75) 90deg, rgba(var(--nc-accent-rgb),0.35) 190deg, transparent 300deg)",
             maskImage: "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
             WebkitMaskImage:
               "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
@@ -33,7 +33,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
             style={{
               background: [
                 "linear-gradient(135deg, var(--nc-accent) 0%, #9e1c1c 100%)",
-                "linear-gradient(135deg, #06b6d4 0%, #0f172a 100%)",
+                ""linear-gradient(135deg, var(--nc-accent-hi) 0%, var(--nc-ink) 100%)"",
                 "linear-gradient(135deg, #818cf8 0%, #1e293b 100%)",
               ][i],
               boxShadow: "0 18px 40px -18px rgba(2,6,23,0.9)",
