@@ -7,7 +7,6 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { NeoCastLoader } from "@/components/NeoCastLoader";
 import { BrandLogo } from "@/components/BrandLogo";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 
 
@@ -82,7 +81,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             {drawerOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
-            <ThemeSwitcher className="hidden sm:inline-flex" />
             <Link to="/" className="flex items-center shrink-0" aria-label={settings.shop_name}>
               <BrandLogo size={30} textClassName="hidden sm:inline" />
             </Link>
