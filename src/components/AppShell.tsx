@@ -7,6 +7,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { NeoCastLoader } from "@/components/NeoCastLoader";
 import { BrandLogo } from "@/components/BrandLogo";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 
 
@@ -127,7 +128,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
             <Link
               to="/recharge"
-              className="flex items-center gap-1 px-3 bg-[var(--nc-accent)] hover:bg-[#b02121] text-white text-[11px] font-semibold uppercase tracking-wide transition"
+              className="flex items-center gap-1 px-3 bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-lo)] text-white text-[11px] font-semibold uppercase tracking-wide transition"
             >
               <Plus className="h-3.5 w-3.5" /> Add
             </Link>
@@ -138,7 +139,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-md border border-[#333] bg-[var(--nc-ink)] hover:border-[var(--nc-accent)]/60 transition"
             >
-              <span className="h-8 w-8 rounded-md bg-gradient-to-br from-[var(--nc-accent)] to-[#7f1414] text-white text-xs uppercase font-bold flex items-center justify-center">
+              <span className="h-8 w-8 rounded-md bg-gradient-to-br from-[var(--nc-accent)] to-[var(--nc-accent-lo)] text-white text-xs uppercase font-bold flex items-center justify-center">
                 {uname.slice(0, 2)}
               </span>
               <span className="hidden sm:block text-left leading-tight">
