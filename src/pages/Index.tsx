@@ -1,13 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { newsApi, announcementsApi, ordersApi } from "@/lib/api";
+import { newsApi, announcementsApi, ordersApi, type VpsOrder } from "@/lib/api";
 import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Activity, Megaphone, ShieldCheck, MessageCircle, ArrowRight,
-  Zap, Layers, RefreshCw, Send,
+  Layers, RefreshCw, Send, Wallet, ShoppingBag, TrendingUp, Clock,
 } from "lucide-react";
+
 
 /**
  * Buyer HOME — NeoCast premium layout.
