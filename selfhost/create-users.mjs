@@ -1,13 +1,13 @@
 // Creates the admin + demo user on the self-hosted Supabase.
 // Usage:
-//   SUPABASE_URL=https://api.zoru.cc SERVICE_KEY=xxxx node create-users.mjs
+//   SUPABASE_URL=https://supabase.neocast.cc SERVICE_KEY=xxxx node create-users.mjs
 const URL_ = process.env.SUPABASE_URL;
 const KEY = process.env.SERVICE_KEY;
 if (!URL_ || !KEY) throw new Error('SUPABASE_URL and SERVICE_KEY required');
 
 const users = [
-  { email: 'admin@zoru.cc', password: process.env.ADMIN_PASS || 'ZoruAdmin#2026', role: 'admin' },
-  { email: 'user@zoru.cc', password: process.env.USER_PASS || 'ZoruUser#2026', role: 'buyer' },
+  { email: 'admin@neocast.cc', password: process.env.ADMIN_PASS || 'ZoruAdmin#2026', role: 'admin' },
+  { email: 'user@neocast.cc', password: process.env.USER_PASS || 'ZoruUser#2026', role: 'buyer' },
 ];
 
 for (const u of users) {
