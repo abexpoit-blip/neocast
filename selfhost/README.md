@@ -67,14 +67,26 @@ pm2 logs neocast-cc --lines 30 --nostream
 | **SERVICE_ROLE_KEY** | credentials.json | সার্ভার/অ্যাডমিন key — কখনো ফ্রন্টে দিও না |
 | **JWT_SECRET** | credentials.json | টোকেন সাইনিং |
 | **POSTGRES_PASSWORD** | credentials.json | DB পাসওয়ার্ড |
-| **Studio UI** | `http://157.173.117.34:8000` | DB dashboard (username/password credentials.json-এ) |
-| **DB connection** | `postgresql://postgres:<POSTGRES_PASSWORD>@127.0.0.1:5432/postgres` | psql / backup |
+| **Studio UI** | `http://127.0.0.1:8001` (SSH tunnel) | DB dashboard (username/password credentials.json-এ) |
+| **DB connection** | `postgresql://postgres:<POSTGRES_PASSWORD>@127.0.0.1:5433/postgres` | psql / backup |
+
+> ⚠️ NeoCast আর Zoru সম্পূর্ণ আলাদা ইনস্ট্যান্স — কখনো মেশানো যাবে না।
+>
+> | | NeoCast | Zoru |
+> |---|---|---|
+> | Supabase dir | `/opt/supabase-neocast` | `/opt/supabase` (Zoru-র নিজের) |
+> | Kong/API port | `8001` | `8000` |
+> | Postgres port | `5433` | `5432` |
+> | App port (PM2) | `3003` (`neocast-cc`) | `3002` (`zoru-cc`) |
+> | Domain | `neocast.cc`, `supabase.neocast.cc` | `zoru.cc` |
+>
+> কী (ANON/SERVICE_ROLE/JWT/DB পাসওয়ার্ড)ও আলাদা — এক প্রজেক্টের key আরেকটায় বসিও না।
 
 ---
 
-## দরকারি কমান্ড
+## দরকারি কমান্ড (শুধু NeoCast)
 ```bash
-cd /opt/supabase/docker
+cd /opt/supabase-neocast/docker
 docker compose ps                 # status
 docker compose logs -f auth       # auth log
 docker compose restart            # restart সব
@@ -83,7 +95,7 @@ docker compose down && docker compose up -d
 
 ### ব্যাকআপ (প্রতিদিন চালানো ভালো)
 ```bash
-cd /opt/supabase/docker
+cd /opt/supabase-neocast/docker
 docker compose exec -T db pg_dump -U postgres postgres | gzip > /root/neocast-db-$(date +%F).sql.gz
 ```
 
@@ -95,12 +107,13 @@ Lovable Cloud → Advanced settings → Export data দিয়ে CSV না�
 ## সিকিউরিটি
 ```bash
 ufw allow 22,80,443/tcp
-ufw deny 5432/tcp     # DB বাইরে থেকে বন্ধ
-ufw deny 8000/tcp     # Studio শুধু SSH tunnel দিয়ে খুলো (নিচে)
+ufw deny 5433/tcp     # NeoCast DB বাইরে থেকে বন্ধ
+ufw deny 8001/tcp     # NeoCast Studio শুধু SSH tunnel দিয়ে
 ufw enable
 ```
 Studio নিরাপদভাবে দেখতে লোকাল পিসি থেকে:
 ```bash
-ssh -L 8000:127.0.0.1:8000 root@157.173.117.34
-# তারপর ব্রাউজারে http://localhost:8000
+ssh -L 8001:127.0.0.1:8001 root@157.173.117.34
+# তারপর ব্রাউজারে http://localhost:8001
 ```
+
