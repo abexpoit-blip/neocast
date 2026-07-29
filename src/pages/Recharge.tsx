@@ -91,13 +91,13 @@ const Recharge = () => {
         const s = await checkDepositStatus({ data: { deposit_id: depositId } });
         setActiveInvoice(prev => prev ? { ...prev, status: s.status, confirmations: s.confirmations ?? 0 } : prev);
         if (s.status === "approved") {
-          toast.success(`$${s.amount} зачислено на баланс!`);
+          toast.success(`$${s.amount} credited to your balance!`);
           setActiveInvoice(null);
           if (pollRef.current) clearInterval(pollRef.current);
           loadHistory(); loadTransactions();
           if (isActivation) setTimeout(() => navigate("/shop"), 1200);
         } else if (s.status === "rejected") {
-          toast.error("Заявка отменена или истекла.");
+          toast.error("Invoice cancelled or expired.");
           setActiveInvoice(null);
           if (pollRef.current) clearInterval(pollRef.current);
           loadHistory();
@@ -116,11 +116,11 @@ const Recharge = () => {
         checkDepositStatus({ data: { deposit_id: activeInvoice.deposit_id } })
           .then((s) => {
             if (s.status === "approved") {
-              toast.success(`$${s.amount} зачислено на баланс!`);
+              toast.success(`$${s.amount} credited to your balance!`);
               setActiveInvoice(null);
               loadHistory(); loadTransactions();
             } else if (s.status === "rejected") {
-              toast.error("Платёж не завершён или истёк.");
+              toast.error("Payment not completed or expired.");
               setActiveInvoice(null);
               loadHistory();
             }
@@ -170,7 +170,7 @@ const Recharge = () => {
   const amtNum = Number(amount) || 0;
 
   const createInvoice = async () => {
-    if (!amtNum || amtNum < MIN_DEPOSIT) return toast.error(`Минимальная сумма пополнения — $${MIN_DEPOSIT}.`);
+    if (!amtNum || amtNum < MIN_DEPOSIT) return toast.error(`Minimum deposit is $${MIN_DEPOSIT}.`);
     setBusy(true);
     try {
       const inv = await createCryptoInvoice({ data: { amount: amtNum } });
@@ -189,9 +189,9 @@ const Recharge = () => {
 
       });
       startPolling(inv.deposit_id);
-      toast.success("Заявка создана — отправьте LTC на адрес ниже.");
+      toast.success("Invoice created — send LTC to the address below.");
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Не удалось создать заявку");
+      toast.error(e instanceof Error ? e.message : "Could not create the invoice");
     } finally { setBusy(false); }
   };
 
@@ -200,9 +200,9 @@ const Recharge = () => {
     try {
       await navigator.clipboard.writeText(txt);
       setCopiedField(field);
-      toast.success("Скопировано");
+      toast.success("Copied");
       setTimeout(() => setCopiedField(null), 2000);
-    } catch { toast.error("Не удалось скопировать — скопируйте вручную"); }
+    } catch { toast.error("Copy failed — please copy manually"); }
   };
 
   const qrValue = activeInvoice
@@ -214,7 +214,7 @@ const Recharge = () => {
   const txnIcon = (type: string) => {
     if (type === "deposit") return <ArrowDownLeft className="h-4 w-4 text-[#2fb344]" />;
     if (type === "purchase") return <ArrowUpRight className="h-4 w-4 text-[#c0392b]" />;
-    if (type === "refund") return <ArrowDownLeft className="h-4 w-4 text-[#2196f3]" />;
+    if (type === "refund") return <ArrowDownLeft className="h-4 w-4 text-[#c62828]" />;
     return <Receipt className="h-4 w-4 text-[#888]" />;
   };
 
@@ -230,13 +230,38 @@ const Recharge = () => {
   return (
     <AppShell>
       <div className="space-y-4 max-w-6xl">
+        {/* PREMIUM HEADER */}
+        <section className="rounded-xl overflow-hidden bg-[#141414] border border-[#2a2a2a] relative">
+          <div className="absolute -top-16 -right-10 h-52 w-52 rounded-full bg-[#c62828]/25 blur-3xl" />
+          <div className="relative px-5 sm:px-7 py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">NeoCast Wallet</div>
+              <h1 className="mt-1.5 text-white text-[22px] sm:text-[26px] font-bold tracking-tight">Deposit &amp; balance</h1>
+              <p className="mt-1 text-[12.5px] text-white/50 max-w-md leading-relaxed">
+                Instant crypto top-ups with automatic crediting after network confirmation.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3 min-w-[150px]">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Available balance</div>
+                <div className="text-[22px] font-bold text-white tabular-nums">${Number(profile?.balance ?? 0).toFixed(2)}</div>
+              </div>
+              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Method</div>
+                <div className="text-[14px] font-semibold text-[#ef5350]">LTC</div>
+              </div>
+            </div>
+          </div>
+          <div className="h-[3px] bg-gradient-to-r from-[#c62828] via-[#ef5350] to-transparent" />
+        </section>
+
         {isActivation && (
           <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex items-start gap-3 text-[13px]">
-            <div className="shrink-0 h-8 w-8 bg-[#2196f3] text-white flex items-center justify-center text-sm font-bold">$</div>
+            <div className="shrink-0 h-8 w-8 bg-[#c62828] text-white flex items-center justify-center text-sm font-bold">$</div>
             <div>
-              <div className="text-[12px] font-semibold text-[#2196f3] uppercase tracking-wider">Активация аккаунта</div>
+              <div className="text-[12px] font-semibold text-[#c62828] uppercase tracking-wider">Account activation</div>
               <div className="text-[#333] mt-0.5">
-                Пополните счёт на ${Number(settings.min_deposit ?? MIN_DEPOSIT).toFixed(2)}, чтобы открыть магазин.
+                Top up ${Number(settings.min_deposit ?? MIN_DEPOSIT).toFixed(2)} to unlock the shop.
               </div>
             </div>
           </div>
@@ -244,10 +269,10 @@ const Recharge = () => {
 
         {activeInvoice ? (
           // ---- ACTIVE INVOICE ----
-          <section className="bg-white border border-[#e6e6e6]">
-            <div className="px-4 h-11 flex items-center justify-between border-b border-[#eee]">
-              <span className="text-[13px] text-[#555] uppercase tracking-wider">Оплата · Litecoin (LTC)</span>
-              <span className="text-[11px] font-mono text-[#888]">#{activeInvoice.deposit_id.slice(0, 8).toUpperCase()}</span>
+          <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div className="px-4 h-11 flex items-center justify-between bg-[#1c1c1c] border-b-2 border-[#c62828]">
+              <span className="text-[13px] text-white/85 uppercase tracking-wider">Payment · Litecoin (LTC)</span>
+              <span className="text-[11px] font-mono text-white/45">#{activeInvoice.deposit_id.slice(0, 8).toUpperCase()}</span>
             </div>
 
             {/* countdown bar */}
@@ -255,11 +280,11 @@ const Recharge = () => {
               <div className={`flex items-center justify-between h-11 px-4 border text-[13px] ${
                 isExpired ? "bg-[#fdecea] border-[#f5c6cb] text-[#c0392b]"
                   : countdown <= 300 ? "bg-[#fff8e1] border-[#ffe0a0] text-[#b26a00]"
-                  : "bg-[#e8f4ff] border-[#bcdcfa] text-[#1976d2]"
+                  : "bg-[#fdecea] border-[#f3c3c3] text-[#c62828]"
               }`}>
                 <span className="inline-flex items-center gap-2">
                   <TimerReset className="h-4 w-4" />
-                  {isExpired ? "Время истекло" : "Оплатите в течение"}
+                  {isExpired ? "Time expired" : "Pay within"}
                 </span>
                 <span className="font-mono text-[18px] font-semibold tracking-widest">
                   {isExpired ? "00:00" : formatCountdown(countdown)}
@@ -267,7 +292,7 @@ const Recharge = () => {
               </div>
               <div className="h-1 bg-[#f0f0f0] mt-[-1px]">
                 <div
-                  className={`h-1 transition-all duration-1000 ${isExpired ? "bg-[#c0392b]" : countdown <= 300 ? "bg-[#b26a00]" : "bg-[#2196f3]"}`}
+                  className={`h-1 transition-all duration-1000 ${isExpired ? "bg-[#c0392b]" : countdown <= 300 ? "bg-[#b26a00]" : "bg-[#c62828]"}`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -277,11 +302,11 @@ const Recharge = () => {
               {/* QR */}
               <div className="space-y-3">
                 <div className="text-center border border-[#e6e6e6] bg-[#fafafa] p-3">
-                  <p className="text-[11px] uppercase tracking-wider text-[#888]">Сумма пополнения</p>
-                  <p className="text-[24px] font-semibold text-[#2196f3] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
+                  <p className="text-[11px] uppercase tracking-wider text-[#888]">Deposit amount</p>
+                  <p className="text-[24px] font-semibold text-[#c62828] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
                   {activeInvoice.charged_amount ? (
                     <p className="text-[11px] text-[#888] font-mono">
-                      к оплате ${activeInvoice.charged_amount.toFixed(2)} (комиссия 2%)
+                      charge ${activeInvoice.charged_amount.toFixed(2)} (2% fee)
                     </p>
                   ) : null}
 
@@ -292,33 +317,33 @@ const Recharge = () => {
                   </div>
                 </div>
                 <p className="text-[11px] text-center text-[#888]">
-                  {isExpired ? "QR-код больше не действителен" : "Отсканируйте QR в вашем LTC-кошельке"}
+                  {isExpired ? "This QR code is no longer valid" : "Scan the QR in your LTC wallet"}
                 </p>
               </div>
 
               {/* Details */}
               <div className="space-y-3">
                 <div className={`border border-[#e6e6e6] bg-[#fafafa] p-3 ${isExpired ? "opacity-40" : ""}`}>
-                  <p className="text-[10px] uppercase tracking-wider text-[#888]">Отправьте точно</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#888]">Send exactly</p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="font-mono text-[16px] font-semibold text-[#1f2d3d] flex-1 break-all">
                       {activeInvoice.crypto_amount} LTC
                     </span>
                     <button onClick={() => copyField(activeInvoice.crypto_amount, "amount")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#f5faff] text-[#2196f3] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[#c62828] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "amount" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                 </div>
 
                 <div className={`border border-[#e6e6e6] bg-[#fafafa] p-3 ${isExpired ? "opacity-40" : ""}`}>
-                  <p className="text-[10px] uppercase tracking-wider text-[#888]">LTC-адрес для оплаты</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[#888]">LTC payment address</p>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="text-[12px] text-[#333] break-all flex-1 font-mono leading-relaxed">
                       {activeInvoice.wallet_address}
                     </code>
                     <button onClick={() => copyField(activeInvoice.wallet_address, "address")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#f5faff] text-[#2196f3] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[#c62828] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "address" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
@@ -326,73 +351,73 @@ const Recharge = () => {
 
                 <div className="flex items-start gap-2 p-3 border border-[#ffe0a0] bg-[#fff8e1] text-[12px] text-[#b26a00]">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <p>Отправляйте <strong>только LTC</strong> на этот адрес. Другие монеты будут утеряны безвозвратно.</p>
+                  <p>Send <strong>LTC only</strong> to this address. Other coins will be lost permanently.</p>
                 </div>
 
                 {!isExpired ? (
                   <div className="border border-[#e6e6e6] bg-white p-3 space-y-2 text-[12px]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-[#333]">
-                        <Loader2 className="h-4 w-4 animate-spin text-[#2196f3]" />
-                        <span className="uppercase tracking-wider">Ожидание оплаты</span>
+                        <Loader2 className="h-4 w-4 animate-spin text-[#c62828]" />
+                        <span className="uppercase tracking-wider">Waiting for payment</span>
                       </div>
-                      <span className="text-[11px] font-mono text-[#2196f3]">
-                        {activeInvoice.confirmations ?? 0}/2 подтверждений
+                      <span className="text-[11px] font-mono text-[#c62828]">
+                        {activeInvoice.confirmations ?? 0}/2 confirmations
                       </span>
                     </div>
                     <p className="text-[11px] text-center text-[#888] pt-1">
-                      Статус проверяется автоматически каждые 10 секунд — не закрывайте вкладку.
+                      Status refreshes automatically every 10 seconds — keep this tab open.
                     </p>
                   </div>
                 ) : (
                   <div className="border border-[#f5c6cb] bg-[#fdecea] p-3 text-[12px] text-[#c0392b]">
-                    Заявка истекла — оплата по этому адресу больше не засчитывается. Создайте новую заявку.
+                    This invoice expired — payments to this address are no longer credited. Create a new invoice.
                   </div>
                 )}
 
                 <button onClick={cancelInvoice}
                   className={`w-full h-10 text-[13px] transition ${
-                    isExpired ? "bg-[#2196f3] hover:bg-[#1e88e5] text-white"
+                    isExpired ? "bg-[#c62828] hover:bg-[#b02121] text-white"
                       : "border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                   }`}>
-                  {isExpired ? "Создать новую заявку" : "Отменить"}
+                  {isExpired ? "Create new invoice" : "Cancel"}
                 </button>
               </div>
             </div>
           </section>
         ) : (
           // ---- FORM ----
-          <section className="bg-white border border-[#e6e6e6]">
-            <div className="px-4 h-11 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
-              Пополнение баланса
+          <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div className="px-4 h-11 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
+              Add funds
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="border border-[#e6e6e6] bg-[#fafafa] p-4">
                   <div className="flex items-center gap-2 text-[13px] text-[#1f2d3d] font-semibold">
-                    <Wallet className="h-4 w-4 text-[#2196f3]" /> Приём только в Litecoin (LTC)
+                    <Wallet className="h-4 w-4 text-[#c62828]" /> Litecoin (LTC) only
                   </div>
                   <p className="text-[12px] text-[#666] mt-1.5 leading-[1.7]">
-                    Быстрые подтверждения и минимальная комиссия сети. Другие монеты не принимаются.
+                    Fast confirmations and low network fees. Other coins are not accepted.
                   </p>
                 </div>
 
                 <ul className="text-[13px] text-[#333] leading-[1.9] list-disc pl-5">
-                  <li>Минимальная сумма пополнения — <strong>${MIN_DEPOSIT}</strong>.</li>
-                  <li>Адрес и сумма действительны <strong>30 минут</strong>, затем заявка истекает.</li>
-                  <li>Отправляйте точную сумму — иначе средства могут не зачислиться.</li>
-                  <li>Баланс пополняется автоматически после 2 подтверждений сети.</li>
+                  <li>Minimum deposit is <strong>${MIN_DEPOSIT}</strong>.</li>
+                  <li>The address and amount stay valid for <strong>30 minutes</strong>.</li>
+                  <li>Send the exact amount — otherwise funds may not be credited.</li>
+                  <li>Balance is credited automatically after 2 network confirmations.</li>
                 </ul>
 
                 <div className="flex items-start gap-2 p-3 border border-[#d7ecd9] bg-[#f2faf3] text-[12px] text-[#2e7d32]">
                   <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5" />
-                  <p>Каждая заявка получает уникальный адрес. Никогда не переиспользуйте старые адреса.</p>
+                  <p>Every invoice gets a unique address. Never reuse an old address.</p>
                 </div>
               </div>
 
               <div className="md:border-l md:border-[#e6e6e6] md:pl-8">
-                <label className="text-[12px] uppercase tracking-wider text-[#888]">Сумма в USD</label>
+                <label className="text-[12px] uppercase tracking-wider text-[#888]">Amount in USD</label>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="h-11 w-11 border border-[#dcdcdc] bg-[#fafafa] flex items-center justify-center text-[#888] font-mono">$</span>
                   <input
@@ -400,8 +425,8 @@ const Recharge = () => {
                     onChange={(e) => setAmount(e.target.value)}
                     type="number"
                     min={MIN_DEPOSIT}
-                    placeholder={`Минимум ${MIN_DEPOSIT}`}
-                    className="flex-1 h-11 px-3 border border-[#dcdcdc] text-[14px] font-mono outline-none focus:border-[#2196f3]"
+                    placeholder={`Minimum ${MIN_DEPOSIT}`}
+                    className="flex-1 h-11 px-3 border border-[#dcdcdc] text-[14px] font-mono outline-none focus:border-[#c62828]"
                   />
                 </div>
 
@@ -409,7 +434,7 @@ const Recharge = () => {
                   {[50, 100, 250, 500, 1000].map((v) => (
                     <button key={v} onClick={() => setAmount(String(v))}
                       className={`px-3 h-8 text-[12px] border transition ${
-                        amount === String(v) ? "border-[#2196f3] text-[#2196f3] bg-[#f0f8ff]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
+                        amount === String(v) ? "border-[#c62828] text-[#c62828] bg-[#fdf2f2]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                       }`}>
                       ${v}
                     </button>
@@ -418,15 +443,15 @@ const Recharge = () => {
 
                 <div className="text-[12px] text-[#666] mt-4 pt-4 border-t border-[#eee] space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span>Комиссия сети (2%)</span>
+                    <span>Network fee (2%)</span>
                     <span className="font-mono text-[#1f2d3d]">${(amtNum * 0.02).toFixed(2)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>К оплате</span>
-                    <span className="font-mono font-semibold text-[#2196f3]">${(amtNum * 1.02).toFixed(2)}</span>
+                    <span>Total to pay</span>
+                    <span className="font-mono font-semibold text-[#c62828]">${(amtNum * 1.02).toFixed(2)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Текущий баланс</span>
+                    <span>Current balance</span>
                     <span className="font-mono font-semibold text-[#1f2d3d]">${Number(profile?.balance ?? 0).toFixed(2)}</span>
                   </div>
                 </div>
@@ -435,13 +460,13 @@ const Recharge = () => {
                 <button
                   onClick={createInvoice}
                   disabled={busy || amtNum < MIN_DEPOSIT}
-                  className="w-full h-11 mt-4 bg-[#2196f3] hover:bg-[#1e88e5] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
+                  className="w-full h-11 mt-4 bg-[#c62828] hover:bg-[#b02121] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
-                  Пополнить через LTC
+                  Pay with LTC
                 </button>
                 <p className="text-[11px] text-[#888] mt-2 text-center">
-                  После нажатия появится QR-код и адрес. Таймер — 30 минут.
+                  A QR code and address appear next. Timer — 30 minutes.
                 </p>
               </div>
             </div>
@@ -450,9 +475,9 @@ const Recharge = () => {
 
         {/* Transactions */}
         {transactions.length > 0 && (
-          <section className="bg-white border border-[#e6e6e6]">
-            <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
-              <Receipt className="h-4 w-4 mr-2 text-[#2196f3]" /> История операций
+          <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div className="px-4 h-10 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
+              <Receipt className="h-4 w-4 mr-2 text-[#c62828]" /> Transaction history
             </div>
             <div className="p-3">
               <div className="divide-y divide-[#eee]">
@@ -479,9 +504,9 @@ const Recharge = () => {
 
         {/* Deposits */}
         {history.length > 0 && (
-          <section className="bg-white border border-[#e6e6e6]">
-            <div className="px-4 h-10 flex items-center border-b border-[#eee] text-[13px] text-[#555] uppercase tracking-wider">
-              Последние пополнения
+          <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div className="px-4 h-10 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
+              Recent deposits
             </div>
             <div className="p-3">
               <div className="divide-y divide-[#eee]">
