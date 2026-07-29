@@ -85,7 +85,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
         </div>
         {drawerOpen && (
-          <div className="lg:hidden bg-[#141414] border-t border-white/10">
+          <div className="lg:hidden bg-[#141414] border-t border-white/10 p-3 grid gap-2 animate-fade-in">
             {items.map((n) => (
               <NavLink
                 key={n.to}
@@ -93,15 +93,19 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 end={(n as any).end}
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
-                  `block px-4 py-3 text-sm border-l-2 ${
-                    isActive ? "border-[#c62828] text-white bg-[#c62828]/80" : "border-transparent text-white/70 hover:bg-white/5"
+                  `group relative overflow-hidden rounded-md px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] border transition-all duration-300 active:scale-[0.97] ${
+                    isActive
+                      ? "text-white border-[#c62828] bg-gradient-to-b from-[#e03131] to-[#a51d1d] shadow-[0_6px_18px_-8px_rgba(198,40,40,0.9)]"
+                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[#c62828]/60 hover:bg-[#c62828]/15"
                   }`
                 }
               >
-                {n.label}
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative">{n.label}</span>
               </NavLink>
             ))}
           </div>
+
         )}
       </header>
 
