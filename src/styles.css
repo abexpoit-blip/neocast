@@ -112,6 +112,8 @@
   --nc-accent-hi: #e03131;
   --nc-accent-lo: #a51d1d;
   --nc-accent-rgb: 198, 40, 40;
+  --nc-accent-soft: #ef5350;
+  --nc-accent-pale: #ff8a80;
   --nc-ink: #141414;
   --nc-ink-2: #1c1c1c;
   --nc-line: #2a2a2a;
@@ -218,6 +220,8 @@
   --nc-accent-hi: #9d2542;
   --nc-accent-lo: #55101f;
   --nc-accent-rgb: 123, 30, 52;
+  --nc-accent-soft: #b8354f;
+  --nc-accent-pale: #e08a9c;
   --nc-ink: #16090d;
   --nc-ink-2: #1f0e14;
   --nc-line: #33191f;

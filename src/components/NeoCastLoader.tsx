@@ -55,7 +55,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
         <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full w-1/3 rounded-full neocast-rail"
-            style={{ background: "linear-gradient(90deg, var(--nc-accent), #ef5350, #ffcdd2)" }}
+            style={{ background: "linear-gradient(90deg, var(--nc-accent), var(--nc-accent-soft), var(--nc-accent-pale))" }}
           />
         </div>
         <div className="mt-3 text-center text-[10px] uppercase tracking-[0.38em] text-white/45">

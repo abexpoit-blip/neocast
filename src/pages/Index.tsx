@@ -59,7 +59,7 @@ const Index = () => {
         <div className="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-[var(--nc-accent)]/25 blur-3xl" />
         <div className="relative px-5 sm:px-7 py-6 flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">Welcome back</div>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--nc-accent-soft)] font-semibold">Welcome back</div>
             <h1 className="mt-1.5 text-white text-[22px] sm:text-[27px] font-bold tracking-tight">
               {profile?.username ?? "buyer"}
             </h1>
@@ -81,7 +81,7 @@ const Index = () => {
             <Stat icon={<Activity className="h-4 w-4" />} label="Feeds" value={String(news.length)} />
           </div>
         </div>
-        <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[#ef5350] to-transparent" />
+        <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[var(--nc-accent-soft)] to-transparent" />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -214,7 +214,7 @@ const Index = () => {
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[#ef5350]">{icon}</div>
+      <div className="flex items-center gap-1.5 text-[var(--nc-accent-soft)]">{icon}</div>
       <div className="mt-1.5 text-[16px] font-bold text-white tabular-nums truncate">{value}</div>
       <div className="text-[9px] uppercase tracking-[0.18em] text-white/40">{label}</div>
     </div>
@@ -226,7 +226,7 @@ function Panel({ title, icon, right, children }: { title: string; icon?: React.R
     <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
       <header className="px-4 h-11 bg-[var(--nc-ink-2)] border-b-2 border-[var(--nc-accent)] flex items-center justify-between">
         <h2 className="text-[12.5px] font-medium text-white/85 uppercase tracking-[0.14em] flex items-center gap-2">
-          <span className="text-[#ef5350]">{icon}</span>{title}
+          <span className="text-[var(--nc-accent-soft)]">{icon}</span>{title}
         </h2>
         {right}
       </header>

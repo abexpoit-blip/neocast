@@ -11,7 +11,7 @@ type Props = {
 };
 
 const accentBar: Record<NonNullable<Props["accent"]>, string> = {
-  blue: "from-transparent via-[#ef5350] to-transparent",
+  blue: "from-transparent via-[var(--nc-accent-soft)] to-transparent",
   red: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
   gold: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
 };
@@ -125,7 +125,7 @@ export function ScorpionAuthShell({
         {/* Brand panel */}
         <section className="hidden lg:block text-white">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ef5350] shadow-[0_0_10px_#ef5350]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--nc-accent-soft)] shadow-[0_0_10px_var(--nc-accent-soft)]" />
             <span className="text-[10px] uppercase tracking-[0.3em] text-white/70">
               Premium prepaid card marketplace
             </span>
@@ -139,7 +139,7 @@ export function ScorpionAuthShell({
             <br />
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(100deg, var(--nc-accent-hi) 0%, #ef5350 60%, #ffcdd2 100%)" }}
+              style={{ backgroundImage: "linear-gradient(100deg, var(--nc-accent-hi) 0%, var(--nc-accent-soft) 60%, var(--nc-accent-pale) 100%)" }}
             >
               that just work.
             </span>
@@ -153,7 +153,7 @@ export function ScorpionAuthShell({
             {perks.map(({ icon: Icon, title: t, copy }) => (
               <div key={t} className="flex items-start gap-3.5">
                 <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/12 bg-white/[0.05] backdrop-blur-md">
-                  <Icon className="h-4 w-4 text-[#ff8a80]" />
+                  <Icon className="h-4 w-4 text-[var(--nc-accent-pale)]" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[13.5px] font-semibold text-white">{t}</div>
@@ -259,7 +259,7 @@ export function ScorpionAuthShell({
                     </div>
                   </div>
 
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#ff8a80]/70">
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[var(--nc-accent-pale)]/70">
                     Secure Access
                   </p>
                   {tagline && (

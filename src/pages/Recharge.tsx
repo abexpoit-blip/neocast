@@ -235,7 +235,7 @@ const Recharge = () => {
           <div className="absolute -top-16 -right-10 h-52 w-52 rounded-full bg-[var(--nc-accent)]/25 blur-3xl" />
           <div className="relative px-5 sm:px-7 py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">NeoCast Wallet</div>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--nc-accent-soft)] font-semibold">NeoCast Wallet</div>
               <h1 className="mt-1.5 text-white text-[22px] sm:text-[26px] font-bold tracking-tight">Deposit &amp; balance</h1>
               <p className="mt-1 text-[12.5px] text-white/50 max-w-md leading-relaxed">
                 Instant crypto top-ups with automatic crediting after network confirmation.
@@ -248,11 +248,11 @@ const Recharge = () => {
               </div>
               <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-4 py-3">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Method</div>
-                <div className="text-[14px] font-semibold text-[#ef5350]">LTC</div>
+                <div className="text-[14px] font-semibold text-[var(--nc-accent-soft)]">LTC</div>
               </div>
             </div>
           </div>
-          <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[#ef5350] to-transparent" />
+          <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[var(--nc-accent-soft)] to-transparent" />
         </section>
 
         {isActivation && (

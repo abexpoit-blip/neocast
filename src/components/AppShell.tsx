@@ -177,7 +177,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 </Link>
                 <button
                   onClick={async () => { setMenuOpen(false); await signOut(); nav("/auth"); }}
-                  className="w-full text-left px-4 py-2.5 hover:bg-[var(--nc-accent)]/15 flex items-center gap-2 text-[#ef5350] border-t border-[var(--nc-line)] transition"
+                  className="w-full text-left px-4 py-2.5 hover:bg-[var(--nc-accent)]/15 flex items-center gap-2 text-[var(--nc-accent-soft)] border-t border-[var(--nc-line)] transition"
                 >
                   <LogOut className="h-4 w-4" /> Log out
                 </button>
@@ -202,7 +202,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           </div>
 
           <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-[#ef5350]/85 font-semibold">Marketplace</div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[var(--nc-accent-soft)]/85 font-semibold">Marketplace</div>
             <ul className="mt-3 space-y-2 text-[13px]">
               <li><Link to="/shop" className="hover:text-white transition">Shop</Link></li>
               <li><Link to="/cart" className="hover:text-white transition">Cart</Link></li>
@@ -212,7 +212,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           </div>
 
           <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-[#ef5350]/85 font-semibold">Account</div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[var(--nc-accent-soft)]/85 font-semibold">Account</div>
             <ul className="mt-3 space-y-2 text-[13px]">
               <li><Link to="/" className="hover:text-white transition">Dashboard</Link></li>
               <li><Link to="/orders" className="hover:text-white transition">Order history</Link></li>
@@ -222,7 +222,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
 
           <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-[#ef5350]/85 font-semibold">Why NeoCast</div>
+            <div className="text-[10px] uppercase tracking-[0.25em] text-[var(--nc-accent-soft)]/85 font-semibold">Why NeoCast</div>
             <ul className="mt-3 space-y-2 text-[13px] text-white/60">
               <li>24/7 support</li>
               <li>Instant delivery</li>
