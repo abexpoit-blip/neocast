@@ -77,11 +77,14 @@ has_svc() { echo "$BASE_SERVICES" | grep -qx "$1"; }
     if has_svc "$pool"; then
       echo "  $pool:"
       echo "    container_name: ${STACK_NAME}-pooler"
-      echo "    ports:"
-      echo "      - \"${PG_PORT}:5432\""
-      echo "      - \"${POOLER_PORT}:6543\""
+      # !override replaces the upstream ports list entirely, otherwise compose
+      # merges them and we'd re-bind the other stack's 5432/6543.
+      echo "    ports: !override"
+      echo "      - \"127.0.0.1:${PG_PORT}:5432\""
+      echo "      - \"127.0.0.1:${POOLER_PORT}:6543\""
     fi
   done
+
 } > "$OVERRIDE_FILE"
 echo "    override written: $OVERRIDE_FILE"
 echo "    services detected: $(echo $BASE_SERVICES | tr '\n' ' ')"
