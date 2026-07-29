@@ -23,7 +23,7 @@ const perks = [
 ];
 
 /** Accepted payment networks. */
-function NetworkTile({ name, Mark }: { name: string; Mark: (p: { className?: string }) => JSX.Element }) {
+function NetworkTile({ name, Mark }: { name: string; Mark: (p: { className?: string }) => ReactNode }) {
   return (
     <div className="group flex items-center gap-2.5 rounded-xl border border-white/12 bg-white/[0.05] px-3 py-2.5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">
       <Mark className="h-7 w-[42px] shrink-0" />
@@ -33,7 +33,7 @@ function NetworkTile({ name, Mark }: { name: string; Mark: (p: { className?: str
 }
 
 
-/** Premium gift-card marketplace card mock used in the brand panel. */
+/** Premium prepaid card mock used in the brand panel. */
 function CardMock({
   label,
   value,
@@ -51,8 +51,8 @@ function CardMock({
       style={{ background: gradient }}
     >
       <div className="flex items-start justify-between">
-        <Gift className="h-5 w-5 text-white/85" />
-        <span className="text-[9px] uppercase tracking-[0.28em] text-white/70">Gift card</span>
+        <CreditCard className="h-5 w-5 text-white/85" />
+        <span className="text-[9px] uppercase tracking-[0.28em] text-white/70">Prepaid card</span>
       </div>
       <div className="mt-7 text-[11px] uppercase tracking-[0.22em] text-white/70">{label}</div>
       <div
@@ -72,7 +72,7 @@ function CardMock({
 
 
 /**
- * NeoCast auth shell — premium gift-card marketplace split layout.
+ * NeoCast auth shell — premium card marketplace split layout.
  * Left: brand story, trust perks and floating card mocks. Right: the form.
  */
 export function ScorpionAuthShell({
@@ -125,7 +125,7 @@ export function ScorpionAuthShell({
           <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 backdrop-blur-md">
             <span className="h-1.5 w-1.5 rounded-full bg-[#ef5350] shadow-[0_0_10px_#ef5350]" />
             <span className="text-[10px] uppercase tracking-[0.3em] text-white/70">
-              Premium gift card marketplace
+              Premium prepaid card marketplace
             </span>
           </div>
 
@@ -133,7 +133,7 @@ export function ScorpionAuthShell({
             className="mt-6 text-[46px] leading-[1.05] font-extrabold tracking-[-0.03em]"
             style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
           >
-            Buy gift cards
+            Buy prepaid cards
             <br />
             <span
               className="bg-clip-text text-transparent"
@@ -143,7 +143,7 @@ export function ScorpionAuthShell({
             </span>
           </h2>
           <p className="mt-4 max-w-[420px] text-[14px] leading-relaxed text-white/60">
-            Steam, Apple, PlayStation, Amazon and 200+ brands — verified stock, instant
+            Visa, Mastercard, Amex, Discover and 200+ brands — verified stock, instant
             delivery and 24/7 support from a marketplace traders actually trust.
           </p>
 
@@ -183,11 +183,16 @@ export function ScorpionAuthShell({
             />
           </div>
 
-          {/* Colorful brand tiles */}
-          <div className="mt-8 grid grid-cols-3 gap-2.5 max-w-[440px]">
-            {brands.map((b) => (
-              <BrandTile key={b.name} {...b} />
-            ))}
+          {/* Accepted networks */}
+          <div className="mt-8 max-w-[440px]">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+              We accept
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2.5">
+              {cardNetworks.map((n) => (
+                <NetworkTile key={n.name} name={n.name} Mark={n.Mark} />
+              ))}
+            </div>
           </div>
 
 
@@ -214,9 +219,9 @@ export function ScorpionAuthShell({
         {/* Form card */}
         <div className="w-full max-w-[430px] mx-auto lg:mx-0">
           {/* Mobile brand strip */}
-          <div className="lg:hidden mb-5 grid grid-cols-3 gap-2">
-            {brands.slice(0, 6).map((b) => (
-              <BrandTile key={b.name} {...b} />
+          <div className="lg:hidden mb-5 grid grid-cols-4 gap-2">
+            {cardNetworks.map((n) => (
+              <n.Mark key={n.name} className="h-8 w-full" />
             ))}
           </div>
 
@@ -239,25 +244,18 @@ export function ScorpionAuthShell({
               <div className={`h-[2px] w-full bg-gradient-to-r ${accentBar[accent]}`} />
               <div className="px-7 py-8 sm:px-10 sm:py-10 text-white">
                 <div className="text-center mb-7">
-                  <div className="flex justify-center mb-5">
-                    <div className="relative h-14 w-14">
+                  <div className="flex justify-center mb-4">
+                    <div className="relative">
                       <div
-                        className="absolute inset-0 rounded-2xl blur-xl opacity-70"
+                        className="absolute -inset-6 blur-2xl opacity-70"
                         style={{
                           background:
-                            "radial-gradient(circle, rgba(239,83,80,0.65) 0%, rgba(198,40,40,0) 70%)",
+                            "radial-gradient(circle, rgba(239,83,80,0.5) 0%, rgba(198,40,40,0) 70%)",
                         }}
                       />
-                      <BrandMark size={56} className="relative" />
+                      <BrandLockup className="relative" />
                     </div>
                   </div>
-                  <h1
-                    className="text-[27px] leading-none font-extrabold tracking-[-0.02em] text-white"
-                    style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
-                  >
-                    {title}
-                    <span className="text-[15px] text-[#ef5350] font-bold">.cc</span>
-                  </h1>
 
                   <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#ff8a80]/70">
                     Secure Access
