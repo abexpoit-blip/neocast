@@ -74,8 +74,8 @@ export function TopProgress() {
         style={{
           width: `${width}%`,
           opacity: width >= 100 ? 0 : 1,
-          background: "linear-gradient(90deg, #c62828 0%, #9e1c1c 55%, #ef5350 100%)",
-          boxShadow: "0 0 12px rgba(239,83,80,0.75)",
+          background: "linear-gradient(90deg, var(--nc-accent) 0%, #9e1c1c 55%, #ef5350 100%)",
+          boxShadow: "0 0 12px rgba(var(--nc-accent-rgb),0.75)",
         }}
       />
     </div>

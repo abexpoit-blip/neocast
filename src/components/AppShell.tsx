@@ -47,7 +47,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     >
 
       {/* TOP NAV */}
-      <header className="bg-[#141414] text-white sticky top-0 z-40 border-b-2 border-[#c62828]">
+      <header className="bg-[var(--nc-ink)] text-white sticky top-0 z-40 border-b-2 border-[var(--nc-accent)]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-between gap-6">
           <nav className="hidden lg:flex items-center h-full gap-1.5 text-[12px] font-semibold tracking-[0.12em]">
             {items.map((n) => (
@@ -58,8 +58,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 className={({ isActive }) =>
                   `group relative overflow-hidden rounded-md px-4 py-1.5 border transition-all duration-300 ease-out will-change-transform active:scale-[0.96] ${
                     isActive
-                      ? "text-white border-[#c62828] bg-gradient-to-b from-[#e03131] to-[#a51d1d] shadow-[0_0_0_1px_rgba(198,40,40,0.5),0_6px_18px_-6px_rgba(198,40,40,0.8)]"
-                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[#c62828]/60 hover:bg-[#c62828]/15 hover:-translate-y-[1px] hover:shadow-[0_6px_16px_-8px_rgba(198,40,40,0.9)]"
+                      ? "text-white border-[var(--nc-accent)] bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[0_0_0_1px_rgba(var(--nc-accent-rgb),0.5),0_6px_18px_-6px_rgba(var(--nc-accent-rgb),0.8)]"
+                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[var(--nc-accent)]/60 hover:bg-[var(--nc-accent)]/15 hover:-translate-y-[1px] hover:shadow-[0_6px_16px_-8px_rgba(var(--nc-accent-rgb),0.9)]"
                   }`
                 }
               >
@@ -85,7 +85,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
         </div>
         {drawerOpen && (
-          <div className="lg:hidden bg-[#141414] border-t border-white/10 p-3 grid gap-2 animate-fade-in">
+          <div className="lg:hidden bg-[var(--nc-ink)] border-t border-white/10 p-3 grid gap-2 animate-fade-in">
             {items.map((n) => (
               <NavLink
                 key={n.to}
@@ -95,8 +95,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 className={({ isActive }) =>
                   `group relative overflow-hidden rounded-md px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] border transition-all duration-300 active:scale-[0.97] ${
                     isActive
-                      ? "text-white border-[#c62828] bg-gradient-to-b from-[#e03131] to-[#a51d1d] shadow-[0_6px_18px_-8px_rgba(198,40,40,0.9)]"
-                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[#c62828]/60 hover:bg-[#c62828]/15"
+                      ? "text-white border-[var(--nc-accent)] bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[0_6px_18px_-8px_rgba(var(--nc-accent-rgb),0.9)]"
+                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[var(--nc-accent)]/60 hover:bg-[var(--nc-accent)]/15"
                   }`
                 }
               >
@@ -110,12 +110,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       </header>
 
       {/* ACCOUNT BAR */}
-      <div className="bg-[#1c1c1c] border-b border-[#2a2a2a]">
+      <div className="bg-[var(--nc-ink-2)] border-b border-[var(--nc-line)]">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-14 py-2 flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
           {/* balance card */}
-          <div className="flex items-stretch rounded-md overflow-hidden border border-[#333] bg-[#141414]">
+          <div className="flex items-stretch rounded-md overflow-hidden border border-[#333] bg-[var(--nc-ink)]">
             <div className="flex items-center gap-2 px-3 py-1.5">
-              <Wallet className="h-4 w-4 text-[#c62828]" />
+              <Wallet className="h-4 w-4 text-[var(--nc-accent)]" />
               <div className="leading-tight">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-white/40">Balance</div>
                 <div className="text-[14px] font-semibold text-white tabular-nums">${balance}</div>
@@ -123,7 +123,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
             <Link
               to="/recharge"
-              className="flex items-center gap-1 px-3 bg-[#c62828] hover:bg-[#b02121] text-white text-[11px] font-semibold uppercase tracking-wide transition"
+              className="flex items-center gap-1 px-3 bg-[var(--nc-accent)] hover:bg-[#b02121] text-white text-[11px] font-semibold uppercase tracking-wide transition"
             >
               <Plus className="h-3.5 w-3.5" /> Add
             </Link>
@@ -132,29 +132,29 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-md border border-[#333] bg-[#141414] hover:border-[#c62828]/60 transition"
+              className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-md border border-[#333] bg-[var(--nc-ink)] hover:border-[var(--nc-accent)]/60 transition"
             >
-              <span className="h-8 w-8 rounded-md bg-gradient-to-br from-[#c62828] to-[#7f1414] text-white text-xs uppercase font-bold flex items-center justify-center">
+              <span className="h-8 w-8 rounded-md bg-gradient-to-br from-[var(--nc-accent)] to-[#7f1414] text-white text-xs uppercase font-bold flex items-center justify-center">
                 {uname.slice(0, 2)}
               </span>
               <span className="hidden sm:block text-left leading-tight">
                 <span className="block text-[13px] text-white font-medium max-w-[130px] truncate">{uname}</span>
-                <span className="block text-[9px] uppercase tracking-[0.18em] text-[#c62828]">
+                <span className="block text-[9px] uppercase tracking-[0.18em] text-[var(--nc-accent)]">
                   {profile?.role === "admin" ? "Administrator" : "Verified buyer"}
                 </span>
               </span>
               <ChevronDown className={`h-3.5 w-3.5 text-white/50 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 rounded-lg overflow-hidden bg-[#141414] border border-[#2f2f2f] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.8)] z-20 text-sm">
-                <div className="px-4 py-3 border-b border-[#2a2a2a] bg-gradient-to-r from-[#c62828]/15 to-transparent">
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-lg overflow-hidden bg-[var(--nc-ink)] border border-[#2f2f2f] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.8)] z-20 text-sm">
+                <div className="px-4 py-3 border-b border-[var(--nc-line)] bg-gradient-to-r from-[var(--nc-accent)]/15 to-transparent">
                   <div className="text-white font-semibold truncate">{uname}</div>
                   <div className="text-[11px] text-white/45 truncate">{user?.email ?? "—"}</div>
                   <div className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-[#2fb344]">
                     <ShieldCheck className="h-3.5 w-3.5" /> Account active
                   </div>
                 </div>
-                <div className="px-4 py-3 border-b border-[#2a2a2a] flex items-center justify-between">
+                <div className="px-4 py-3 border-b border-[var(--nc-line)] flex items-center justify-between">
                   <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">Balance</span>
                   <span className="text-[15px] font-semibold text-white tabular-nums">${balance}</span>
                 </div>
@@ -166,7 +166,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 </Link>
                 <button
                   onClick={async () => { setMenuOpen(false); await signOut(); nav("/auth"); }}
-                  className="w-full text-left px-4 py-2.5 hover:bg-[#c62828]/15 flex items-center gap-2 text-[#ef5350] border-t border-[#2a2a2a] transition"
+                  className="w-full text-left px-4 py-2.5 hover:bg-[var(--nc-accent)]/15 flex items-center gap-2 text-[#ef5350] border-t border-[var(--nc-line)] transition"
                 >
                   <LogOut className="h-4 w-4" /> Log out
                 </button>
@@ -180,7 +180,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-3 sm:px-6 py-4 sm:py-5">{children}</main>
 
       {/* FOOTER */}
-      <footer className="mt-10 border-t-2 !border-t-[#c62828] bg-[#101010] text-white/70 border-t border-white/10">
+      <footer className="mt-10 border-t-2 !border-t-[var(--nc-accent)] bg-[#101010] text-white/70 border-t border-white/10">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <BrandLogo size={38} />
@@ -245,7 +245,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-white">
         <div className="border border-[#e6e6e6] rounded-md p-8 max-w-md bg-white shadow-sm">
-          <h2 className="text-2xl font-semibold text-[#d32f2f] mb-2">Account blocked</h2>
+          <h2 className="text-2xl font-semibold text-[var(--nc-accent-hi)] mb-2">Account blocked</h2>
           <p className="text-[#666] text-sm mb-6">Your account has been blocked. Contact support if you believe this is a mistake.</p>
           <Button onClick={async () => { await signOut(); nav("/auth"); }} variant="outline">Log out</Button>
         </div>

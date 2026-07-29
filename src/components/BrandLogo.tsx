@@ -4,7 +4,7 @@
  * Wordmark: NEOCAST in white + .CC accent in brand red.
  */
 
-const RED = "#c62828";
+const RED = "var(--nc-accent)";
 const RED_LIGHT = "#ef5350";
 
 export const BrandMark = ({ size = 36, className = "" }: { size?: number; className?: string }) => (

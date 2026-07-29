@@ -85,7 +85,7 @@ export function ScorpionShell({ children }: { children: ReactNode }) {
                 </Link>
                 <button
                   onClick={() => { setMenuOpen(false); signOut(); }}
-                  className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[#d32f2f]"
+                  className="w-full text-left px-3 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 text-[var(--nc-accent-hi)]"
                 >
                   <LogOut className="h-3.5 w-3.5" /> Sign out
                 </button>

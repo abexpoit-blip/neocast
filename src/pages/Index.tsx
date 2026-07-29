@@ -55,8 +55,8 @@ const Index = () => {
       <Seo title="NeoCast — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
 
       {/* HERO */}
-      <section className="rounded-xl overflow-hidden bg-[#141414] border border-[#2a2a2a] relative mb-5">
-        <div className="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-[#c62828]/25 blur-3xl" />
+      <section className="rounded-xl overflow-hidden bg-[var(--nc-ink)] border border-[var(--nc-line)] relative mb-5">
+        <div className="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-[var(--nc-accent)]/25 blur-3xl" />
         <div className="relative px-5 sm:px-7 py-6 flex flex-col lg:flex-row lg:items-end justify-between gap-5">
           <div>
             <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">Welcome back</div>
@@ -67,10 +67,10 @@ const Index = () => {
               Fresh stock is pushed to the shop around the clock. Track new drops in the live feed below.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link to="/shop" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md bg-[#c62828] hover:bg-[#b02121] text-white text-[12px] font-semibold uppercase tracking-wide transition">
+              <Link to="/shop" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md bg-[var(--nc-accent)] hover:bg-[#b02121] text-white text-[12px] font-semibold uppercase tracking-wide transition">
                 Browse shop <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <Link to="/recharge" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md border border-[#3a3a3a] text-white/80 hover:text-white hover:border-[#c62828] text-[12px] font-semibold uppercase tracking-wide transition">
+              <Link to="/recharge" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md border border-[#3a3a3a] text-white/80 hover:text-white hover:border-[var(--nc-accent)] text-[12px] font-semibold uppercase tracking-wide transition">
                 Add funds
               </Link>
             </div>
@@ -81,7 +81,7 @@ const Index = () => {
             <Stat icon={<Activity className="h-4 w-4" />} label="Feeds" value={String(news.length)} />
           </div>
         </div>
-        <div className="h-[3px] bg-gradient-to-r from-[#c62828] via-[#ef5350] to-transparent" />
+        <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[#ef5350] to-transparent" />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -111,11 +111,11 @@ const Index = () => {
             {!loading && news.map((n) => (
               <div key={n.id} className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-[#fafafa] transition group">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#c62828] shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--nc-accent)] shrink-0" />
                   <span className="text-[13px] text-[#222] truncate font-medium">{n.label}</span>
                 </div>
                 {n.count ? (
-                  <span className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded border border-[#f2caca] bg-[#fdf2f2] text-[#c62828]">
+                  <span className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded border border-[#f2caca] bg-[#fdf2f2] text-[var(--nc-accent)]">
                     {n.count} pcs
                   </span>
                 ) : null}
@@ -142,7 +142,7 @@ const Index = () => {
               </div>
             ) : (
               anns.map((a) => (
-                <article key={a.id} className="rounded-lg border border-[#eee] bg-white p-4 border-l-[3px] border-l-[#c62828]">
+                <article key={a.id} className="rounded-lg border border-[#eee] bg-white p-4 border-l-[3px] border-l-[var(--nc-accent)]">
                   <h3 className="text-[14px] font-semibold text-[#1a1a1a]">{a.title}</h3>
                   <p className="mt-1.5 text-[13px] text-[#555] leading-[1.75] whitespace-pre-line">{a.body}</p>
                 </article>
@@ -167,7 +167,7 @@ const Index = () => {
               "The shop is not responsible for how you use information from this resource.",
             ].map((r) => (
               <li key={r} className="flex gap-2.5">
-                <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#c62828] shrink-0" />
+                <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[var(--nc-accent)] shrink-0" />
                 <span>{r}</span>
               </li>
             ))}
@@ -176,34 +176,34 @@ const Index = () => {
 
         <Panel title="Contact information" icon={<MessageCircle className="h-4 w-4" />}>
           <div className="px-5 py-4 space-y-4 text-[13px] text-[#444] leading-[1.7]">
-            <p className="rounded-lg bg-[#fdf2f2] border border-[#f2caca] px-3.5 py-2.5 text-[#c62828]">
+            <p className="rounded-lg bg-[#fdf2f2] border border-[#f2caca] px-3.5 py-2.5 text-[var(--nc-accent)]">
               Beware of fake NeoCast support. We never message you first.
             </p>
             <div className="grid gap-2.5">
               <a href="https://t.me/zoru_support" target="_blank" rel="noreferrer"
-                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[#c62828]/50 hover:bg-[#fafafa] transition group">
+                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[var(--nc-accent)]/50 hover:bg-[#fafafa] transition group">
                 <span className="flex items-center gap-2.5">
-                  <span className="h-8 w-8 rounded-md bg-[#1c1c1c] text-white flex items-center justify-center"><Send className="h-4 w-4" /></span>
+                  <span className="h-8 w-8 rounded-md bg-[var(--nc-ink-2)] text-white flex items-center justify-center"><Send className="h-4 w-4" /></span>
                   <span>
                     <span className="block text-[10px] uppercase tracking-[0.18em] text-[#999]">Support</span>
                     <span className="block text-[13px] font-medium text-[#1a1a1a]">@zoru_support</span>
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[#c62828] transition" />
+                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[var(--nc-accent)] transition" />
               </a>
               <a href="https://t.me/zoru_shop" target="_blank" rel="noreferrer"
-                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[#c62828]/50 hover:bg-[#fafafa] transition group">
+                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[var(--nc-accent)]/50 hover:bg-[#fafafa] transition group">
                 <span className="flex items-center gap-2.5">
-                  <span className="h-8 w-8 rounded-md bg-[#1c1c1c] text-white flex items-center justify-center"><Megaphone className="h-4 w-4" /></span>
+                  <span className="h-8 w-8 rounded-md bg-[var(--nc-ink-2)] text-white flex items-center justify-center"><Megaphone className="h-4 w-4" /></span>
                   <span>
                     <span className="block text-[10px] uppercase tracking-[0.18em] text-[#999]">Channel</span>
                     <span className="block text-[13px] font-medium text-[#1a1a1a]">t.me/zoru_shop</span>
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[#c62828] transition" />
+                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[var(--nc-accent)] transition" />
               </a>
             </div>
-            <p className="text-[12.5px] text-[#c62828] font-semibold">Sellers are welcome to join the platform.</p>
+            <p className="text-[12.5px] text-[var(--nc-accent)] font-semibold">Sellers are welcome to join the platform.</p>
           </div>
         </Panel>
       </div>
@@ -213,7 +213,7 @@ const Index = () => {
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-3 py-2.5">
+    <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-3 py-2.5">
       <div className="flex items-center gap-1.5 text-[#ef5350]">{icon}</div>
       <div className="mt-1.5 text-[16px] font-bold text-white tabular-nums truncate">{value}</div>
       <div className="text-[9px] uppercase tracking-[0.18em] text-white/40">{label}</div>
@@ -224,7 +224,7 @@ function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; va
 function Panel({ title, icon, right, children }: { title: string; icon?: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-      <header className="px-4 h-11 bg-[#1c1c1c] border-b-2 border-[#c62828] flex items-center justify-between">
+      <header className="px-4 h-11 bg-[var(--nc-ink-2)] border-b-2 border-[var(--nc-accent)] flex items-center justify-between">
         <h2 className="text-[12.5px] font-medium text-white/85 uppercase tracking-[0.14em] flex items-center gap-2">
           <span className="text-[#ef5350]">{icon}</span>{title}
         </h2>

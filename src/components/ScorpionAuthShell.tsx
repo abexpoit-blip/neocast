@@ -88,7 +88,7 @@ export function ScorpionAuthShell({
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 sm:py-14 overflow-hidden"
       style={{
         fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif',
-        background: "linear-gradient(160deg, #0a0a0a 0%, #141414 48%, #0a0a0a 100%)",
+        background: "linear-gradient(160deg, #0a0a0a 0%, var(--nc-ink) 48%, #0a0a0a 100%)",
       }}
     >
       {/* Grid */}
@@ -105,7 +105,7 @@ export function ScorpionAuthShell({
       {/* Aurora glows */}
       <div
         className="absolute -top-40 -left-32 h-[460px] w-[460px] rounded-full blur-[130px] opacity-60"
-        style={{ background: "radial-gradient(circle, #c62828 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent) 0%, transparent 70%)" }}
       />
       <div
         className="absolute -bottom-48 -right-24 h-[500px] w-[500px] rounded-full blur-[140px] opacity-50"
@@ -169,7 +169,7 @@ export function ScorpionAuthShell({
               label="Balance"
               value="$100.00"
               className="left-0 top-0 -rotate-6"
-              gradient="linear-gradient(140deg, rgba(198,40,40,0.85) 0%, rgba(158,28,28,0.7) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.85) 0%, rgba(var(--nc-accent-rgb),0.7) 100%)"
             />
             <CardMock
               label="Balance"
@@ -232,7 +232,7 @@ export function ScorpionAuthShell({
               className="absolute -inset-[1px] rounded-[22px] opacity-80"
               style={{
                 background:
-                  "linear-gradient(140deg, rgba(239,83,80,0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
+                  "linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
               }}
             />
             <div
@@ -252,7 +252,7 @@ export function ScorpionAuthShell({
                         className="absolute -inset-6 blur-2xl opacity-70"
                         style={{
                           background:
-                            "radial-gradient(circle, rgba(239,83,80,0.5) 0%, rgba(198,40,40,0) 70%)",
+                            "radial-gradient(circle, rgba(var(--nc-accent-rgb),0.5) 0%, rgba(var(--nc-accent-rgb),0) 70%)",
                         }}
                       />
                       <BrandLockup className="relative" />
