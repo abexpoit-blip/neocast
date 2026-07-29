@@ -112,10 +112,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               </NavLink>
 
             ))}
-            <div className="mt-1 flex items-center justify-between rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
-              <span className="text-[10px] uppercase tracking-[0.16em] text-white/45">Theme</span>
-              <ThemeSwitcher />
-            </div>
           </div>
 
         )}
