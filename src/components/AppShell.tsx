@@ -57,19 +57,20 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 to={n.to}
                 end={(n as any).end}
                 className={({ isActive }) =>
-                  `group relative overflow-hidden rounded-md px-4 py-1.5 border transition-all duration-300 ease-out will-change-transform active:scale-[0.96] ${
+                  `group relative overflow-hidden rounded-full px-5 py-1.5 border transition-all duration-200 ease-out will-change-transform translate-y-0 active:translate-y-[2px] ${
                     isActive
-                      ? "text-white border-[var(--nc-accent)] bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[0_0_0_1px_rgba(var(--nc-accent-rgb),0.5),0_6px_18px_-6px_rgba(var(--nc-accent-rgb),0.8)]"
-                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[var(--nc-accent)]/60 hover:bg-[var(--nc-accent)]/15 hover:-translate-y-[1px] hover:shadow-[0_6px_16px_-8px_rgba(var(--nc-accent-rgb),0.9)]"
+                      ? "text-white border-[var(--nc-accent)]/80 bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_4px_rgba(0,0,0,0.35),0_4px_0_-1px_rgba(0,0,0,0.55),0_10px_20px_-8px_rgba(var(--nc-accent-rgb),0.85)] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_3px_rgba(0,0,0,0.4),0_2px_0_-1px_rgba(0,0,0,0.5)]"
+                      : "text-white/70 border-white/12 bg-gradient-to-b from-white/[0.10] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_3px_0_-1px_rgba(0,0,0,0.5),0_8px_16px_-10px_rgba(0,0,0,0.9)] hover:text-white hover:-translate-y-[1px] hover:border-[var(--nc-accent)]/60 hover:from-[var(--nc-accent)]/30 hover:to-[var(--nc-accent)]/10 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_5px_0_-1px_rgba(0,0,0,0.55),0_12px_22px_-10px_rgba(var(--nc-accent-rgb),0.8)] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
                   }`
                 }
               >
+                {/* glossy top highlight */}
+                <span className="pointer-events-none absolute inset-x-1 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent opacity-70" />
                 {/* sweep shine */}
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
-                {/* underline grow */}
-                <span className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-white/80 transition-all duration-300 group-hover:w-2/3" />
-                <span className="relative">{n.label}</span>
+                <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)]">{n.label}</span>
               </NavLink>
+
             ))}
           </nav>
 
