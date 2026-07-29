@@ -10,6 +10,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import TopProgress from "@/components/TopProgress";
 
 import { LanguageProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/hooks/useTheme";
 
 // Eager: first screens users hit.
 import Index from "./pages/Index";
@@ -54,6 +55,7 @@ const App = () => (
       <Sonner theme="light" />
       <BrowserRouter>
         <LanguageProvider>
+        <ThemeProvider>
         <AuthProvider>
           <ScrollToTop />
           <TopProgress />
@@ -90,6 +92,7 @@ const App = () => (
           </Routes>
           </Suspense>
         </AuthProvider>
+        </ThemeProvider>
         </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
