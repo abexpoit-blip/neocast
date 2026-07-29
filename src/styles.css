@@ -211,3 +211,18 @@
 .gold-border {
   box-shadow: 0 0 0 1px hsl(var(--border)) !important;
 }
+
+/* ===== Theme: Maroon (alternate brand skin) ===== */
+:root[data-theme="maroon"] {
+  --nc-accent: #7b1e34;
+  --nc-accent-hi: #9d2542;
+  --nc-accent-lo: #55101f;
+  --nc-accent-rgb: 123, 30, 52;
+  --nc-ink: #16090d;
+  --nc-ink-2: #1f0e14;
+  --nc-line: #33191f;
+}
+
+/* Smooth skin transitions when switching themes */
+html { transition: none; }
+header, footer, .nc-skin { transition: background-color .35s ease, border-color .35s ease; }
