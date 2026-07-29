@@ -1,12 +1,12 @@
 # Project Memory
 
 ## Core
-Domain: zoru.cc (SSL live via nexus_certbot on VPS 157.173.117.34).
-VPS project folder: `/var/www/zoru-cc/` (source/build). Web root served by nexus_nginx: `/var/www/certbot/zoru-cc/` (mounted in container).
-Nginx config file: `/opt/nexus/deployment/nginx/conf.d/zoru.cc.conf` — DO NOT touch other nexus files.
-GitHub repo: https://github.com/abexpoit-blip/the-happy-storefront (public).
-Never touch Nexus stack (`/opt/nexus/`, nexus_* containers, other .conf files).
-User prefers Bangla, beginner-friendly, step-by-step deploy commands with log-check.
+Brand is NeoCast (renamed from Zoru Shop). Never use the old name.
+Site language is English by default; RU/EN toggle stays but starts on EN.
+Palette: midnight indigo #0b1230 base, indigo #4f46e5 → cyan #22d3ee accents. No red/gold dragon theme.
+Redesign work is visual only — backend, APIs and business logic must stay unchanged.
+Target domain: neocast.cc (Namecheap). Existing VPS: 157.173.117.34 (also hosts zoru.cc).
 
 ## Memories
-- [Deploy setup](mem://deploy/vps) — VPS layout, nginx config path, safe folders
+- [Deploy setup (zoru.cc)](mem://deploy/vps) — existing VPS layout, nginx config path, safe boundaries around the Nexus stack
+- [Deploy setup (neocast.cc)](mem://deploy/neocast-cc) — new domain, DNS records, planned paths on the same VPS
