@@ -19,12 +19,30 @@ const Shop = () => {
 
   const [bin, setBin] = useState("");
   const [base, setBase] = useState("all");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("all");
   const [zip, setZip] = useState("");
+  const [brand, setBrand] = useState("all");
+  const [hasZip, setHasZip] = useState(false);
+  const [hasPhone, setHasPhone] = useState(false);
+  const [hasEmail, setHasEmail] = useState(false);
+  const [refundable, setRefundable] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [lastBin, setLastBin] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [q, setQ] = useState({ bin: "", base: "all", country: "", zip: "" });
+  type Query = {
+    bin: string; base: string; country: string; zip: string; brand: string;
+    hasZip: boolean; hasPhone: boolean; hasEmail: boolean; refundable: boolean;
+    minPrice: string; maxPrice: string;
+  };
+  const emptyQuery: Query = {
+    bin: "", base: "all", country: "all", zip: "", brand: "all",
+    hasZip: false, hasPhone: false, hasEmail: false, refundable: false,
+    minPrice: "", maxPrice: "",
+  };
+  const [q, setQ] = useState<Query>(emptyQuery);
+
 
   const lastLoad = useRef(0);
   const load = async (force = false) => {
