@@ -230,6 +230,31 @@ const Recharge = () => {
   return (
     <AppShell>
       <div className="space-y-4 max-w-6xl">
+        {/* PREMIUM HEADER */}
+        <section className="rounded-xl overflow-hidden bg-[#141414] border border-[#2a2a2a] relative">
+          <div className="absolute -top-16 -right-10 h-52 w-52 rounded-full bg-[#c62828]/25 blur-3xl" />
+          <div className="relative px-5 sm:px-7 py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">NeoCast Wallet</div>
+              <h1 className="mt-1.5 text-white text-[22px] sm:text-[26px] font-bold tracking-tight">Deposit &amp; balance</h1>
+              <p className="mt-1 text-[12.5px] text-white/50 max-w-md leading-relaxed">
+                Instant crypto top-ups with automatic crediting after network confirmation.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3 min-w-[150px]">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Available balance</div>
+                <div className="text-[22px] font-bold text-white tabular-nums">${Number(profile?.balance ?? 0).toFixed(2)}</div>
+              </div>
+              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Method</div>
+                <div className="text-[14px] font-semibold text-[#ef5350]">LTC</div>
+              </div>
+            </div>
+          </div>
+          <div className="h-[3px] bg-gradient-to-r from-[#c62828] via-[#ef5350] to-transparent" />
+        </section>
+
         {isActivation && (
           <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex items-start gap-3 text-[13px]">
             <div className="shrink-0 h-8 w-8 bg-[#c62828] text-white flex items-center justify-center text-sm font-bold">$</div>
