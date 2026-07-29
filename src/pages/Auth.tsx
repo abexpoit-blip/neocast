@@ -8,7 +8,6 @@ import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 import Seo from "@/components/Seo";
 import { useAuth } from "@/hooks/useAuth";
 import { ScorpionAuthShell } from "@/components/ScorpionAuthShell";
-import { useLanguage } from "@/lib/i18n";
 
 /** Simple human check: only + and - with a non-negative answer. */
 function makeChallenge() {
@@ -22,7 +21,6 @@ function makeChallenge() {
 
 
 const Auth = () => {
-  const { lang, setLang } = useLanguage();
   const nav = useNavigate();
   const loc = useLocation();
   const { refresh } = useAuth();
