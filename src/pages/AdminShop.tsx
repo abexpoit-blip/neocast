@@ -226,7 +226,7 @@ const AdminShop = () => {
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-1.5">
                 <div className={labelCls}>Name</div>
-                <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Walmart Gift Card $100" />
+                <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Walmart Card $100" />
               </div>
               <div className="space-y-1.5">
                 <div className={labelCls}>Category</div>
