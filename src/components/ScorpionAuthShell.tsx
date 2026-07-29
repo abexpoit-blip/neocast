@@ -1,6 +1,7 @@
-import { BrandMark } from "@/components/BrandLogo";
+import { BrandLockup } from "@/components/BrandLogo";
+import { cardNetworks } from "@/components/CardNetworks";
 import { ReactNode } from "react";
-import { BadgeCheck, Zap, Lock, Gift, Gamepad2, Apple, ShoppingBag, Music, Play, Tv } from "lucide-react";
+import { BadgeCheck, Zap, Lock, CreditCard } from "lucide-react";
 
 type Props = {
   children: ReactNode;
@@ -21,42 +22,16 @@ const perks = [
   { icon: Lock, title: "Protected payments", copy: "Encrypted crypto & card checkout with buyer cover." },
 ];
 
-/** Colorful brand tiles for the popular gift-card categories. */
-const brands = [
-  { name: "Steam", icon: Gamepad2, from: "#1b2838", to: "#66c0f4" },
-  { name: "Apple", icon: Apple, from: "#3f3f46", to: "#a1a1aa" },
-  { name: "PlayStation", icon: Play, from: "#003791", to: "#0070d1" },
-  { name: "Amazon", icon: ShoppingBag, from: "#232f3e", to: "#ff9900" },
-  { name: "Spotify", icon: Music, from: "#0f3d24", to: "#1db954" },
-  { name: "Netflix", icon: Tv, from: "#2b0708", to: "#e50914" },
-];
-
-function BrandTile({
-  name,
-  icon: Icon,
-  from,
-  to,
-}: {
-  name: string;
-  icon: typeof Gamepad2;
-  from: string;
-  to: string;
-}) {
+/** Accepted payment networks. */
+function NetworkTile({ name, Mark }: { name: string; Mark: (p: { className?: string }) => JSX.Element }) {
   return (
-    <div
-      className="group flex items-center gap-2.5 rounded-xl border border-white/12 px-3 py-2.5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1"
-      style={{ background: `linear-gradient(135deg, ${from}cc 0%, ${to}55 100%)` }}
-    >
-      <span
-        className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/20"
-        style={{ background: `linear-gradient(135deg, ${to} 0%, ${from} 100%)` }}
-      >
-        <Icon className="h-3.5 w-3.5 text-white" />
-      </span>
-      <span className="truncate text-[12px] font-semibold text-white/90">{name}</span>
+    <div className="group flex items-center gap-2.5 rounded-xl border border-white/12 bg-white/[0.05] px-3 py-2.5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">
+      <Mark className="h-7 w-[42px] shrink-0" />
+      <span className="truncate text-[12px] font-semibold text-white/85">{name}</span>
     </div>
   );
 }
+
 
 /** Premium gift-card marketplace card mock used in the brand panel. */
 function CardMock({
