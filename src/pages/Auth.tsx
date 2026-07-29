@@ -123,12 +123,14 @@ const Auth = () => {
       <ScorpionAuthShell
         tagline={
           <>
-            Our Telegram channel:{" "}
+            Sign in to buy verified gift cards with instant delivery.
+            <br />
             <a href="https://t.me/scorpionccstore02" className="text-[#67e8f9] font-semibold hover:underline">
               @scorpionccstore02
             </a>
           </>
         }
+
       >
 
         {/* Tabs */}
