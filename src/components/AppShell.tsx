@@ -123,23 +123,24 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-14 py-2 flex items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
 
           {/* balance card */}
-          <div className="flex items-stretch rounded-md overflow-hidden border border-[#333] bg-[var(--nc-ink)]">
-            <div className="flex items-center gap-2 px-3 py-1.5">
-              <Wallet className="h-4 w-4 text-[var(--nc-accent)]" />
-              <div className="leading-tight">
+          <div className="flex min-w-0 items-stretch rounded-md overflow-hidden border border-[#333] bg-[var(--nc-ink)]">
+            <div className="flex min-w-0 items-center gap-2 px-2.5 sm:px-3 py-1.5">
+              <Wallet className="h-4 w-4 shrink-0 text-[var(--nc-accent)]" />
+              <div className="min-w-0 leading-tight">
                 <div className="text-[9px] uppercase tracking-[0.18em] text-white/40">Balance</div>
-                <div className="text-[14px] font-semibold text-white tabular-nums">${balance}</div>
+                <div className="truncate text-[13px] sm:text-[14px] font-semibold text-white tabular-nums">${balance}</div>
               </div>
             </div>
             <Link
               to="/recharge"
-              className="flex items-center gap-1 px-3 bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-lo)] text-white text-[11px] font-semibold uppercase tracking-wide transition"
+              className="flex shrink-0 items-center gap-1 px-2.5 sm:px-3 bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-lo)] text-white text-[11px] font-semibold uppercase tracking-wide transition"
             >
-              <Plus className="h-3.5 w-3.5" /> Add
+              <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline sm:inline">Add</span>
             </Link>
           </div>
 
-          <div className="relative" ref={menuRef}>
+          <div className="relative shrink-0" ref={menuRef}>
+
             <button
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-md border border-[#333] bg-[var(--nc-ink)] hover:border-[var(--nc-accent)]/60 transition"
