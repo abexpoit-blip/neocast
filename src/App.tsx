@@ -15,9 +15,9 @@ import { ThemeProvider } from "@/hooks/useTheme";
 // Eager: first screens users hit.
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Shop from "./pages/Shop";
 
 // Lazy: everything else — keeps the initial bundle small and first paint fast.
+const Shop = lazy(() => import("./pages/Shop"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));

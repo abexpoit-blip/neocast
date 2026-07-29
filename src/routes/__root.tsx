@@ -5,6 +5,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  ScriptOnce,
   Link,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -74,8 +75,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head><HeadContent /></head>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+        <ScriptOnce>
+          {`try{var t=localStorage.getItem('neocast-theme');if(t==='maroon'){document.documentElement.setAttribute('data-theme','maroon');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#16090d';}}catch(e){}`}
+        </ScriptOnce>
+      </head>
       <body>{children}<Scripts /></body>
     </html>
   );
