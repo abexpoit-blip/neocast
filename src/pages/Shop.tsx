@@ -72,14 +72,33 @@ const Shop = () => {
     () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
     [all],
   );
+  const countries = useMemo(
+    () => [...new Set(all.map((p) => p.country).filter(Boolean) as string[])].sort(),
+    [all],
+  );
+  const brands = useMemo(
+    () => [...new Set(all.map((p) => p.brand || detectBrandFromBin(p.bin ?? "")).filter(Boolean) as string[])].sort(),
+    [all],
+  );
 
   const cards = useMemo(() => {
     if (!searched) return [];
+    const binList = q.bin.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    const zipList = q.zip.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    const min = q.minPrice ? Number(q.minPrice) : null;
+    const max = q.maxPrice ? Number(q.maxPrice) : null;
     return all.filter((p) => {
-      if (q.bin && !(p.bin ?? "").startsWith(q.bin)) return false;
+      if (binList.length && !binList.some((b) => (p.bin ?? "").startsWith(b))) return false;
+      if (zipList.length && !zipList.some((z) => (p.zip ?? "").startsWith(z))) return false;
       if (q.base !== "all" && (p.base ?? "") !== q.base) return false;
-      if (q.country && !(p.country ?? "").toUpperCase().includes(q.country.toUpperCase())) return false;
-      if (q.zip && !(p.zip ?? "").startsWith(q.zip)) return false;
+      if (q.country !== "all" && (p.country ?? "") !== q.country) return false;
+      if (q.brand !== "all" && (p.brand || detectBrandFromBin(p.bin ?? "")) !== q.brand) return false;
+      if (q.hasZip && !p.zip) return false;
+      if (q.hasPhone && !p.has_phone) return false;
+      if (q.hasEmail && !p.has_email) return false;
+      if (q.refundable && !p.refundable) return false;
+      if (min !== null && Number(p.price) < min) return false;
+      if (max !== null && Number(p.price) > max) return false;
       return true;
     });
   }, [all, q, searched]);
@@ -94,28 +113,26 @@ const Shop = () => {
     [cards, page],
   );
 
+  const currentQuery = (): Query => ({
+    bin, base, country, zip, brand, hasZip, hasPhone, hasEmail, refundable, minPrice, maxPrice,
+  });
 
   const runSearch = () => {
-    setQ({ bin, base, country, zip });
-    setLastBin(bin);
+    setQ(currentQuery());
+    setLastBin(bin.trim());
     setSearched(true);
     setSelected(new Set());
   };
 
   const reset = () => {
-    setBin(""); setBase("all"); setCountry(""); setZip("");
-    setQ({ bin: "", base: "all", country: "", zip: "" });
+    setBin(""); setBase("all"); setCountry("all"); setZip(""); setBrand("all");
+    setHasZip(false); setHasPhone(false); setHasEmail(false); setRefundable(false);
+    setMinPrice(""); setMaxPrice("");
+    setQ(emptyQuery);
     setSearched(true); setLastBin(""); setSelected(new Set());
     void load(true);
-
   };
 
-  useEffect(() => {
-    if (bin.length >= 6) {
-      const t = setTimeout(() => { setQ({ bin, base, country, zip }); setLastBin(bin); setSearched(true); }, 350);
-      return () => clearTimeout(t);
-    }
-  }, [bin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [count, setCount] = useState(0);
   useEffect(() => {
