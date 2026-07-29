@@ -107,16 +107,17 @@
   --background: 0 0% 96%;                /* #f5f5f5 */
   --foreground: 210 29% 18%;              /* deep navy text */
 
-  /* ===== NeoCast brand theme tokens (switchable) ===== */
-  --nc-accent: #c62828;
-  --nc-accent-hi: #e03131;
-  --nc-accent-lo: #a51d1d;
-  --nc-accent-rgb: 198, 40, 40;
-  --nc-accent-soft: #ef5350;
-  --nc-accent-pale: #ff8a80;
-  --nc-ink: #141414;
-  --nc-ink-2: #1c1c1c;
-  --nc-line: #2a2a2a;
+  /* ===== NeoCast brand theme tokens (single maroon skin) ===== */
+  --nc-accent: #7b1e34;
+  --nc-accent-hi: #9d2542;
+  --nc-accent-lo: #55101f;
+  --nc-accent-rgb: 123, 30, 52;
+  --nc-accent-soft: #b8354f;
+  --nc-accent-pale: #e08a9c;
+  --nc-ink: #1a0b10;
+  --nc-ink-2: #250f16;
+  --nc-line: #3a1c24;
+
 
   --card: 0 0% 100%;
   --card-foreground: 210 29% 18%;
@@ -214,7 +215,7 @@
   box-shadow: 0 0 0 1px hsl(var(--border)) !important;
 }
 
-/* ===== Theme: Maroon (alternate brand skin) ===== */
+/* ===== Single maroon brand skin (crimson/black skin retired) ===== */
 :root[data-theme="maroon"] {
   --nc-accent: #7b1e34;
   --nc-accent-hi: #9d2542;
@@ -222,39 +223,24 @@
   --nc-accent-rgb: 123, 30, 52;
   --nc-accent-soft: #b8354f;
   --nc-accent-pale: #e08a9c;
-  --nc-ink: #16090d;
-  --nc-ink-2: #1f0e14;
-  --nc-line: #33191f;
+  --nc-ink: #1a0b10;
+  --nc-ink-2: #250f16;
+  --nc-line: #3a1c24;
 }
 
-/* ===== Smooth brand-theme transitions =====
-   Registering the tokens as typed custom properties lets the browser
-   interpolate them, so every surface using var(--nc-*) animates at once. */
-@property --nc-accent { syntax: "<color>"; inherits: true; initial-value: #c62828; }
-@property --nc-accent-hi { syntax: "<color>"; inherits: true; initial-value: #e03131; }
-@property --nc-accent-lo { syntax: "<color>"; inherits: true; initial-value: #a51d1d; }
-@property --nc-accent-soft { syntax: "<color>"; inherits: true; initial-value: #ef5350; }
-@property --nc-accent-pale { syntax: "<color>"; inherits: true; initial-value: #ff8a80; }
-@property --nc-ink { syntax: "<color>"; inherits: true; initial-value: #141414; }
-@property --nc-ink-2 { syntax: "<color>"; inherits: true; initial-value: #1c1c1c; }
-@property --nc-line { syntax: "<color>"; inherits: true; initial-value: #2a2a2a; }
-
-:root {
-  transition:
-    --nc-accent .45s ease,
-    --nc-accent-hi .45s ease,
-    --nc-accent-lo .45s ease,
-    --nc-accent-soft .45s ease,
-    --nc-accent-pale .45s ease,
-    --nc-ink .45s ease,
-    --nc-ink-2 .45s ease,
-    --nc-line .45s ease;
-}
+@property --nc-accent { syntax: "<color>"; inherits: true; initial-value: #7b1e34; }
+@property --nc-accent-hi { syntax: "<color>"; inherits: true; initial-value: #9d2542; }
+@property --nc-accent-lo { syntax: "<color>"; inherits: true; initial-value: #55101f; }
+@property --nc-accent-soft { syntax: "<color>"; inherits: true; initial-value: #b8354f; }
+@property --nc-accent-pale { syntax: "<color>"; inherits: true; initial-value: #e08a9c; }
+@property --nc-ink { syntax: "<color>"; inherits: true; initial-value: #1a0b10; }
+@property --nc-ink-2 { syntax: "<color>"; inherits: true; initial-value: #250f16; }
+@property --nc-line { syntax: "<color>"; inherits: true; initial-value: #3a1c24; }
 
 header, footer, .nc-skin { transition: background-color .35s ease, border-color .35s ease; }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { transition: none; }
   header, footer, .nc-skin { transition: none; }
 }
+
 
