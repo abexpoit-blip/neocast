@@ -106,6 +106,16 @@
 :root {
   --background: 0 0% 96%;                /* #f5f5f5 */
   --foreground: 210 29% 18%;              /* deep navy text */
+
+  /* ===== NeoCast brand theme tokens (switchable) ===== */
+  --nc-accent: #c62828;
+  --nc-accent-hi: #e03131;
+  --nc-accent-lo: #a51d1d;
+  --nc-accent-rgb: 198, 40, 40;
+  --nc-ink: #141414;
+  --nc-ink-2: #1c1c1c;
+  --nc-line: #2a2a2a;
+
   --card: 0 0% 100%;
   --card-foreground: 210 29% 18%;
   --popover: 0 0% 100%;
