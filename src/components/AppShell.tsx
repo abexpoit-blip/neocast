@@ -109,6 +109,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 <span className="relative">{n.label}</span>
               </NavLink>
             ))}
+            <div className="mt-1 flex items-center justify-between rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
+              <span className="text-[10px] uppercase tracking-[0.16em] text-white/45">Theme</span>
+              <ThemeSwitcher />
+            </div>
           </div>
 
         )}
@@ -116,7 +120,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
       {/* ACCOUNT BAR */}
       <div className="bg-[var(--nc-ink-2)] border-b border-[var(--nc-line)]">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-14 py-2 flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-14 py-2 flex items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
+
           {/* balance card */}
           <div className="flex items-stretch rounded-md overflow-hidden border border-[#333] bg-[var(--nc-ink)]">
             <div className="flex items-center gap-2 px-3 py-1.5">
