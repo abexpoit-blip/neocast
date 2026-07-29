@@ -272,21 +272,7 @@ export function ScorpionAuthShell({
                             "radial-gradient(circle, rgba(239,83,80,0.65) 0%, rgba(198,40,40,0) 70%)",
                         }}
                       />
-                      <div
-                        className="relative h-full w-full rounded-2xl border border-white/15 flex items-center justify-center"
-                        style={{
-                          background: "linear-gradient(135deg, #c62828 0%, #06b6d4 100%)",
-                          boxShadow:
-                            "inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 30px -10px rgba(239,83,80,0.6)",
-                        }}
-                      >
-                        <span
-                          className="text-[24px] font-extrabold leading-none text-white"
-                          style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
-                        >
-                          N
-                        </span>
-                      </div>
+                      <BrandMark size={56} className="relative" />
                     </div>
                   </div>
                   <h1
@@ -294,7 +280,9 @@ export function ScorpionAuthShell({
                     style={{ fontFamily: '"Space Grotesk", "DM Sans", sans-serif' }}
                   >
                     {title}
+                    <span className="text-[15px] text-[#ef5350] font-bold">.cc</span>
                   </h1>
+
                   <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#ff8a80]/70">
                     Secure Access
                   </p>
