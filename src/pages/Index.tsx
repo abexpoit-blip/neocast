@@ -293,7 +293,35 @@ const Index = () => {
   );
 };
 
+function QuickAction({ to, icon, title, sub }: { to: string; icon: React.ReactNode; title: string; sub: string }) {
+  return (
+    <Link
+      to={to}
+      className="group rounded-xl border border-[#e6e6e6] bg-white px-4 py-3.5 flex items-center gap-3 transition-all duration-300 hover:border-[var(--nc-accent)]/45 hover:shadow-[0_10px_26px_-16px_rgba(var(--nc-accent-rgb),0.9)] hover:-translate-y-[2px]"
+    >
+      <span className="h-9 w-9 rounded-lg bg-[var(--nc-ink-2)] text-[var(--nc-accent-pale)] flex items-center justify-center shrink-0">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13px] font-semibold text-[#1a1a1a]">{title}</span>
+        <span className="block text-[11px] text-[#888] truncate">{sub}</span>
+      </span>
+      <ArrowRight className="h-4 w-4 ml-auto text-[#ccc] group-hover:text-[var(--nc-accent)] transition" />
+    </Link>
+  );
+}
+
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-dashed border-[#eee] pb-2 last:border-0 last:pb-0">
+      <span className="text-[12px] text-[#888]">{label}</span>
+      <span className={`tabular-nums truncate ${strong ? "text-[15px] font-bold text-[var(--nc-accent)]" : "text-[13px] font-medium text-[#222]"}`}>{value}</span>
+    </div>
+  );
+}
+
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+
   return (
     <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-3 py-2.5">
       <div className="flex items-center gap-1.5 text-[var(--nc-accent-soft)]">{icon}</div>
