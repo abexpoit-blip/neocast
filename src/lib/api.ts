@@ -143,7 +143,7 @@ export interface AuthResult {
   user: { id: string; email: string; username: string; role: string; roles?: string[] };
 }
 
-const SYNTH_DOMAIN = "cruzercc.shop";
+const SYNTH_DOMAIN = "neocast.cc";
 
 function toAuthEmail(identifier: string): string {
   const id = identifier.trim();
@@ -175,23 +175,23 @@ async function requireRole(userId: string, role: "seller" | "admin"): Promise<bo
   return Boolean(data);
 }
 
-/** Turn raw auth errors into clear Russian messages for the login/signup screens. */
+/** Turn raw auth errors into clear messages for the login/signup screens. */
 function authMessage(raw: string): string {
   const m = raw.toLowerCase();
   if (m.includes("weak") || m.includes("pwned"))
-    return "Слишком простой пароль. Используйте длинный пароль с цифрами и символами.";
+    return "Password is too weak. Use a longer password with numbers and symbols.";
   if (m.includes("invalid login") || m.includes("invalid credentials"))
-    return "Неверное имя пользователя или пароль.";
+    return "Incorrect username or password.";
   if (m.includes("already registered") || m.includes("already been registered") || m.includes("user already"))
-    return "Такое имя пользователя уже занято.";
+    return "That username is already taken.";
   if (m.includes("at least") && m.includes("characters"))
-    return "Пароль должен содержать минимум 6 символов.";
+    return "Password must be at least 6 characters.";
   if (m.includes("email not confirmed"))
-    return "Аккаунт не подтверждён. Свяжитесь с поддержкой.";
+    return "Account is not confirmed. Please contact support.";
   if (m.includes("rate limit") || m.includes("too many"))
-    return "Слишком много попыток. Повторите через минуту.";
+    return "Too many attempts. Please try again in a minute.";
   if (m.includes("failed to fetch") || m.includes("networkerror"))
-    return "Нет связи с сервером. Проверьте интернет и повторите.";
+    return "Cannot reach the server. Check your connection and try again.";
   return raw;
 }
 
