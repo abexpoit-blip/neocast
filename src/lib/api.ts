@@ -207,7 +207,7 @@ export const authApi = {
       },
     });
     if (error) throw new ApiError(400, authMessage(error.message));
-    if (!res.user) throw new ApiError(400, "Не удалось создать аккаунт");
+    if (!res.user) throw new ApiError(400, "Failed to create account");
     const user = await loadRolesAndProfile(res.user.id);
     return { token: res.session?.access_token ?? "", user };
   },
@@ -219,7 +219,7 @@ export const authApi = {
       password: data.password,
     });
     if (error) throw new ApiError(401, authMessage(error.message));
-    if (!res.user) throw new ApiError(401, "Не удалось войти");
+    if (!res.user) throw new ApiError(401, "Failed to sign in");
     const user = await loadRolesAndProfile(res.user.id);
     return { token: res.session?.access_token ?? "", user };
   },

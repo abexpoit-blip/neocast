@@ -110,20 +110,20 @@ const Orders = () => {
     setDownloading(o.id);
     try {
       const lines = buildLines(o);
-      if (!lines.length) { toast.error("Нет данных для скачивания"); return; }
+      if (!lines.length) { toast.error("Nothing to download"); return; }
       downloadTxt(`${o.id.slice(0, 12)}.txt`, lines);
-      toast.success("Скачано");
+      toast.success("Downloaded");
     } finally { setDownloading(null); }
   };
 
   const downloadSelected = () => {
     const chosen = orders.filter((o) => selected[o.id]);
-    if (!chosen.length) { toast.error("Выберите заказы"); return; }
+    if (!chosen.length) { toast.error("Select orders"); return; }
     const lines = chosen.flatMap((o) => buildLines(o));
-    if (!lines.length) { toast.error("Нет данных для скачивания"); return; }
+    if (!lines.length) { toast.error("Nothing to download"); return; }
     downloadTxt(`orders-${Date.now()}.txt`, lines);
 
-    toast.success("Скачано");
+    toast.success("Downloaded");
   };
 
   const filtered = useMemo(
@@ -155,31 +155,31 @@ const Orders = () => {
       <div className="text-[13px] text-[#333]">
         {/* Search bar */}
         <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex flex-wrap items-center gap-3">
-          <label className="font-medium text-[#333]">Номер заказа</label>
+          <label className="font-medium text-[#333]">Order number</label>
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { setQuery(q); setPage(1); } }}
-            placeholder="Введите номер заказа"
+            placeholder="Enter order number"
             className="h-8 w-[230px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
           />
           <button
             onClick={() => { setQuery(q); setPage(1); }}
             className="h-8 px-4 bg-[#409eff] hover:bg-[#3a8ee6] text-white text-[13px] inline-flex items-center gap-1.5 transition"
           >
-            <Search className="h-3.5 w-3.5" /> Поиск
+            <Search className="h-3.5 w-3.5" /> Search
           </button>
           <button
             onClick={() => { setQ(""); setQuery(""); setPage(1); }}
             className="h-8 px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center gap-1.5 transition"
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Сброс
+            <RotateCcw className="h-3.5 w-3.5" /> Reset
           </button>
           <button
             onClick={downloadSelected}
             className="h-8 px-4 ml-auto bg-[#e8f5e9] hover:bg-[#dcedc8] border border-[#c8e6c9] text-[#2e7d32] text-[13px] transition"
           >
-            Скачать выбранные
+            Download selected
           </button>
         </div>
 
@@ -187,8 +187,8 @@ const Orders = () => {
         <div className="mt-3 bg-[#fdf6ec] border border-[#faecd8] text-[#e6a23c] px-4 py-2.5 flex items-start gap-2">
           <AlertCircle className="h-4 w-4 mt-[1px] shrink-0" />
           <span>
-            Внимание: последние заказы могут появиться не сразу. Если ваш заказ не отображается, подождите
-            несколько секунд, обновите страницу и попробуйте скачать снова.
+            Note: recent orders may take a moment to appear. If your order is missing, wait a
+            few seconds, refresh the page and try downloading again.
           </span>
         </div>
 
@@ -208,9 +208,9 @@ const Orders = () => {
                     }}
                   />
                 </th>
-                <th className="p-3 text-center font-normal border-b border-[#eee]">Номер заказа</th>
-                <th className="p-3 text-center font-normal border-b border-[#eee] w-[280px]">Время оплаты</th>
-                <th className="p-3 text-center font-normal border-b border-[#eee] w-[160px]">Операция</th>
+                <th className="p-3 text-center font-normal border-b border-[#eee]">Order number</th>
+                <th className="p-3 text-center font-normal border-b border-[#eee] w-[280px]">Payment time</th>
+                <th className="p-3 text-center font-normal border-b border-[#eee] w-[160px]">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -231,7 +231,7 @@ const Orders = () => {
                       disabled={downloading === o.id}
                       className="text-[#409eff] hover:underline disabled:opacity-60"
                     >
-                      {downloading === o.id ? "Загрузка…" : "Скачать"}
+                      {downloading === o.id ? "Loading…" : "Download"}
                     </button>
                   </td>
                 </tr>
@@ -246,7 +246,7 @@ const Orders = () => {
                 </tr>
               ))}
               {!loading && rows.length === 0 && (
-                <tr><td colSpan={4} className="p-12 text-center text-[#909399]">Нет заказов</td></tr>
+                <tr><td colSpan={4} className="p-12 text-center text-[#909399]">No orders</td></tr>
               )}
             </tbody>
           </table>
@@ -254,13 +254,13 @@ const Orders = () => {
 
         {/* Pagination */}
         <div className="mt-4 flex flex-wrap items-center justify-end gap-2 text-[13px] text-[#606266]">
-          <span>Всего {filtered.length}</span>
+          <span>Total {filtered.length}</span>
           <select
             value={perPage}
             onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
             className="h-7 border border-[#dcdcdc] px-2 bg-white outline-none"
           >
-            {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / стр.</option>)}
+            {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / page</option>)}
           </select>
           <button
             onClick={() => setPage(Math.max(1, current - 1))}
@@ -289,7 +289,7 @@ const Orders = () => {
           >
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
-          <span className="ml-2">Перейти</span>
+          <span className="ml-2">Go</span>
           <input
             type="number"
             min={1}

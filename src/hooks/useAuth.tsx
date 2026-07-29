@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         banned: Boolean(p?.blocked),
       });
     } catch (err: unknown) {
-      setProfileError(err instanceof Error ? err.message : "Не удалось загрузить профиль");
+      setProfileError(err instanceof Error ? err.message : "Failed to load profile");
       setProfile(null);
       loadedForUid.current = null;
     } finally {

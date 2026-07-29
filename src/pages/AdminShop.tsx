@@ -57,15 +57,15 @@ const AdminShop = () => {
 
   const runBulkUpload = async () => {
     const { rows, errors } = bulkPreview;
-    if (!rows.length) { toast.error("Нет корректных строк"); return; }
+    if (!rows.length) { toast.error("No valid rows"); return; }
     setBulkBusy(true);
     try {
       const n = await adminBulkCreateCards(rows, bulkCat || null);
-      toast.success(`Загружено позиций: ${n}${errors.length ? ` · пропущено: ${errors.length}` : ""}`);
+      toast.success(`Items uploaded: ${n}${errors.length ? ` · skipped: ${errors.length}` : ""}`);
       setBulkText("");
       void load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+      toast.error(e instanceof Error ? e.message : "Loading error");
     } finally {
       setBulkBusy(false);
     }
@@ -84,7 +84,7 @@ const AdminShop = () => {
       setCats(c);
       setProducts(p);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+      toast.error(e instanceof Error ? e.message : "Loading error");
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,7 @@ const AdminShop = () => {
   };
 
   const save = async () => {
-    if (!form.title.trim()) { toast.error("Введите название"); return; }
+    if (!form.title.trim()) { toast.error("Enter a name"); return; }
     setSaving(true);
     try {
       const { keys, ...rest } = form;
@@ -139,28 +139,28 @@ const AdminShop = () => {
       const lines = keys.split("\n").map((l) => l.trim()).filter(Boolean);
       if (lines.length) {
         const n = await adminAddKeys(id, lines);
-        toast.success(`Сохранено. Добавлено карт: ${n}`);
+        toast.success(`Saved. Cards added: ${n}`);
       } else {
         if (payload.delivery_type === "key") await adminSyncStock(id);
-        toast.success("Сохранено");
+        toast.success("Saved");
       }
       resetForm();
       void load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка сохранения");
+      toast.error(e instanceof Error ? e.message : "Save error");
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (p: Product) => {
-    if (!confirm(`Удалить «${p.title}»?`)) return;
-    try { await adminDeleteProduct(p.id); toast.success("Удалено"); void load(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Ошибка"); }
+    if (!confirm(`Delete «${p.title}»?`)) return;
+    try { await adminDeleteProduct(p.id); toast.success("Deleted"); void load(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Error"); }
   };
 
   const saveCat = async () => {
-    if (!catForm.name.trim()) { toast.error("Введите название категории"); return; }
+    if (!catForm.name.trim()) { toast.error("Enter a category name"); return; }
     try {
       await adminSaveCategory({
         id: catForm.id,
@@ -170,16 +170,16 @@ const AdminShop = () => {
         sort_order: Number(catForm.sort_order) || 0,
         active: catForm.active,
       });
-      toast.success("Категория сохранена");
+      toast.success("Category saved");
       setCatForm({ name: "", slug: "", icon: "", sort_order: 0, active: true });
       void load();
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Ошибка"); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Error"); }
   };
 
   const removeCat = async (c: Category) => {
-    if (!confirm(`Удалить категорию «${c.name}»?`)) return;
-    try { await adminDeleteCategory(c.id); toast.success("Удалено"); void load(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Ошибка"); }
+    if (!confirm(`Delete category «${c.name}»?`)) return;
+    try { await adminDeleteCategory(c.id); toast.success("Deleted"); void load(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Error"); }
   };
 
   const filtered = useMemo(() => {
@@ -192,7 +192,7 @@ const AdminShop = () => {
   const catName = (id: string | null) => cats.find((c) => c.id === id)?.name ?? "—";
 
   return (
-    <AdminLayout title="Магазин · карты и категории">
+    <AdminLayout title="Shop · cards and categories">
       <div className="flex gap-2">
         {(["cards", "cats"] as const).map((t) => (
           <button
@@ -203,11 +203,11 @@ const AdminShop = () => {
             }`}
           >
             {t === "cards" ? <CreditCard className="h-4 w-4" /> : <Layers className="h-4 w-4" />}
-            {t === "cards" ? "Карты / товары" : "Категории"}
+            {t === "cards" ? "Cards / products" : "Categories"}
           </button>
         ))}
         <button onClick={() => void load()} className="ml-auto inline-flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Обновить
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
         </button>
       </div>
 
@@ -215,33 +215,33 @@ const AdminShop = () => {
         <>
           <div className="glass rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">{editingId ? "Редактировать позицию" : "Новая позиция"}</h2>
+              <h2 className="text-sm font-semibold">{editingId ? "Edit item" : "New item"}</h2>
               {editingId && (
                 <button onClick={resetForm} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" /> Отмена
+                  <X className="h-3.5 w-3.5" /> Cancel
                 </button>
               )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-1.5">
-                <div className={labelCls}>Название</div>
+                <div className={labelCls}>Name</div>
                 <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Walmart Gift Card $100" />
               </div>
               <div className="space-y-1.5">
-                <div className={labelCls}>Категория</div>
+                <div className={labelCls}>Category</div>
                 <select className={inputCls} value={form.category_id ?? ""} onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}>
-                  <option value="">Без категории</option>
+                  <option value="">Uncategorized</option>
                   {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <div className={labelCls}>Цена ($)</div>
+                <div className={labelCls}>Price ($)</div>
                 <input className={inputCls} type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
               </div>
 
               <div className="space-y-1.5">
-                <div className={labelCls}>BIN (первые 6 цифр)</div>
+                <div className={labelCls}>BIN (first 6 digits)</div>
                 <input
                   className={inputCls}
                   value={form.bin ?? ""}
@@ -272,21 +272,21 @@ const AdminShop = () => {
                   placeholder="414720"
                 />
                 <div className="text-[11px] text-muted-foreground min-h-[16px]">
-                  {binLoading && "Проверка BIN…"}
+                  {binLoading && "Checking BIN…"}
                   {!binLoading && binInfo && [binInfo.brand, binInfo.type, binInfo.level, binInfo.bank, binInfo.countryName]
                     .filter(Boolean)
                     .join(" · ")}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <div className={labelCls}>Бренд</div>
+                <div className={labelCls}>Brand</div>
                 <select className={inputCls} value={form.brand ?? ""} onChange={(e) => setForm({ ...form, brand: e.target.value })}>
                   <option value="">—</option>
                   {BRANDS.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <div className={labelCls}>Страна</div>
+                <div className={labelCls}>Country</div>
                 <select className={inputCls} value={form.country ?? ""} onChange={(e) => setForm({ ...form, country: e.target.value })}>
                   <option value="">—</option>
                   {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.name}</option>)}
@@ -294,26 +294,26 @@ const AdminShop = () => {
               </div>
 
               <div className="space-y-1.5 md:col-span-2">
-                <div className={labelCls}>BASE (качество / название базы)</div>
-                <input className={inputCls} value={form.base ?? ""} onChange={(e) => setForm({ ...form, base: e.target.value })} placeholder="BASE: PREMIUM-WM-2026 / 98% валидность" />
+                <div className={labelCls}>BASE (quality / base name)</div>
+                <input className={inputCls} value={form.base ?? ""} onChange={(e) => setForm({ ...form, base: e.target.value })} placeholder="BASE: PREMIUM-WM-2026 / 98% valid" />
               </div>
               <div className="space-y-1.5">
-                <div className={labelCls}>Тип выдачи</div>
+                <div className={labelCls}>Delivery type</div>
                 <select className={inputCls} value={form.delivery_type} onChange={(e) => setForm({ ...form, delivery_type: e.target.value as DeliveryType })}>
-                  <option value="key">Карты из склада (key)</option>
-                  <option value="instant">Мгновенный текст</option>
-                  <option value="download">Ссылка на скачивание</option>
+                  <option value="key">Cards from stock (key)</option>
+                  <option value="instant">Instant text</option>
+                  <option value="download">Download link</option>
                 </select>
               </div>
 
               <div className="space-y-1.5 md:col-span-3">
-                <div className={labelCls}>Краткое описание</div>
-                <input className={inputCls} value={form.short_description ?? ""} onChange={(e) => setForm({ ...form, short_description: e.target.value })} placeholder="Номинал $100 · мгновенная выдача" />
+                <div className={labelCls}>Short description</div>
+                <input className={inputCls} value={form.short_description ?? ""} onChange={(e) => setForm({ ...form, short_description: e.target.value })} placeholder="Denomination $100 · instant delivery" />
               </div>
 
               {form.delivery_type === "key" && (
                 <div className="space-y-1.5 md:col-span-3">
-                  <div className={labelCls}>Загрузка карт — по одной в строке (CC|MM|YY|CVV|Name|Address|ZIP)</div>
+                  <div className={labelCls}>Card upload — one per line (CC|MM|YY|CVV|Name|Address|ZIP)</div>
                   <textarea
                     className="min-h-[120px] w-full rounded-md border border-border/60 bg-input/40 p-3 font-mono text-xs text-foreground outline-none focus:border-primary/60"
                     value={form.keys}
@@ -324,27 +324,27 @@ const AdminShop = () => {
               )}
               {form.delivery_type === "instant" && (
                 <div className="space-y-1.5 md:col-span-3">
-                  <div className={labelCls}>Контент выдачи</div>
+                  <div className={labelCls}>Delivery content</div>
                   <textarea className="min-h-[90px] w-full rounded-md border border-border/60 bg-input/40 p-3 font-mono text-xs" value={form.instant_content ?? ""} onChange={(e) => setForm({ ...form, instant_content: e.target.value })} />
                 </div>
               )}
               {form.delivery_type === "download" && (
                 <div className="space-y-1.5 md:col-span-3">
-                  <div className={labelCls}>Ссылка</div>
+                  <div className={labelCls}>Link</div>
                   <input className={inputCls} value={form.download_url ?? ""} onChange={(e) => setForm({ ...form, download_url: e.target.value })} placeholder="https://…" />
                 </div>
               )}
 
               <div className="flex items-center gap-5 md:col-span-3">
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input type="checkbox" checked={!!form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Активно
+                  <input type="checkbox" checked={!!form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Active
                 </label>
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Хит продаж
+                  <input type="checkbox" checked={!!form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Best seller
                 </label>
                 <button onClick={() => void save()} disabled={saving} className="ml-auto inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  {editingId ? "Обновить" : "Создать"}
+                  {editingId ? "Refresh" : "Create"}
                 </button>
               </div>
             </div>
@@ -366,19 +366,19 @@ const AdminShop = () => {
             />
             <div className="flex items-center gap-3 flex-wrap">
               <select className={`${inputCls} max-w-[220px]`} value={bulkCat} onChange={(e) => setBulkCat(e.target.value)}>
-                <option value="">Без категории</option>
+                <option value="">Uncategorized</option>
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <span className="text-xs text-muted-foreground">
-                Готово к загрузке: <b className="text-foreground">{bulkPreview.rows.length}</b>
-                {bulkPreview.errors.length > 0 && <span className="text-destructive"> · ошибок: {bulkPreview.errors.length}</span>}
+                Ready to upload: <b className="text-foreground">{bulkPreview.rows.length}</b>
+                {bulkPreview.errors.length > 0 && <span className="text-destructive"> · errors: {bulkPreview.errors.length}</span>}
               </span>
               <button
                 onClick={() => void runBulkUpload()}
                 disabled={bulkBusy || bulkPreview.rows.length === 0}
                 className="ml-auto inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
-                {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Загрузить
+                {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Upload
               </button>
             </div>
             {bulkPreview.errors.length > 0 && (
@@ -391,7 +391,7 @@ const AdminShop = () => {
                 <table className="w-full min-w-[700px] text-xs">
                   <thead className="text-[10px] uppercase tracking-widest text-muted-foreground">
                     <tr>
-                      {["BIN", "Бренд", "Страна", "State", "City", "ZIP", "MM", "YY", "Цена"].map((h) => (
+                      {["BIN", "Brand", "Country", "State", "City", "ZIP", "MM", "YY", "Price"].map((h) => (
                         <th key={h} className="p-2 text-left font-normal">{h}</th>
                       ))}
                     </tr>
@@ -425,20 +425,20 @@ const AdminShop = () => {
 
           <div className="glass rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-border/30">
-              <input className={`${inputCls} max-w-sm`} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск: BIN, база, бренд…" />
+              <input className={`${inputCls} max-w-sm`} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search: BIN, base, brand…" />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[900px]">
                 <thead className="bg-secondary/50 text-[10px] uppercase tracking-widest text-muted-foreground">
                   <tr>
-                    <th className="p-3 text-left">Бренд</th>
+                    <th className="p-3 text-left">Brand</th>
                     <th className="p-3 text-left">BIN</th>
-                    <th className="p-3 text-left">Позиция</th>
+                    <th className="p-3 text-left">Item</th>
                     <th className="p-3 text-left">BASE</th>
-                    <th className="p-3 text-left">Страна</th>
-                    <th className="p-3 text-left">Категория</th>
-                    <th className="p-3 text-center">Склад</th>
-                    <th className="p-3 text-right">Цена</th>
+                    <th className="p-3 text-left">Country</th>
+                    <th className="p-3 text-left">Category</th>
+                    <th className="p-3 text-center">Stock</th>
+                    <th className="p-3 text-right">Price</th>
                     <th className="p-3"></th>
                   </tr>
                 </thead>
@@ -449,7 +449,7 @@ const AdminShop = () => {
                       <td className="p-3 font-mono text-xs">{p.bin ?? "—"}</td>
                       <td className="p-3">
                         <div className="font-medium">{p.title}</div>
-                        {!p.active && <span className="text-[10px] uppercase text-destructive">скрыто</span>}
+                        {!p.active && <span className="text-[10px] uppercase text-destructive">hidden</span>}
                       </td>
                       <td className="p-3 text-xs text-muted-foreground">{p.base ?? "—"}</td>
                       <td className="p-3">{p.country ? `${toFlag(p.country)} ${p.country}` : "—"}</td>
@@ -463,7 +463,7 @@ const AdminShop = () => {
                     </tr>
                   ))}
                   {!loading && filtered.length === 0 && (
-                    <tr><td colSpan={9} className="p-10 text-center text-muted-foreground">Позиции не найдены</td></tr>
+                    <tr><td colSpan={9} className="p-10 text-center text-muted-foreground">No items found</td></tr>
                   )}
                 </tbody>
               </table>
@@ -475,26 +475,26 @@ const AdminShop = () => {
       {tab === "cats" && (
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
           <div className="glass rounded-2xl p-5 space-y-3">
-            <h2 className="text-sm font-semibold">{catForm.id ? "Редактировать категорию" : "Новая категория"}</h2>
-            <div className="space-y-1.5"><div className={labelCls}>Название</div>
+            <h2 className="text-sm font-semibold">{catForm.id ? "Edit category" : "New category"}</h2>
+            <div className="space-y-1.5"><div className={labelCls}>Name</div>
               <input className={inputCls} value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} placeholder="Prepaid Cards" /></div>
             <div className="space-y-1.5"><div className={labelCls}>Slug</div>
               <input className={inputCls} value={catForm.slug} onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })} placeholder="prepaid-cards" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><div className={labelCls}>Иконка (emoji)</div>
+              <div className="space-y-1.5"><div className={labelCls}>Icon (emoji)</div>
                 <input className={inputCls} value={catForm.icon} onChange={(e) => setCatForm({ ...catForm, icon: e.target.value })} placeholder="💳" /></div>
-              <div className="space-y-1.5"><div className={labelCls}>Порядок</div>
+              <div className="space-y-1.5"><div className={labelCls}>Order</div>
                 <input className={inputCls} type="number" value={catForm.sort_order} onChange={(e) => setCatForm({ ...catForm, sort_order: Number(e.target.value) })} /></div>
             </div>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <input type="checkbox" checked={catForm.active} onChange={(e) => setCatForm({ ...catForm, active: e.target.checked })} /> Активна
+              <input type="checkbox" checked={catForm.active} onChange={(e) => setCatForm({ ...catForm, active: e.target.checked })} /> Active
             </label>
             <div className="flex gap-2">
               <button onClick={() => void saveCat()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground">
-                <Plus className="h-4 w-4" /> {catForm.id ? "Обновить" : "Добавить"}
+                <Plus className="h-4 w-4" /> {catForm.id ? "Refresh" : "Add"}
               </button>
               {catForm.id && (
-                <button onClick={() => setCatForm({ name: "", slug: "", icon: "", sort_order: 0, active: true })} className="rounded-lg border border-border/60 px-4 py-2 text-sm text-muted-foreground">Отмена</button>
+                <button onClick={() => setCatForm({ name: "", slug: "", icon: "", sort_order: 0, active: true })} className="rounded-lg border border-border/60 px-4 py-2 text-sm text-muted-foreground">Cancel</button>
               )}
             </div>
           </div>
@@ -502,7 +502,7 @@ const AdminShop = () => {
           <div className="glass rounded-2xl overflow-hidden">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-secondary/50 text-[10px] uppercase tracking-widest text-muted-foreground">
-                <tr><th className="p-3 text-left">Категория</th><th className="p-3 text-left">Slug</th><th className="p-3 text-center">Порядок</th><th className="p-3 text-center">Статус</th><th className="p-3"></th></tr>
+                <tr><th className="p-3 text-left">Category</th><th className="p-3 text-left">Slug</th><th className="p-3 text-center">Order</th><th className="p-3 text-center">Status</th><th className="p-3"></th></tr>
               </thead>
               <tbody className="divide-y divide-border/30">
                 {cats.map((c) => (
@@ -517,7 +517,7 @@ const AdminShop = () => {
                     </td>
                   </tr>
                 ))}
-                {cats.length === 0 && <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">Категорий нет</td></tr>}
+                {cats.length === 0 && <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">No categories</td></tr>}
               </tbody>
             </table>
           </div>

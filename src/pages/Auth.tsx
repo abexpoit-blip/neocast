@@ -8,7 +8,6 @@ import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 import Seo from "@/components/Seo";
 import { useAuth } from "@/hooks/useAuth";
 import { ScorpionAuthShell } from "@/components/ScorpionAuthShell";
-import { useLanguage } from "@/lib/i18n";
 
 /** Simple human check: only + and - with a non-negative answer. */
 function makeChallenge() {
@@ -22,7 +21,6 @@ function makeChallenge() {
 
 
 const Auth = () => {
-  const { lang, setLang } = useLanguage();
   const nav = useNavigate();
   const loc = useLocation();
   const { refresh } = useAuth();
@@ -112,14 +110,6 @@ const Auth = () => {
   return (
     <>
       <Seo title="Sign in | NeoCast" description="Sign in or create your NeoCast account — a verified marketplace with instant delivery." path="/auth" />
-      <button
-        type="button"
-        onClick={() => setLang(lang === "en" ? "ru" : "en")}
-        title={lang === "en" ? "Switch to Russian" : "Switch to English"}
-        className="fixed top-4 right-4 z-50 px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-[0.15em] text-white/80 bg-white/[0.06] border border-white/15 backdrop-blur-md hover:text-white hover:border-[#ef5350]/60 transition"
-      >
-        {lang === "en" ? "RU" : "EN"}
-      </button>
       <ScorpionAuthShell
         tagline={
           <>

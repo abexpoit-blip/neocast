@@ -25,7 +25,7 @@ export function useSessionTimeout(enabled: boolean) {
       if (Date.now() - start >= limitMs) {
         clearSessionStart();
         await signOut();
-        toast.info(`Сессия истекла (${SESSION_MINUTES} минут). Войдите снова.`);
+        toast.info(`Session expired (${SESSION_MINUTES} minutes). Please sign in again.`);
         nav("/auth", { replace: true });
       }
     };
