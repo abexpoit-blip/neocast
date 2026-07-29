@@ -107,16 +107,17 @@
   --background: 0 0% 96%;                /* #f5f5f5 */
   --foreground: 210 29% 18%;              /* deep navy text */
 
-  /* ===== NeoCast brand theme tokens (switchable) ===== */
-  --nc-accent: #c62828;
-  --nc-accent-hi: #e03131;
-  --nc-accent-lo: #a51d1d;
-  --nc-accent-rgb: 198, 40, 40;
-  --nc-accent-soft: #ef5350;
-  --nc-accent-pale: #ff8a80;
-  --nc-ink: #141414;
-  --nc-ink-2: #1c1c1c;
-  --nc-line: #2a2a2a;
+  /* ===== NeoCast brand theme tokens (single maroon skin) ===== */
+  --nc-accent: #7b1e34;
+  --nc-accent-hi: #9d2542;
+  --nc-accent-lo: #55101f;
+  --nc-accent-rgb: 123, 30, 52;
+  --nc-accent-soft: #b8354f;
+  --nc-accent-pale: #e08a9c;
+  --nc-ink: #1a0b10;
+  --nc-ink-2: #250f16;
+  --nc-line: #3a1c24;
+
 
   --card: 0 0% 100%;
   --card-foreground: 210 29% 18%;
