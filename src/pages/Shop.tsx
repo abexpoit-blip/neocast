@@ -148,12 +148,12 @@ const Shop = () => {
 
 
   const buyMany = (ids: string[]) => {
-    if (!ids.length) return toast.error("Выберите карты");
+    if (!ids.length) return toast.error("Select cards first");
     const items = all.filter((p) => ids.includes(p.id));
     const added = addToCart(items);
     setSelected(new Set());
-    if (added === 0) toast.info("Уже в корзине");
-    else toast.success(`Добавлено в корзину: ${added}`);
+    if (added === 0) toast.info("Already in cart");
+    else toast.success(`Added to cart: ${added}`);
   };
 
 
@@ -162,65 +162,115 @@ const Shop = () => {
   return (
     <AppShell>
       <Seo
-        title="Магазин | NeoCast"
-        description="Живой сток. Поиск по BIN, базе, стране и ZIP."
+        title="Shop | NeoCast"
+        description="Live stock. Search by BIN, base, country and ZIP."
         path="/shop"
       />
 
-      {/* FILTER BAR */}
-      <div className="bg-white border border-[#e6e6e6] px-3 sm:px-4 py-3 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-x-6 gap-y-3 text-[13px]">
-        <Field label="BIN">
-          <input
-            value={bin}
-            onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 16))}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter the card number"
-            className="h-8 w-full min-w-0 lg:w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="BASE">
-          <select
-            value={base}
-            onChange={(e) => setBase(e.target.value)}
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
-          >
-            <option value="all">base</option>
-            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </Field>
-        <Field label="COUNTRY">
-          <input
-            value={country}
-            onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter country"
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="ZIP">
-          <input
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter your zip code"
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <div className="flex items-center gap-2 sm:col-span-2 lg:col-auto lg:ml-auto">
-          <button
-            onClick={runSearch}
-            className="h-8 flex-1 lg:flex-none px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center justify-center gap-1.5 transition"
-          >
-            <Search className="h-3.5 w-3.5" /> search
-          </button>
-          <button
-            onClick={reset}
-            className="h-8 flex-1 lg:flex-none px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center justify-center gap-1.5 transition"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> reset
-          </button>
+      {/* FILTER PANELS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Panel 1 — bulk inputs */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Bins">
+            <textarea
+              value={bin}
+              onChange={(e) => setBin(e.target.value)}
+              placeholder="Please use a carriage return to separate multiple records."
+              rows={3}
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+            />
+          </Field>
+          <Field label="Zips">
+            <textarea
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              placeholder="Please use a carriage return to separate multiple records."
+              rows={3}
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+            />
+          </Field>
+          <Field label="Base">
+            <select
+              value={base}
+              onChange={(e) => setBase(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </Field>
+        </div>
+
+        {/* Panel 2 — country + attribute toggles */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Country">
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <div className="border border-[#eee] divide-y divide-[#f2f2f2]">
+            <Toggle label="ZIP" checked={hasZip} onChange={setHasZip} />
+            <Toggle label="Phone" checked={hasPhone} onChange={setHasPhone} />
+            <Toggle label="Mail" checked={hasEmail} onChange={setHasEmail} />
+            <Toggle label="Refundable" checked={refundable} onChange={setRefundable} />
+          </div>
+        </div>
+
+        {/* Panel 3 — brand + price */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Brand">
+            <select
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </Field>
+          <Field label="Price range">
+            <div className="flex items-center gap-2">
+              <input
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="Min Price"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+              />
+              <span className="text-[#999]">-</span>
+              <input
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="Max Price"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+              />
+            </div>
+          </Field>
         </div>
       </div>
+
+      {/* ACTIONS */}
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <button
+          onClick={reset}
+          className="h-9 px-8 bg-[#141414] hover:bg-[#000] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Reset
+        </button>
+        <button
+          onClick={runSearch}
+          className="h-9 px-8 bg-[#c62828] hover:bg-[#a91f1f] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+        >
+          <Search className="h-3.5 w-3.5" /> Search
+        </button>
+      </div>
+
 
       {/* BATCH ADD BUTTON */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
