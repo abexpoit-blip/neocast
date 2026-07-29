@@ -227,6 +227,34 @@
   --nc-line: #33191f;
 }
 
-/* Smooth skin transitions when switching themes */
-html { transition: none; }
+/* ===== Smooth brand-theme transitions =====
+   Registering the tokens as typed custom properties lets the browser
+   interpolate them, so every surface using var(--nc-*) animates at once. */
+@property --nc-accent { syntax: "<color>"; inherits: true; initial-value: #c62828; }
+@property --nc-accent-hi { syntax: "<color>"; inherits: true; initial-value: #e03131; }
+@property --nc-accent-lo { syntax: "<color>"; inherits: true; initial-value: #a51d1d; }
+@property --nc-accent-soft { syntax: "<color>"; inherits: true; initial-value: #ef5350; }
+@property --nc-accent-pale { syntax: "<color>"; inherits: true; initial-value: #ff8a80; }
+@property --nc-ink { syntax: "<color>"; inherits: true; initial-value: #141414; }
+@property --nc-ink-2 { syntax: "<color>"; inherits: true; initial-value: #1c1c1c; }
+@property --nc-line { syntax: "<color>"; inherits: true; initial-value: #2a2a2a; }
+
+:root {
+  transition:
+    --nc-accent .45s ease,
+    --nc-accent-hi .45s ease,
+    --nc-accent-lo .45s ease,
+    --nc-accent-soft .45s ease,
+    --nc-accent-pale .45s ease,
+    --nc-ink .45s ease,
+    --nc-ink-2 .45s ease,
+    --nc-line .45s ease;
+}
+
 header, footer, .nc-skin { transition: background-color .35s ease, border-color .35s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { transition: none; }
+  header, footer, .nc-skin { transition: none; }
+}
+

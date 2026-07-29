@@ -5,6 +5,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  ScriptOnce,
   Link,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
@@ -51,6 +52,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "NeoCast is a verified marketplace with instant delivery, auto-replacement and secure settlement." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#141414" },
+      { name: "color-scheme", content: "dark light" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -60,8 +63,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -71,8 +75,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head><HeadContent /></head>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+        <ScriptOnce>
+          {`try{var t=localStorage.getItem('neocast-theme');if(t==='maroon'){document.documentElement.setAttribute('data-theme','maroon');var m=document.querySelector('meta[name=theme-color]');if(m)m.content='#16090d';}}catch(e){}`}
+        </ScriptOnce>
+      </head>
       <body>{children}<Scripts /></body>
     </html>
   );
