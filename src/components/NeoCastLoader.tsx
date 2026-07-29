@@ -32,11 +32,12 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
             className="absolute left-1/2 top-1/2 h-[58px] w-[94px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20 neocast-card"
             style={{
               background: [
-                "linear-gradient(135deg, var(--nc-accent) 0%, #9e1c1c 100%)",
-                ""linear-gradient(135deg, var(--nc-accent-hi) 0%, var(--nc-ink) 100%)"",
-                "linear-gradient(135deg, #818cf8 0%, #1e293b 100%)",
+                "linear-gradient(135deg, var(--nc-accent) 0%, var(--nc-accent-lo) 100%)",
+                "linear-gradient(135deg, var(--nc-accent-hi) 0%, var(--nc-ink) 100%)",
+                "linear-gradient(135deg, var(--nc-accent-lo) 0%, var(--nc-ink-2) 100%)",
               ][i],
-              boxShadow: "0 18px 40px -18px rgba(2,6,23,0.9)",
+              boxShadow: "0 18px 40px -18px rgba(8,4,6,0.9)",
+
               animationDelay: `${i * 0.42}s`,
             }}
           >
