@@ -72,9 +72,10 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           >
             {drawerOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <div className="text-[13px] font-medium tracking-wide text-white/90 truncate">
-            {settings.shop_name}
-          </div>
+          <Link to="/" className="flex items-center shrink-0" aria-label={settings.shop_name}>
+            <BrandLogo size={30} textClassName="hidden sm:inline" />
+          </Link>
+
         </div>
         {drawerOpen && (
           <div className="lg:hidden bg-[#141414] border-t border-white/10">
