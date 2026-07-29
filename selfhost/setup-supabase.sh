@@ -45,38 +45,47 @@ cd "$BASE_DIR/docker"
 # stack would fall back to upstream's hardcoded "supabase-*" container names
 # and collide with another Supabase stack on this VPS.
 if [ -f "$BASE_DIR/docker/compose.yaml" ]; then
-  OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yaml"
+  BASE_COMPOSE="$BASE_DIR/docker/compose.yaml"; OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yaml"
 elif [ -f "$BASE_DIR/docker/compose.yml" ]; then
-  OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yml"
+  BASE_COMPOSE="$BASE_DIR/docker/compose.yml"; OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yml"
 elif [ -f "$BASE_DIR/docker/docker-compose.yaml" ]; then
-  OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yaml"
+  BASE_COMPOSE="$BASE_DIR/docker/docker-compose.yaml"; OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yaml"
 else
-  OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yml"
+  BASE_COMPOSE="$BASE_DIR/docker/docker-compose.yml"; OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yml"
 fi
+
+# Only override services that actually exist in the upstream compose file.
+# Upstream removes/renames services over time (e.g. vector); overriding a
+# missing one makes Compose fail with "has neither an image nor a build context".
+BASE_SERVICES="$(awk '
+  /^services:[[:space:]]*$/ {in_s=1; next}
+  in_s && /^[^[:space:]#]/ {in_s=0}
+  in_s && /^  [a-zA-Z0-9_-]+:[[:space:]]*$/ {gsub(/[: ]/,"",$0); print}
+' "$BASE_COMPOSE")"
+
+has_svc() { echo "$BASE_SERVICES" | grep -qx "$1"; }
 
 # Isolate this stack: unique container names + unique host ports so it can run
 # side by side with any other Supabase stack already on this VPS.
-cat > "$OVERRIDE_FILE" <<OVERRIDE
-services:
-  studio:    { container_name: ${STACK_NAME}-studio }
-  kong:      { container_name: ${STACK_NAME}-kong }
-  auth:      { container_name: ${STACK_NAME}-auth }
-  rest:      { container_name: ${STACK_NAME}-rest }
-  realtime:  { container_name: ${STACK_NAME}-realtime }
-  storage:   { container_name: ${STACK_NAME}-storage }
-  imgproxy:  { container_name: ${STACK_NAME}-imgproxy }
-  meta:      { container_name: ${STACK_NAME}-meta }
-  functions: { container_name: ${STACK_NAME}-edge-functions }
-  analytics: { container_name: ${STACK_NAME}-analytics }
-  db:        { container_name: ${STACK_NAME}-db }
-  vector:    { container_name: ${STACK_NAME}-vector }
-  supavisor:
-    container_name: ${STACK_NAME}-pooler
-    ports:
-      - "${PG_PORT}:5432"
-      - "${POOLER_PORT}:6543"
-OVERRIDE
+{
+  echo "services:"
+  for svc in studio kong auth rest realtime storage imgproxy meta analytics db vector; do
+    has_svc "$svc" && echo "  $svc: { container_name: ${STACK_NAME}-$svc }"
+  done
+  has_svc functions && echo "  functions: { container_name: ${STACK_NAME}-edge-functions }"
+  for pool in supavisor pooler; do
+    if has_svc "$pool"; then
+      echo "  $pool:"
+      echo "    container_name: ${STACK_NAME}-pooler"
+      echo "    ports:"
+      echo "      - \"${PG_PORT}:5432\""
+      echo "      - \"${POOLER_PORT}:6543\""
+    fi
+  done
+} > "$OVERRIDE_FILE"
 echo "    override written: $OVERRIDE_FILE"
+echo "    services detected: $(echo $BASE_SERVICES | tr '\n' ' ')"
+
 
 # Safety: never touch containers that belong to another stack.
 docker compose config --format json 2>/dev/null \
