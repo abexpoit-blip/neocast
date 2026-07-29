@@ -52,7 +52,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "NeoCast is a verified marketplace with instant delivery, auto-replacement and secure settlement." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#141414" },
+      { name: "theme-color", content: "#1a0b10" },
       { name: "color-scheme", content: "dark light" },
     ],
     links: [

@@ -197,7 +197,7 @@ const Index = () => {
                   <span className="text-[13px] text-[#222] truncate font-medium">{n.label}</span>
                 </div>
                 {n.count ? (
-                  <span className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded border border-[#f2caca] bg-[#fdf2f2] text-[var(--nc-accent)]">
+                  <span className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded border border-[#e8ccd3] bg-[#fbf1f3] text-[var(--nc-accent)]">
                     {n.count} pcs
                   </span>
                 ) : null}
@@ -258,7 +258,7 @@ const Index = () => {
 
         <Panel title="Contact information" icon={<MessageCircle className="h-4 w-4" />}>
           <div className="px-5 py-4 space-y-4 text-[13px] text-[#444] leading-[1.7]">
-            <p className="rounded-lg bg-[#fdf2f2] border border-[#f2caca] px-3.5 py-2.5 text-[var(--nc-accent)]">
+            <p className="rounded-lg bg-[#fbf1f3] border border-[#e8ccd3] px-3.5 py-2.5 text-[var(--nc-accent)]">
               Beware of fake NeoCast support. We never message you first.
             </p>
             <div className="grid gap-2.5">

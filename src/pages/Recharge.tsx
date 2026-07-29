@@ -330,7 +330,7 @@ const Recharge = () => {
                       {activeInvoice.crypto_amount} LTC
                     </span>
                     <button onClick={() => copyField(activeInvoice.crypto_amount, "amount")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fbf1f3] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "amount" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
@@ -343,7 +343,7 @@ const Recharge = () => {
                       {activeInvoice.wallet_address}
                     </code>
                     <button onClick={() => copyField(activeInvoice.wallet_address, "address")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fbf1f3] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "address" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
@@ -377,7 +377,7 @@ const Recharge = () => {
 
                 <button onClick={cancelInvoice}
                   className={`w-full h-10 text-[13px] transition ${
-                    isExpired ? "bg-[var(--nc-accent)] hover:bg-[#b02121] text-white"
+                    isExpired ? "bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-hi)] text-white"
                       : "border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                   }`}>
                   {isExpired ? "Create new invoice" : "Cancel"}
@@ -434,7 +434,7 @@ const Recharge = () => {
                   {[50, 100, 250, 500, 1000].map((v) => (
                     <button key={v} onClick={() => setAmount(String(v))}
                       className={`px-3 h-8 text-[12px] border transition ${
-                        amount === String(v) ? "border-[var(--nc-accent)] text-[var(--nc-accent)] bg-[#fdf2f2]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
+                        amount === String(v) ? "border-[var(--nc-accent)] text-[var(--nc-accent)] bg-[#fbf1f3]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                       }`}>
                       ${v}
                     </button>
@@ -460,7 +460,7 @@ const Recharge = () => {
                 <button
                   onClick={createInvoice}
                   disabled={busy || amtNum < MIN_DEPOSIT}
-                  className="w-full h-11 mt-4 bg-[var(--nc-accent)] hover:bg-[#b02121] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
+                  className="w-full h-11 mt-4 bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-hi)] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
                   Pay with LTC
