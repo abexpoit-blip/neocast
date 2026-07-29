@@ -135,7 +135,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               to="/recharge"
               className="flex shrink-0 items-center gap-1 px-2.5 sm:px-3 bg-[var(--nc-accent)] hover:bg-[var(--nc-accent-lo)] text-white text-[11px] font-semibold uppercase tracking-wide transition"
             >
-              <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline sm:inline">Add</span>
+              <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Add</span>
             </Link>
           </div>
 
