@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/BrandLogo";
 import { ReactNode } from "react";
 import { BadgeCheck, Zap, Lock, Gift, Gamepad2, Apple, ShoppingBag, Music, Play, Tv } from "lucide-react";
 
