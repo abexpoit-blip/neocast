@@ -19,12 +19,30 @@ const Shop = () => {
 
   const [bin, setBin] = useState("");
   const [base, setBase] = useState("all");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("all");
   const [zip, setZip] = useState("");
+  const [brand, setBrand] = useState("all");
+  const [hasZip, setHasZip] = useState(false);
+  const [hasPhone, setHasPhone] = useState(false);
+  const [hasEmail, setHasEmail] = useState(false);
+  const [refundable, setRefundable] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [lastBin, setLastBin] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [q, setQ] = useState({ bin: "", base: "all", country: "", zip: "" });
+  type Query = {
+    bin: string; base: string; country: string; zip: string; brand: string;
+    hasZip: boolean; hasPhone: boolean; hasEmail: boolean; refundable: boolean;
+    minPrice: string; maxPrice: string;
+  };
+  const emptyQuery: Query = {
+    bin: "", base: "all", country: "all", zip: "", brand: "all",
+    hasZip: false, hasPhone: false, hasEmail: false, refundable: false,
+    minPrice: "", maxPrice: "",
+  };
+  const [q, setQ] = useState<Query>(emptyQuery);
+
 
   const lastLoad = useRef(0);
   const load = async (force = false) => {
@@ -34,7 +52,7 @@ const Shop = () => {
     try {
       setAll(await listProducts());
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+      toast.error(e instanceof Error ? e.message : "Failed to load");
       setAll([]);
     } finally {
       setLoading(false);
@@ -54,14 +72,33 @@ const Shop = () => {
     () => [...new Set(all.map((p) => p.base).filter(Boolean) as string[])].sort(),
     [all],
   );
+  const countries = useMemo(
+    () => [...new Set(all.map((p) => p.country).filter(Boolean) as string[])].sort(),
+    [all],
+  );
+  const brands = useMemo(
+    () => [...new Set(all.map((p) => p.brand || detectBrandFromBin(p.bin ?? "")).filter(Boolean) as string[])].sort(),
+    [all],
+  );
 
   const cards = useMemo(() => {
     if (!searched) return [];
+    const binList = q.bin.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    const zipList = q.zip.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+    const min = q.minPrice ? Number(q.minPrice) : null;
+    const max = q.maxPrice ? Number(q.maxPrice) : null;
     return all.filter((p) => {
-      if (q.bin && !(p.bin ?? "").startsWith(q.bin)) return false;
+      if (binList.length && !binList.some((b) => (p.bin ?? "").startsWith(b))) return false;
+      if (zipList.length && !zipList.some((z) => (p.zip ?? "").startsWith(z))) return false;
       if (q.base !== "all" && (p.base ?? "") !== q.base) return false;
-      if (q.country && !(p.country ?? "").toUpperCase().includes(q.country.toUpperCase())) return false;
-      if (q.zip && !(p.zip ?? "").startsWith(q.zip)) return false;
+      if (q.country !== "all" && (p.country ?? "") !== q.country) return false;
+      if (q.brand !== "all" && (p.brand || detectBrandFromBin(p.bin ?? "")) !== q.brand) return false;
+      if (q.hasZip && !p.zip) return false;
+      if (q.hasPhone && !p.has_phone) return false;
+      if (q.hasEmail && !p.has_email) return false;
+      if (q.refundable && !p.refundable) return false;
+      if (min !== null && Number(p.price) < min) return false;
+      if (max !== null && Number(p.price) > max) return false;
       return true;
     });
   }, [all, q, searched]);
@@ -76,28 +113,26 @@ const Shop = () => {
     [cards, page],
   );
 
+  const currentQuery = (): Query => ({
+    bin, base, country, zip, brand, hasZip, hasPhone, hasEmail, refundable, minPrice, maxPrice,
+  });
 
   const runSearch = () => {
-    setQ({ bin, base, country, zip });
-    setLastBin(bin);
+    setQ(currentQuery());
+    setLastBin(bin.trim());
     setSearched(true);
     setSelected(new Set());
   };
 
   const reset = () => {
-    setBin(""); setBase("all"); setCountry(""); setZip("");
-    setQ({ bin: "", base: "all", country: "", zip: "" });
+    setBin(""); setBase("all"); setCountry("all"); setZip(""); setBrand("all");
+    setHasZip(false); setHasPhone(false); setHasEmail(false); setRefundable(false);
+    setMinPrice(""); setMaxPrice("");
+    setQ(emptyQuery);
     setSearched(true); setLastBin(""); setSelected(new Set());
     void load(true);
-
   };
 
-  useEffect(() => {
-    if (bin.length >= 6) {
-      const t = setTimeout(() => { setQ({ bin, base, country, zip }); setLastBin(bin); setSearched(true); }, 350);
-      return () => clearTimeout(t);
-    }
-  }, [bin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -113,12 +148,12 @@ const Shop = () => {
 
 
   const buyMany = (ids: string[]) => {
-    if (!ids.length) return toast.error("Выберите карты");
+    if (!ids.length) return toast.error("Select cards first");
     const items = all.filter((p) => ids.includes(p.id));
     const added = addToCart(items);
     setSelected(new Set());
-    if (added === 0) toast.info("Уже в корзине");
-    else toast.success(`Добавлено в корзину: ${added}`);
+    if (added === 0) toast.info("Already in cart");
+    else toast.success(`Added to cart: ${added}`);
   };
 
 
@@ -127,65 +162,115 @@ const Shop = () => {
   return (
     <AppShell>
       <Seo
-        title="Магазин | NeoCast"
-        description="Живой сток. Поиск по BIN, базе, стране и ZIP."
+        title="Shop | NeoCast"
+        description="Live stock. Search by BIN, base, country and ZIP."
         path="/shop"
       />
 
-      {/* FILTER BAR */}
-      <div className="bg-white border border-[#e6e6e6] px-3 sm:px-4 py-3 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-x-6 gap-y-3 text-[13px]">
-        <Field label="BIN">
-          <input
-            value={bin}
-            onChange={(e) => setBin(e.target.value.replace(/\D/g, "").slice(0, 16))}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter the card number"
-            className="h-8 w-full min-w-0 lg:w-[190px] border border-[#dcdcdc] px-2 text-[13px] font-mono outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="BASE">
-          <select
-            value={base}
-            onChange={(e) => setBase(e.target.value)}
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#4fc3f7]"
-          >
-            <option value="all">base</option>
-            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </Field>
-        <Field label="COUNTRY">
-          <input
-            value={country}
-            onChange={(e) => setCountry(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter country"
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <Field label="ZIP">
-          <input
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && runSearch()}
-            placeholder="Please enter your zip code"
-            className="h-8 w-full min-w-0 lg:w-[170px] border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#4fc3f7]"
-          />
-        </Field>
-        <div className="flex items-center gap-2 sm:col-span-2 lg:col-auto lg:ml-auto">
-          <button
-            onClick={runSearch}
-            className="h-8 flex-1 lg:flex-none px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center justify-center gap-1.5 transition"
-          >
-            <Search className="h-3.5 w-3.5" /> search
-          </button>
-          <button
-            onClick={reset}
-            className="h-8 flex-1 lg:flex-none px-4 border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7] text-[13px] inline-flex items-center justify-center gap-1.5 transition"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> reset
-          </button>
+      {/* FILTER PANELS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Panel 1 — bulk inputs */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Bins">
+            <textarea
+              value={bin}
+              onChange={(e) => setBin(e.target.value)}
+              placeholder="Please use a carriage return to separate multiple records."
+              rows={3}
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+            />
+          </Field>
+          <Field label="Zips">
+            <textarea
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              placeholder="Please use a carriage return to separate multiple records."
+              rows={3}
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+            />
+          </Field>
+          <Field label="Base">
+            <select
+              value={base}
+              onChange={(e) => setBase(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </Field>
+        </div>
+
+        {/* Panel 2 — country + attribute toggles */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Country">
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <div className="border border-[#eee] divide-y divide-[#f2f2f2]">
+            <Toggle label="ZIP" checked={hasZip} onChange={setHasZip} />
+            <Toggle label="Phone" checked={hasPhone} onChange={setHasPhone} />
+            <Toggle label="Mail" checked={hasEmail} onChange={setHasEmail} />
+            <Toggle label="Refundable" checked={refundable} onChange={setRefundable} />
+          </div>
+        </div>
+
+        {/* Panel 3 — brand + price */}
+        <div className="bg-white border border-[#e6e6e6] p-3 sm:p-4 space-y-3">
+          <Field label="Brand">
+            <select
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+            >
+              <option value="all">All</option>
+              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </Field>
+          <Field label="Price range">
+            <div className="flex items-center gap-2">
+              <input
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="Min Price"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+              />
+              <span className="text-[#999]">-</span>
+              <input
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="Max Price"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+              />
+            </div>
+          </Field>
         </div>
       </div>
+
+      {/* ACTIONS */}
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <button
+          onClick={reset}
+          className="h-9 px-8 bg-[#141414] hover:bg-[#000] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Reset
+        </button>
+        <button
+          onClick={runSearch}
+          className="h-9 px-8 bg-[#c62828] hover:bg-[#a91f1f] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+        >
+          <Search className="h-3.5 w-3.5" /> Search
+        </button>
+      </div>
+
 
       {/* BATCH ADD BUTTON */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -197,9 +282,9 @@ const Shop = () => {
           Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
         </button>
         <div className="flex items-center gap-4 text-[12px] text-[#888]">
-          {cards.length > 0 ? <span>{cards.length} results · стр. {page}/{totalPages}</span> : null}
+          {cards.length > 0 ? <span>{cards.length} results · page {page}/{totalPages}</span> : null}
           <Link to="/cart" className="text-[#2196f3] hover:underline">
-            Корзина{count > 0 ? ` (${count})` : ""}
+            Cart{count > 0 ? ` (${count})` : ""}
           </Link>
         </div>
 
@@ -345,7 +430,7 @@ const Shop = () => {
 
       {buying && (
         <div className="mt-3 text-[12px] text-[#888] inline-flex items-center gap-2">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Обработка…
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing…
         </div>
       )}
 
@@ -361,10 +446,10 @@ const Shop = () => {
             <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap break-all p-4 font-mono text-[12px] text-[#303133]">{delivered.content}</pre>
             <div className="border-t border-[#f0f0f0] px-4 py-3 text-right">
               <button
-                onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Скопировано"); }}
+                onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Copied"); }}
                 className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5"
               >
-                <Copy className="h-3.5 w-3.5" /> Копировать
+                <Copy className="h-3.5 w-3.5" /> Copy
               </button>
             </div>
           </div>
@@ -388,12 +473,37 @@ function pageNumbers(page: number, total: number): (number | "…")[] {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <span className="text-[#888] text-[11px] tracking-wider shrink-0 w-[62px] lg:w-auto">{label}</span>
-
+    <div className="min-w-0">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="h-3.5 w-[3px] bg-[#c62828]" />
+        <span className="text-[#333] text-[12px] font-medium">{label}</span>
+      </div>
       {children}
     </div>
   );
 }
+
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center justify-between px-3 py-2 cursor-pointer select-none">
+      <span className="flex items-center gap-2 text-[13px] text-[#444]">
+        <span className="h-3.5 w-[3px] bg-[#c62828]" />
+        {label}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        aria-pressed={checked}
+        aria-label={label}
+        className={`relative h-5 w-9 rounded-full transition ${checked ? "bg-[#c62828]" : "bg-[#dcdcdc]"}`}
+      >
+        <span
+          className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${checked ? "left-[18px]" : "left-0.5"}`}
+        />
+      </button>
+    </label>
+  );
+}
+
 
 export default Shop;
