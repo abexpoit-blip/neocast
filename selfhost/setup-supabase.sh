@@ -7,8 +7,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 DOMAIN_API="${DOMAIN_API:-supabase.neocast.cc}"
-BASE_DIR="/opt/supabase"
-APP_DIR="/var/www/neocast-cc"
+BASE_DIR="${BASE_DIR:-/opt/supabase-neocast}"
+APP_DIR="${APP_DIR:-/var/www/neocast-cc}"
+STACK_NAME="${STACK_NAME:-neocast}"      # docker compose project name (keeps it separate from other stacks)
+KONG_PORT="${KONG_PORT:-8001}"           # host port for the Supabase API gateway
+KONG_HTTPS_PORT_H="${KONG_HTTPS_PORT_H:-8444}"
+PG_PORT="${PG_PORT:-5433}"               # host port for Postgres (pooler)
+POOLER_PORT="${POOLER_PORT:-6544}"       # host port for the transaction pooler
+APP_PORT="${APP_PORT:-3003}"
 
 echo "==> 1/8 Installing Docker + tools"
 apt-get update -y
@@ -32,6 +38,29 @@ if [ ! -d "$BASE_DIR/docker" ]; then
   cp "$BASE_DIR/docker/.env.example" "$BASE_DIR/docker/.env"
 fi
 cd "$BASE_DIR/docker"
+
+# Isolate this stack: unique container names + unique host ports so it can run
+# side by side with any other Supabase stack already on this VPS.
+cat > "$BASE_DIR/docker/docker-compose.override.yml" <<OVERRIDE
+services:
+  studio:    { container_name: ${STACK_NAME}-studio }
+  kong:      { container_name: ${STACK_NAME}-kong }
+  auth:      { container_name: ${STACK_NAME}-auth }
+  rest:      { container_name: ${STACK_NAME}-rest }
+  realtime:  { container_name: ${STACK_NAME}-realtime }
+  storage:   { container_name: ${STACK_NAME}-storage }
+  imgproxy:  { container_name: ${STACK_NAME}-imgproxy }
+  meta:      { container_name: ${STACK_NAME}-meta }
+  functions: { container_name: ${STACK_NAME}-edge-functions }
+  analytics: { container_name: ${STACK_NAME}-analytics }
+  db:        { container_name: ${STACK_NAME}-db }
+  vector:    { container_name: ${STACK_NAME}-vector }
+  supavisor:
+    container_name: ${STACK_NAME}-pooler
+    ports:
+      - "${PG_PORT}:5432"
+      - "${POOLER_PORT}:6543"
+OVERRIDE
 
 echo "==> 3/8 Generating keys"
 KEYS_FILE="$BASE_DIR/credentials.json"
@@ -129,9 +158,10 @@ setenv JWT_EXPIRY "3600"
 setenv POSTGRES_HOST "db"
 setenv POSTGRES_DB "postgres"
 setenv POSTGRES_PORT "5432"
-setenv KONG_HTTP_PORT "8000"
-setenv KONG_HTTPS_PORT "8443"
-setenv POOLER_PROXY_PORT_TRANSACTION "6543"
+setenv COMPOSE_PROJECT_NAME "$STACK_NAME"
+setenv KONG_HTTP_PORT "$KONG_PORT"
+setenv KONG_HTTPS_PORT "$KONG_HTTPS_PORT_H"
+setenv POOLER_PROXY_PORT_TRANSACTION "$POOLER_PORT"
 setenv POOLER_DEFAULT_POOL_SIZE "20"
 setenv POOLER_MAX_CLIENT_CONN "100"
 setenv POOLER_DB_POOL_SIZE "5"
@@ -182,7 +212,7 @@ server {
     client_max_body_size 50m;
     $ACME_LOC
     location / {
-        proxy_pass http://$HOST_IP:8000;
+        proxy_pass http://$HOST_IP:$KONG_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -221,7 +251,7 @@ server {
     ssl_certificate     /etc/letsencrypt/live/$DOMAIN_API/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_API/privkey.pem;
     location / {
-        proxy_pass http://$HOST_IP:8000;
+        proxy_pass http://$HOST_IP:$KONG_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -244,7 +274,7 @@ server {
     server_name $DOMAIN_API;
     client_max_body_size 50m;
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:$KONG_PORT;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -282,8 +312,8 @@ VITE_SUPABASE_ANON_KEY=$ANON_KEY
 SUPABASE_URL=https://$DOMAIN_API
 SUPABASE_PUBLISHABLE_KEY=$ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
-SUPABASE_DB_URL=postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5432/postgres
-PORT=3002
+SUPABASE_DB_URL=postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:$PG_PORT/postgres
+PORT=$APP_PORT
 APPENV
   chmod 600 "$APP_DIR/.env"
 fi
@@ -293,7 +323,7 @@ echo "==================== SAVE THESE DETAILS ===================="
 cat "$KEYS_FILE"
 echo
 echo "API URL      : https://$DOMAIN_API"
-echo "Studio (UI)  : http://$(curl -s ifconfig.me):8000  (login: $DASHBOARD_USERNAME / $DASHBOARD_PASSWORD)"
-echo "Postgres     : postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5432/postgres"
+echo "Studio (UI)  : http://$(curl -s ifconfig.me):$KONG_PORT  (login: $DASHBOARD_USERNAME / $DASHBOARD_PASSWORD)"
+echo "Postgres     : postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:$PG_PORT/postgres"
 echo "Credentials file: $KEYS_FILE"
 echo "============================================================"
