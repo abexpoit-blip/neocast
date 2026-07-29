@@ -133,6 +133,15 @@ export function ScorpionAuthShell({
         className="absolute -bottom-48 -right-24 h-[500px] w-[500px] rounded-full blur-[140px] opacity-50"
         style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
       />
+      <div
+        className="absolute top-1/3 left-1/2 h-[360px] w-[360px] -translate-x-1/2 rounded-full blur-[150px] opacity-30"
+        style={{ background: "radial-gradient(circle, #d946ef 0%, transparent 70%)" }}
+      />
+      <div
+        className="absolute -top-24 right-1/4 h-[300px] w-[300px] rounded-full blur-[130px] opacity-25"
+        style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }}
+      />
+
 
       <div className="relative z-10 w-full max-w-[1060px] grid lg:grid-cols-[1.05fr_minmax(0,430px)] gap-10 lg:gap-14 items-center">
         {/* Brand panel */}
