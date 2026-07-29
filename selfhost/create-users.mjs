@@ -6,8 +6,8 @@ const KEY = process.env.SERVICE_KEY;
 if (!URL_ || !KEY) throw new Error('SUPABASE_URL and SERVICE_KEY required');
 
 const users = [
-  { email: 'admin@neocast.cc', password: process.env.ADMIN_PASS || 'ZoruAdmin#2026', role: 'admin' },
-  { email: 'user@neocast.cc', password: process.env.USER_PASS || 'ZoruUser#2026', role: 'buyer' },
+  { email: 'admin@neocast.cc', password: process.env.ADMIN_PASS || 'NeoAdmin#2026', role: 'admin' },
+  { email: 'user@neocast.cc', password: process.env.USER_PASS || 'NeoUser#2026', role: 'buyer' },
 ];
 
 for (const u of users) {

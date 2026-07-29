@@ -84,7 +84,7 @@ docker compose down && docker compose up -d
 ### ব্যাকআপ (প্রতিদিন চালানো ভালো)
 ```bash
 cd /opt/supabase/docker
-docker compose exec -T db pg_dump -U postgres postgres | gzip > /root/zoru-db-$(date +%F).sql.gz
+docker compose exec -T db pg_dump -U postgres postgres | gzip > /root/neocast-db-$(date +%F).sql.gz
 ```
 
 ### পুরনো cloud ডাটা আনতে চাইলে

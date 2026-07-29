@@ -1,4 +1,4 @@
--- Zoru Shop — scale & safety indexes for the self-hosted database.
+-- NeoCast — scale & safety indexes for the self-hosted database.
 -- Safe to run multiple times. Speeds up shop listing, admin card lists,
 -- balances, orders and deposits when stock and user count grow large.
 
