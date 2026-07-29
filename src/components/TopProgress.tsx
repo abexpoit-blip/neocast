@@ -68,10 +68,15 @@ export function TopProgress() {
   if (width === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] h-[2px] pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 z-[9999] h-[3px] pointer-events-none">
       <div
-        className="h-full bg-[#d32f2f] transition-[width,opacity] duration-300 ease-out"
-        style={{ width: `${width}%`, opacity: width >= 100 ? 0 : 1 }}
+        className="h-full transition-[width,opacity] duration-300 ease-out"
+        style={{
+          width: `${width}%`,
+          opacity: width >= 100 ? 0 : 1,
+          background: "linear-gradient(90deg, #4f46e5 0%, #0ea5e9 55%, #22d3ee 100%)",
+          boxShadow: "0 0 12px rgba(34,211,238,0.75)",
+        }}
       />
     </div>
   );

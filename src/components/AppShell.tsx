@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { LanguageToggle } from "@/lib/i18n";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import { NeoCastLoader } from "@/components/NeoCastLoader";
 
 
 // NeoCast primary navigation — 5 items.
@@ -202,7 +203,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const loc = useLocation();
   // 30-minute session limit — regular users only, admins are exempt.
   useSessionTimeout(Boolean(user) && profile?.role !== "admin");
-  if (loading && !profileError) return <div className="min-h-screen flex items-center justify-center text-[#666]">Loading…</div>;
+  if (loading && !profileError) return <NeoCastLoader />;
 
   if (!user) return <Navigate to="/auth" replace state={{ from: loc }} />;
   if (profile?.banned) {
@@ -223,7 +224,7 @@ export const AdminRoute = ({ children }: { children: ReactNode }) => {
   const { profile, loading, user, profileError } = useAuth();
   const loc = useLocation();
   if (loading && !profileError) {
-    return <div className="min-h-screen flex items-center justify-center text-[#666]">Loading…</div>;
+    return <NeoCastLoader />;
   }
   if (!user) return <Navigate to="/crzr-x9k2-panel" replace state={{ from: loc }} />;
   if (profile?.role !== "admin") {
