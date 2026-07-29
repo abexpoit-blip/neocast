@@ -76,7 +76,7 @@ const Auth = () => {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const fakeEmail = email || `${username.toLowerCase()}@cruzercc.shop`;
+        const fakeEmail = email || `${username.toLowerCase()}@neocast.cc`;
         const result = await authApi.signup({ email: fakeEmail, username, password });
         setToken(result.token);
         await refresh();
