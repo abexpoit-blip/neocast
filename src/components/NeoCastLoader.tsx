@@ -7,7 +7,7 @@ type Props = {
 };
 
 /**
- * NeoCast loading state — a shuffling stack of gift cards with an orbiting
+ * NeoCast loading state — a shuffling stack of cards with an orbiting
  * spark and a shimmering progress rail. Distinct to the NeoCast brand.
  */
 export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) {

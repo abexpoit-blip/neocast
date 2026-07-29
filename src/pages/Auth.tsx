@@ -113,7 +113,7 @@ const Auth = () => {
       <ScorpionAuthShell
         tagline={
           <>
-            Sign in to buy verified gift cards with instant delivery.
+            Sign in to buy verified cards with instant delivery.
             <br />
             <a href="https://t.me/scorpionccstore02" className="text-[#ff8a80] font-semibold hover:underline">
               @scorpionccstore02
