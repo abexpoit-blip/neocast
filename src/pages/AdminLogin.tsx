@@ -50,7 +50,7 @@ const AdminLogin = () => {
         if (err.status === 0) { title = "Server unavailable"; detail = `Backend ${API_BASE_URL} is unavailable.`; }
         else if (err.status === 401) { title = "Invalid credentials"; detail = "Check your email and password."; }
         else if (err.status === 403) { title = "Not an admin account"; detail = "This login is for administrators only."; }
-        else if (err.contentType?.includes("text/html")) { title = "Server configuration error"; detail = `API вернул HTML (HTTP ${err.status}).`; }
+        else if (err.contentType?.includes("text/html")) { title = "Server configuration error"; detail = `API returned HTML (HTTP ${err.status}).`; }
         else title = err.message;
       } else if (err instanceof Error) title = err.message;
       setError({ title, detail });
