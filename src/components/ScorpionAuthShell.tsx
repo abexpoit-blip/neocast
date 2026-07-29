@@ -25,9 +25,11 @@ const perks = [
 /** Accepted payment networks. */
 function NetworkTile({ name, Mark }: { name: string; Mark: (p: { className?: string }) => ReactNode }) {
   return (
-    <div className="group flex items-center gap-2.5 rounded-xl border border-white/12 bg-white/[0.05] px-3 py-2.5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">
-      <Mark className="h-7 w-[42px] shrink-0" />
-      <span className="truncate text-[12px] font-semibold text-white/85">{name}</span>
+    <div
+      title={name}
+      className="flex items-center justify-center rounded-xl border border-white/12 bg-white/[0.05] px-3 py-3 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1"
+    >
+      <Mark className="h-8 w-[52px]" />
     </div>
   );
 }
