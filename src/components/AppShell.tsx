@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { NeoCastLoader } from "@/components/NeoCastLoader";
+import { BrandLogo } from "@/components/BrandLogo";
+
 
 
 // NeoCast primary navigation — 5 items.
