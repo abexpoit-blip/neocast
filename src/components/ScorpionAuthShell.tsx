@@ -207,6 +207,15 @@ export function ScorpionAuthShell({
             />
           </div>
 
+          {/* Colorful brand tiles */}
+          <div className="mt-8 grid grid-cols-3 gap-2.5 max-w-[440px]">
+            {brands.map((b) => (
+              <BrandTile key={b.name} {...b} />
+            ))}
+          </div>
+
+
+
           <div className="mt-8 flex items-center gap-7 text-white/55">
             {[
               ["200+", "Brands"],
