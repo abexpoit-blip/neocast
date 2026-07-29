@@ -1,5 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 
+import { NeoCastLoader } from "./components/NeoCastLoader";
+
 const App = lazy(() => import("./App"));
 
 /**
@@ -12,15 +14,11 @@ export default function ClientApp() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground font-mono text-xs tracking-[0.3em] uppercase">
-          Loading…
-        </div>
-      </div>
+      <NeoCastLoader />
     );
   }
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<NeoCastLoader />}>
       <App />
     </Suspense>
   );
