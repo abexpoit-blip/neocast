@@ -99,16 +99,18 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 end={(n as any).end}
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
-                  `group relative overflow-hidden rounded-md px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] border transition-all duration-300 active:scale-[0.97] ${
+                  `group relative overflow-hidden rounded-full px-5 py-2.5 text-[12px] font-semibold tracking-[0.12em] border transition-all duration-200 active:translate-y-[2px] ${
                     isActive
-                      ? "text-white border-[var(--nc-accent)] bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[0_6px_18px_-8px_rgba(var(--nc-accent-rgb),0.9)]"
-                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[var(--nc-accent)]/60 hover:bg-[var(--nc-accent)]/15"
+                      ? "text-white border-[var(--nc-accent)]/80 bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_4px_rgba(0,0,0,0.35),0_4px_0_-1px_rgba(0,0,0,0.55),0_10px_20px_-10px_rgba(var(--nc-accent-rgb),0.85)]"
+                      : "text-white/70 border-white/12 bg-gradient-to-b from-white/[0.10] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_3px_0_-1px_rgba(0,0,0,0.5)] hover:text-white hover:border-[var(--nc-accent)]/60 hover:from-[var(--nc-accent)]/30 hover:to-[var(--nc-accent)]/10"
                   }`
                 }
               >
+                <span className="pointer-events-none absolute inset-x-1 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/20 to-transparent opacity-70" />
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <span className="relative">{n.label}</span>
+                <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)]">{n.label}</span>
               </NavLink>
+
             ))}
             <div className="mt-1 flex items-center justify-between rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
               <span className="text-[10px] uppercase tracking-[0.16em] text-white/45">Theme</span>
