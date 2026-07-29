@@ -237,6 +237,13 @@ export function ScorpionAuthShell({
 
         {/* Form card */}
         <div className="w-full max-w-[430px] mx-auto lg:mx-0">
+          {/* Mobile brand strip */}
+          <div className="lg:hidden mb-5 grid grid-cols-3 gap-2">
+            {brands.slice(0, 6).map((b) => (
+              <BrandTile key={b.name} {...b} />
+            ))}
+          </div>
+
           <div className="relative rounded-[22px] overflow-hidden">
             <div
               className="absolute -inset-[1px] rounded-[22px] opacity-80"
