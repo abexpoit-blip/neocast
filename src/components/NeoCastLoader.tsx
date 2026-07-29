@@ -19,7 +19,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
           className="absolute left-1/2 top-1/2 h-[126px] w-[126px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70 neocast-spin"
           style={{
             background:
-              "conic-gradient(from 0deg, transparent 0deg, rgba(239,83,80,0.75) 90deg, rgba(129,140,248,0.55) 190deg, transparent 300deg)",
+              "conic-gradient(from 0deg, transparent 0deg, rgba(var(--nc-accent-rgb),0.75) 90deg, rgba(var(--nc-accent-rgb),0.35) 190deg, transparent 300deg)",
             maskImage: "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
             WebkitMaskImage:
               "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
@@ -32,11 +32,12 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
             className="absolute left-1/2 top-1/2 h-[58px] w-[94px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20 neocast-card"
             style={{
               background: [
-                "linear-gradient(135deg, #c62828 0%, #9e1c1c 100%)",
-                "linear-gradient(135deg, #06b6d4 0%, #0f172a 100%)",
-                "linear-gradient(135deg, #818cf8 0%, #1e293b 100%)",
+                "linear-gradient(135deg, var(--nc-accent) 0%, var(--nc-accent-lo) 100%)",
+                "linear-gradient(135deg, var(--nc-accent-hi) 0%, var(--nc-ink) 100%)",
+                "linear-gradient(135deg, var(--nc-accent-lo) 0%, var(--nc-ink-2) 100%)",
               ][i],
-              boxShadow: "0 18px 40px -18px rgba(2,6,23,0.9)",
+              boxShadow: "0 18px 40px -18px rgba(8,4,6,0.9)",
+
               animationDelay: `${i * 0.42}s`,
             }}
           >
@@ -54,7 +55,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
         <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full w-1/3 rounded-full neocast-rail"
-            style={{ background: "linear-gradient(90deg, #c62828, #ef5350, #ffcdd2)" }}
+            style={{ background: "linear-gradient(90deg, var(--nc-accent), var(--nc-accent-soft), var(--nc-accent-pale))" }}
           />
         </div>
         <div className="mt-3 text-center text-[10px] uppercase tracking-[0.38em] text-white/45">
@@ -89,11 +90,11 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%)" }}
+      style={{ background: "linear-gradient(160deg, #0a0a0a 0%, var(--nc-ink) 50%, #0a0a0a 100%)" }}
     >
       <div
         className="absolute -top-32 -left-24 h-[380px] w-[380px] rounded-full blur-[120px] opacity-50"
-        style={{ background: "radial-gradient(circle, #c62828 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent) 0%, transparent 70%)" }}
       />
       <div
         className="absolute -bottom-32 -right-20 h-[400px] w-[400px] rounded-full blur-[130px] opacity-40"

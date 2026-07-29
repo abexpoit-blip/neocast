@@ -214,7 +214,7 @@ const Recharge = () => {
   const txnIcon = (type: string) => {
     if (type === "deposit") return <ArrowDownLeft className="h-4 w-4 text-[#2fb344]" />;
     if (type === "purchase") return <ArrowUpRight className="h-4 w-4 text-[#c0392b]" />;
-    if (type === "refund") return <ArrowDownLeft className="h-4 w-4 text-[#c62828]" />;
+    if (type === "refund") return <ArrowDownLeft className="h-4 w-4 text-[var(--nc-accent)]" />;
     return <Receipt className="h-4 w-4 text-[#888]" />;
   };
 
@@ -231,35 +231,35 @@ const Recharge = () => {
     <AppShell>
       <div className="space-y-4 max-w-6xl">
         {/* PREMIUM HEADER */}
-        <section className="rounded-xl overflow-hidden bg-[#141414] border border-[#2a2a2a] relative">
-          <div className="absolute -top-16 -right-10 h-52 w-52 rounded-full bg-[#c62828]/25 blur-3xl" />
+        <section className="rounded-xl overflow-hidden bg-[var(--nc-ink)] border border-[var(--nc-line)] relative">
+          <div className="absolute -top-16 -right-10 h-52 w-52 rounded-full bg-[var(--nc-accent)]/25 blur-3xl" />
           <div className="relative px-5 sm:px-7 py-6 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">NeoCast Wallet</div>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--nc-accent-soft)] font-semibold">NeoCast Wallet</div>
               <h1 className="mt-1.5 text-white text-[22px] sm:text-[26px] font-bold tracking-tight">Deposit &amp; balance</h1>
               <p className="mt-1 text-[12.5px] text-white/50 max-w-md leading-relaxed">
                 Instant crypto top-ups with automatic crediting after network confirmation.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3 min-w-[150px]">
+              <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-4 py-3 min-w-[150px]">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Available balance</div>
                 <div className="text-[22px] font-bold text-white tabular-nums">${Number(profile?.balance ?? 0).toFixed(2)}</div>
               </div>
-              <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-4 py-3">
+              <div className="rounded-lg border border-[#333] bg-[var(--nc-ink-2)] px-4 py-3">
                 <div className="text-[9px] uppercase tracking-[0.2em] text-white/40">Method</div>
-                <div className="text-[14px] font-semibold text-[#ef5350]">LTC</div>
+                <div className="text-[14px] font-semibold text-[var(--nc-accent-soft)]">LTC</div>
               </div>
             </div>
           </div>
-          <div className="h-[3px] bg-gradient-to-r from-[#c62828] via-[#ef5350] to-transparent" />
+          <div className="h-[3px] bg-gradient-to-r from-[var(--nc-accent)] via-[var(--nc-accent-soft)] to-transparent" />
         </section>
 
         {isActivation && (
           <div className="bg-white border border-[#e6e6e6] px-4 py-3 flex items-start gap-3 text-[13px]">
-            <div className="shrink-0 h-8 w-8 bg-[#c62828] text-white flex items-center justify-center text-sm font-bold">$</div>
+            <div className="shrink-0 h-8 w-8 bg-[var(--nc-accent)] text-white flex items-center justify-center text-sm font-bold">$</div>
             <div>
-              <div className="text-[12px] font-semibold text-[#c62828] uppercase tracking-wider">Account activation</div>
+              <div className="text-[12px] font-semibold text-[var(--nc-accent)] uppercase tracking-wider">Account activation</div>
               <div className="text-[#333] mt-0.5">
                 Top up ${Number(settings.min_deposit ?? MIN_DEPOSIT).toFixed(2)} to unlock the shop.
               </div>
@@ -270,7 +270,7 @@ const Recharge = () => {
         {activeInvoice ? (
           // ---- ACTIVE INVOICE ----
           <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <div className="px-4 h-11 flex items-center justify-between bg-[#1c1c1c] border-b-2 border-[#c62828]">
+            <div className="px-4 h-11 flex items-center justify-between bg-[var(--nc-ink-2)] border-b-2 border-[var(--nc-accent)]">
               <span className="text-[13px] text-white/85 uppercase tracking-wider">Payment · Litecoin (LTC)</span>
               <span className="text-[11px] font-mono text-white/45">#{activeInvoice.deposit_id.slice(0, 8).toUpperCase()}</span>
             </div>
@@ -280,7 +280,7 @@ const Recharge = () => {
               <div className={`flex items-center justify-between h-11 px-4 border text-[13px] ${
                 isExpired ? "bg-[#fdecea] border-[#f5c6cb] text-[#c0392b]"
                   : countdown <= 300 ? "bg-[#fff8e1] border-[#ffe0a0] text-[#b26a00]"
-                  : "bg-[#fdecea] border-[#f3c3c3] text-[#c62828]"
+                  : "bg-[#fdecea] border-[#f3c3c3] text-[var(--nc-accent)]"
               }`}>
                 <span className="inline-flex items-center gap-2">
                   <TimerReset className="h-4 w-4" />
@@ -292,7 +292,7 @@ const Recharge = () => {
               </div>
               <div className="h-1 bg-[#f0f0f0] mt-[-1px]">
                 <div
-                  className={`h-1 transition-all duration-1000 ${isExpired ? "bg-[#c0392b]" : countdown <= 300 ? "bg-[#b26a00]" : "bg-[#c62828]"}`}
+                  className={`h-1 transition-all duration-1000 ${isExpired ? "bg-[#c0392b]" : countdown <= 300 ? "bg-[#b26a00]" : "bg-[var(--nc-accent)]"}`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -303,7 +303,7 @@ const Recharge = () => {
               <div className="space-y-3">
                 <div className="text-center border border-[#e6e6e6] bg-[#fafafa] p-3">
                   <p className="text-[11px] uppercase tracking-wider text-[#888]">Deposit amount</p>
-                  <p className="text-[24px] font-semibold text-[#c62828] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
+                  <p className="text-[24px] font-semibold text-[var(--nc-accent)] font-mono">${activeInvoice.usd_amount.toFixed(2)}</p>
                   {activeInvoice.charged_amount ? (
                     <p className="text-[11px] text-[#888] font-mono">
                       charge ${activeInvoice.charged_amount.toFixed(2)} (2% fee)
@@ -330,7 +330,7 @@ const Recharge = () => {
                       {activeInvoice.crypto_amount} LTC
                     </span>
                     <button onClick={() => copyField(activeInvoice.crypto_amount, "amount")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[#c62828] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "amount" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
@@ -343,7 +343,7 @@ const Recharge = () => {
                       {activeInvoice.wallet_address}
                     </code>
                     <button onClick={() => copyField(activeInvoice.wallet_address, "address")} disabled={isExpired}
-                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[#c62828] flex items-center justify-center disabled:opacity-30">
+                      className="shrink-0 h-8 w-8 border border-[#dcdcdc] bg-white hover:bg-[#fdf2f2] text-[var(--nc-accent)] flex items-center justify-center disabled:opacity-30">
                       {copiedField === "address" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
@@ -358,10 +358,10 @@ const Recharge = () => {
                   <div className="border border-[#e6e6e6] bg-white p-3 space-y-2 text-[12px]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-[#333]">
-                        <Loader2 className="h-4 w-4 animate-spin text-[#c62828]" />
+                        <Loader2 className="h-4 w-4 animate-spin text-[var(--nc-accent)]" />
                         <span className="uppercase tracking-wider">Waiting for payment</span>
                       </div>
-                      <span className="text-[11px] font-mono text-[#c62828]">
+                      <span className="text-[11px] font-mono text-[var(--nc-accent)]">
                         {activeInvoice.confirmations ?? 0}/2 confirmations
                       </span>
                     </div>
@@ -377,7 +377,7 @@ const Recharge = () => {
 
                 <button onClick={cancelInvoice}
                   className={`w-full h-10 text-[13px] transition ${
-                    isExpired ? "bg-[#c62828] hover:bg-[#b02121] text-white"
+                    isExpired ? "bg-[var(--nc-accent)] hover:bg-[#b02121] text-white"
                       : "border border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                   }`}>
                   {isExpired ? "Create new invoice" : "Cancel"}
@@ -388,7 +388,7 @@ const Recharge = () => {
         ) : (
           // ---- FORM ----
           <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <div className="px-4 h-11 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
+            <div className="px-4 h-11 flex items-center bg-[var(--nc-ink-2)] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[var(--nc-accent)]">
               Add funds
             </div>
 
@@ -396,7 +396,7 @@ const Recharge = () => {
               <div className="space-y-4">
                 <div className="border border-[#e6e6e6] bg-[#fafafa] p-4">
                   <div className="flex items-center gap-2 text-[13px] text-[#1f2d3d] font-semibold">
-                    <Wallet className="h-4 w-4 text-[#c62828]" /> Litecoin (LTC) only
+                    <Wallet className="h-4 w-4 text-[var(--nc-accent)]" /> Litecoin (LTC) only
                   </div>
                   <p className="text-[12px] text-[#666] mt-1.5 leading-[1.7]">
                     Fast confirmations and low network fees. Other coins are not accepted.
@@ -426,7 +426,7 @@ const Recharge = () => {
                     type="number"
                     min={MIN_DEPOSIT}
                     placeholder={`Minimum ${MIN_DEPOSIT}`}
-                    className="flex-1 h-11 px-3 border border-[#dcdcdc] text-[14px] font-mono outline-none focus:border-[#c62828]"
+                    className="flex-1 h-11 px-3 border border-[#dcdcdc] text-[14px] font-mono outline-none focus:border-[var(--nc-accent)]"
                   />
                 </div>
 
@@ -434,7 +434,7 @@ const Recharge = () => {
                   {[50, 100, 250, 500, 1000].map((v) => (
                     <button key={v} onClick={() => setAmount(String(v))}
                       className={`px-3 h-8 text-[12px] border transition ${
-                        amount === String(v) ? "border-[#c62828] text-[#c62828] bg-[#fdf2f2]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
+                        amount === String(v) ? "border-[var(--nc-accent)] text-[var(--nc-accent)] bg-[#fdf2f2]" : "border-[#dcdcdc] text-[#555] hover:bg-[#f7f7f7]"
                       }`}>
                       ${v}
                     </button>
@@ -448,7 +448,7 @@ const Recharge = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Total to pay</span>
-                    <span className="font-mono font-semibold text-[#c62828]">${(amtNum * 1.02).toFixed(2)}</span>
+                    <span className="font-mono font-semibold text-[var(--nc-accent)]">${(amtNum * 1.02).toFixed(2)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Current balance</span>
@@ -460,7 +460,7 @@ const Recharge = () => {
                 <button
                   onClick={createInvoice}
                   disabled={busy || amtNum < MIN_DEPOSIT}
-                  className="w-full h-11 mt-4 bg-[#c62828] hover:bg-[#b02121] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
+                  className="w-full h-11 mt-4 bg-[var(--nc-accent)] hover:bg-[#b02121] disabled:opacity-50 text-white text-[13px] uppercase tracking-wider inline-flex items-center justify-center gap-2"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
                   Pay with LTC
@@ -476,8 +476,8 @@ const Recharge = () => {
         {/* Transactions */}
         {transactions.length > 0 && (
           <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <div className="px-4 h-10 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
-              <Receipt className="h-4 w-4 mr-2 text-[#c62828]" /> Transaction history
+            <div className="px-4 h-10 flex items-center bg-[var(--nc-ink-2)] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[var(--nc-accent)]">
+              <Receipt className="h-4 w-4 mr-2 text-[var(--nc-accent)]" /> Transaction history
             </div>
             <div className="p-3">
               <div className="divide-y divide-[#eee]">
@@ -505,7 +505,7 @@ const Recharge = () => {
         {/* Deposits */}
         {history.length > 0 && (
           <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <div className="px-4 h-10 flex items-center bg-[#1c1c1c] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[#c62828]">
+            <div className="px-4 h-10 flex items-center bg-[var(--nc-ink-2)] text-[13px] text-white/85 uppercase tracking-wider border-b-2 border-[var(--nc-accent)]">
               Recent deposits
             </div>
             <div className="p-3">

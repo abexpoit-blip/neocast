@@ -11,9 +11,9 @@ type Props = {
 };
 
 const accentBar: Record<NonNullable<Props["accent"]>, string> = {
-  blue: "from-transparent via-[#ef5350] to-transparent",
-  red: "from-transparent via-[#f472b6] to-transparent",
-  gold: "from-transparent via-[#818cf8] to-transparent",
+  blue: "from-transparent via-[var(--nc-accent-soft)] to-transparent",
+  red: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
+  gold: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
 };
 
 const perks = [
@@ -49,7 +49,7 @@ function CardMock({
 }) {
   return (
     <div
-      className={`absolute w-[230px] rounded-2xl border border-white/15 p-4 backdrop-blur-md shadow-[0_28px_70px_-24px_rgba(2,6,23,0.95)] ${className}`}
+      className={`absolute w-[230px] rounded-2xl border border-white/15 p-4 backdrop-blur-md shadow-[0_28px_70px_-24px_rgba(8,4,6,0.95)] ${className}`}
       style={{ background: gradient }}
     >
       <div className="flex items-start justify-between">
@@ -88,7 +88,7 @@ export function ScorpionAuthShell({
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 sm:py-14 overflow-hidden"
       style={{
         fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif',
-        background: "linear-gradient(160deg, #0a0a0a 0%, #141414 48%, #0a0a0a 100%)",
+        background: "linear-gradient(160deg, #0a0a0a 0%, var(--nc-ink) 48%, #0a0a0a 100%)",
       }}
     >
       {/* Grid */}
@@ -96,7 +96,7 @@ export function ScorpionAuthShell({
         className="absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(129,140,248,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.10) 1px, transparent 1px)",
+            "linear-gradient(rgba(var(--nc-accent-rgb),0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--nc-accent-rgb),0.10) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
           maskImage: "radial-gradient(ellipse at 50% 35%, black 10%, transparent 78%)",
           WebkitMaskImage: "radial-gradient(ellipse at 50% 35%, black 10%, transparent 78%)",
@@ -105,15 +105,15 @@ export function ScorpionAuthShell({
       {/* Aurora glows */}
       <div
         className="absolute -top-40 -left-32 h-[460px] w-[460px] rounded-full blur-[130px] opacity-60"
-        style={{ background: "radial-gradient(circle, #c62828 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent) 0%, transparent 70%)" }}
       />
       <div
         className="absolute -bottom-48 -right-24 h-[500px] w-[500px] rounded-full blur-[140px] opacity-50"
-        style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent-hi) 0%, transparent 70%)" }}
       />
       <div
         className="absolute top-1/3 left-1/2 h-[360px] w-[360px] -translate-x-1/2 rounded-full blur-[150px] opacity-30"
-        style={{ background: "radial-gradient(circle, #d946ef 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent) 0%, transparent 70%)" }}
       />
       <div
         className="absolute -top-24 right-1/4 h-[300px] w-[300px] rounded-full blur-[130px] opacity-25"
@@ -125,7 +125,7 @@ export function ScorpionAuthShell({
         {/* Brand panel */}
         <section className="hidden lg:block text-white">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ef5350] shadow-[0_0_10px_#ef5350]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--nc-accent-soft)] shadow-[0_0_10px_var(--nc-accent-soft)]" />
             <span className="text-[10px] uppercase tracking-[0.3em] text-white/70">
               Premium prepaid card marketplace
             </span>
@@ -139,7 +139,7 @@ export function ScorpionAuthShell({
             <br />
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(100deg, #818cf8 0%, #ef5350 60%, #ffcdd2 100%)" }}
+              style={{ backgroundImage: "linear-gradient(100deg, var(--nc-accent-hi) 0%, var(--nc-accent-soft) 60%, var(--nc-accent-pale) 100%)" }}
             >
               that just work.
             </span>
@@ -153,7 +153,7 @@ export function ScorpionAuthShell({
             {perks.map(({ icon: Icon, title: t, copy }) => (
               <div key={t} className="flex items-start gap-3.5">
                 <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/12 bg-white/[0.05] backdrop-blur-md">
-                  <Icon className="h-4 w-4 text-[#ff8a80]" />
+                  <Icon className="h-4 w-4 text-[var(--nc-accent-pale)]" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[13.5px] font-semibold text-white">{t}</div>
@@ -169,19 +169,19 @@ export function ScorpionAuthShell({
               label="Balance"
               value="$100.00"
               className="left-0 top-0 -rotate-6"
-              gradient="linear-gradient(140deg, rgba(198,40,40,0.85) 0%, rgba(158,28,28,0.7) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.85) 0%, rgba(var(--nc-accent-rgb),0.7) 100%)"
             />
             <CardMock
               label="Balance"
               value="$50.00"
               className="left-[150px] top-[46px] rotate-3"
-              gradient="linear-gradient(140deg, rgba(6,182,212,0.8) 0%, rgba(15,23,42,0.85) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.8) 0%, rgba(18,9,12,0.85) 100%)"
             />
             <CardMock
               label="Balance"
               value="$25.00"
               className="left-[300px] top-[14px] rotate-[9deg]"
-              gradient="linear-gradient(140deg, rgba(129,140,248,0.7) 0%, rgba(30,41,59,0.9) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.7) 0%, rgba(30,14,18,0.9) 100%)"
             />
           </div>
 
@@ -232,14 +232,14 @@ export function ScorpionAuthShell({
               className="absolute -inset-[1px] rounded-[22px] opacity-80"
               style={{
                 background:
-                  "linear-gradient(140deg, rgba(239,83,80,0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
+                  "linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.55), rgba(var(--nc-accent-rgb),0.35) 45%, rgba(255,255,255,0.05) 100%)",
               }}
             />
             <div
-              className="relative rounded-[22px] border border-white/10 shadow-[0_30px_90px_-25px_rgba(4,8,25,0.95)]"
+              className="relative rounded-[22px] border border-white/10 shadow-[0_30px_90px_-25px_rgba(8,4,6,0.95)]"
               style={{
                 background:
-                  "linear-gradient(165deg, rgba(18,24,52,0.86) 0%, rgba(9,12,30,0.92) 100%)",
+                  "linear-gradient(165deg, rgba(22,10,14,0.86) 0%, rgba(10,6,8,0.92) 100%)",
                 backdropFilter: "blur(24px) saturate(140%)",
               }}
             >
@@ -252,14 +252,14 @@ export function ScorpionAuthShell({
                         className="absolute -inset-6 blur-2xl opacity-70"
                         style={{
                           background:
-                            "radial-gradient(circle, rgba(239,83,80,0.5) 0%, rgba(198,40,40,0) 70%)",
+                            "radial-gradient(circle, rgba(var(--nc-accent-rgb),0.5) 0%, rgba(var(--nc-accent-rgb),0) 70%)",
                         }}
                       />
                       <BrandLockup className="relative" />
                     </div>
                   </div>
 
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#ff8a80]/70">
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[var(--nc-accent-pale)]/70">
                     Secure Access
                   </p>
                   {tagline && (

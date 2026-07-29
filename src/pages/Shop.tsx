@@ -177,7 +177,7 @@ const Shop = () => {
               onChange={(e) => setBin(e.target.value)}
               placeholder="Please use a carriage return to separate multiple records."
               rows={3}
-              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[var(--nc-accent)]"
             />
           </Field>
           <Field label="Zips">
@@ -186,14 +186,14 @@ const Shop = () => {
               onChange={(e) => setZip(e.target.value)}
               placeholder="Please use a carriage return to separate multiple records."
               rows={3}
-              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[#c62828]"
+              className="w-full border border-[#dcdcdc] px-2 py-1.5 text-[13px] font-mono outline-none resize-none focus:border-[var(--nc-accent)]"
             />
           </Field>
           <Field label="Base">
             <select
               value={base}
               onChange={(e) => setBase(e.target.value)}
-              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[var(--nc-accent)]"
             >
               <option value="all">All</option>
               {bases.map((b) => <option key={b} value={b}>{b}</option>)}
@@ -207,7 +207,7 @@ const Shop = () => {
             <select
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[var(--nc-accent)]"
             >
               <option value="all">All</option>
               {countries.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -227,7 +227,7 @@ const Shop = () => {
             <select
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
-              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[#c62828]"
+              className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none bg-white focus:border-[var(--nc-accent)]"
             >
               <option value="all">All</option>
               {brands.map((b) => <option key={b} value={b}>{b}</option>)}
@@ -240,7 +240,7 @@ const Shop = () => {
                 onChange={(e) => setMinPrice(e.target.value.replace(/[^\d.]/g, ""))}
                 onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 placeholder="Min Price"
-                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[var(--nc-accent)]"
               />
               <span className="text-[#999]">-</span>
               <input
@@ -248,7 +248,7 @@ const Shop = () => {
                 onChange={(e) => setMaxPrice(e.target.value.replace(/[^\d.]/g, ""))}
                 onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 placeholder="Max Price"
-                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[#c62828]"
+                className="h-9 w-full border border-[#dcdcdc] px-2 text-[13px] outline-none focus:border-[var(--nc-accent)]"
               />
             </div>
           </Field>
@@ -259,13 +259,13 @@ const Shop = () => {
       <div className="mt-4 flex items-center justify-center gap-3">
         <button
           onClick={reset}
-          className="h-9 px-8 bg-[#141414] hover:bg-[#000] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+          className="h-9 px-8 bg-[var(--nc-ink)] hover:bg-[#000] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Reset
         </button>
         <button
           onClick={runSearch}
-          className="h-9 px-8 bg-[#c62828] hover:bg-[#a91f1f] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
+          className="h-9 px-8 bg-[var(--nc-accent)] hover:bg-[#a91f1f] text-white text-[13px] uppercase tracking-wide inline-flex items-center justify-center gap-2 transition"
         >
           <Search className="h-3.5 w-3.5" /> Search
         </button>
@@ -475,7 +475,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2 mb-1.5">
-        <span className="h-3.5 w-[3px] bg-[#c62828]" />
+        <span className="h-3.5 w-[3px] bg-[var(--nc-accent)]" />
         <span className="text-[#333] text-[12px] font-medium">{label}</span>
       </div>
       {children}
@@ -487,7 +487,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   return (
     <label className="flex items-center justify-between px-3 py-2 cursor-pointer select-none">
       <span className="flex items-center gap-2 text-[13px] text-[#444]">
-        <span className="h-3.5 w-[3px] bg-[#c62828]" />
+        <span className="h-3.5 w-[3px] bg-[var(--nc-accent)]" />
         {label}
       </span>
       <button
@@ -495,7 +495,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
         onClick={() => onChange(!checked)}
         aria-pressed={checked}
         aria-label={label}
-        className={`relative h-5 w-9 rounded-full transition ${checked ? "bg-[#c62828]" : "bg-[#dcdcdc]"}`}
+        className={`relative h-5 w-9 rounded-full transition ${checked ? "bg-[var(--nc-accent)]" : "bg-[#dcdcdc]"}`}
       >
         <span
           className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${checked ? "left-[18px]" : "left-0.5"}`}

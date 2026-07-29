@@ -4,8 +4,8 @@
  * Wordmark: NEOCAST in white + .CC accent in brand red.
  */
 
-const RED = "#c62828";
-const RED_LIGHT = "#ef5350";
+const RED = "var(--nc-accent)";
+const RED_LIGHT = "var(--nc-accent-soft)";
 
 export const BrandMark = ({ size = 36, className = "" }: { size?: number; className?: string }) => (
   <svg
@@ -68,7 +68,7 @@ export const BrandLockup = ({ className = "" }: { className?: string }) => (
     <span className="flex flex-col items-center gap-1">
       <span className="text-white font-extrabold text-[26px] leading-none tracking-[-0.02em]">
         Neo<span className="text-white/85">Cast</span>
-        <span className="text-[#ef5350] text-[15px] font-bold">.cc</span>
+        <span className="text-[var(--nc-accent-soft)] text-[15px] font-bold">.cc</span>
       </span>
       <span className="text-[9px] uppercase tracking-[0.4em] text-white/40">Verified marketplace</span>
     </span>
