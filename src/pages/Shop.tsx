@@ -52,7 +52,7 @@ const Shop = () => {
     try {
       setAll(await listProducts());
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ошибка загрузки");
+      toast.error(e instanceof Error ? e.message : "Failed to load");
       setAll([]);
     } finally {
       setLoading(false);
@@ -282,9 +282,9 @@ const Shop = () => {
           Batch add shopping cart{selected.size > 0 ? ` (${selected.size})` : ""}
         </button>
         <div className="flex items-center gap-4 text-[12px] text-[#888]">
-          {cards.length > 0 ? <span>{cards.length} results · стр. {page}/{totalPages}</span> : null}
+          {cards.length > 0 ? <span>{cards.length} results · page {page}/{totalPages}</span> : null}
           <Link to="/cart" className="text-[#2196f3] hover:underline">
-            Корзина{count > 0 ? ` (${count})` : ""}
+            Cart{count > 0 ? ` (${count})` : ""}
           </Link>
         </div>
 
@@ -430,7 +430,7 @@ const Shop = () => {
 
       {buying && (
         <div className="mt-3 text-[12px] text-[#888] inline-flex items-center gap-2">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Обработка…
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing…
         </div>
       )}
 
@@ -446,10 +446,10 @@ const Shop = () => {
             <pre className="max-h-[320px] overflow-auto whitespace-pre-wrap break-all p-4 font-mono text-[12px] text-[#303133]">{delivered.content}</pre>
             <div className="border-t border-[#f0f0f0] px-4 py-3 text-right">
               <button
-                onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Скопировано"); }}
+                onClick={() => { void navigator.clipboard.writeText(delivered.content); toast.success("Copied"); }}
                 className="h-8 px-4 bg-[#2196f3] hover:bg-[#1e88e5] text-white text-[13px] inline-flex items-center gap-1.5"
               >
-                <Copy className="h-3.5 w-3.5" /> Копировать
+                <Copy className="h-3.5 w-3.5" /> Copy
               </button>
             </div>
           </div>
