@@ -49,24 +49,29 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       {/* TOP NAV */}
       <header className="bg-[#141414] text-white sticky top-0 z-40 border-b-2 border-[#c62828]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-between gap-6">
-          <nav className="hidden lg:flex items-center h-full text-[13px] tracking-wide">
+          <nav className="hidden lg:flex items-center h-full gap-1.5 text-[12px] font-semibold tracking-[0.12em]">
             {items.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 end={(n as any).end}
                 className={({ isActive }) =>
-                  `h-full px-4 flex items-center transition-colors border-b-2 relative ${
+                  `group relative overflow-hidden rounded-md px-4 py-1.5 border transition-all duration-300 ease-out will-change-transform active:scale-[0.96] ${
                     isActive
-                      ? "text-white border-[#c62828] bg-[#c62828]"
-                      : "text-white/70 border-transparent hover:text-white hover:bg-white/[0.06]"
+                      ? "text-white border-[#c62828] bg-gradient-to-b from-[#e03131] to-[#a51d1d] shadow-[0_0_0_1px_rgba(198,40,40,0.5),0_6px_18px_-6px_rgba(198,40,40,0.8)]"
+                      : "text-white/70 border-white/10 bg-white/[0.03] hover:text-white hover:border-[#c62828]/60 hover:bg-[#c62828]/15 hover:-translate-y-[1px] hover:shadow-[0_6px_16px_-8px_rgba(198,40,40,0.9)]"
                   }`
                 }
               >
-                {n.label}
+                {/* sweep shine */}
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                {/* underline grow */}
+                <span className="pointer-events-none absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-white/80 transition-all duration-300 group-hover:w-2/3" />
+                <span className="relative">{n.label}</span>
               </NavLink>
             ))}
           </nav>
+
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             className="lg:hidden p-2 -ml-2 text-white"
