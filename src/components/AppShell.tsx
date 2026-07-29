@@ -4,7 +4,6 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { LanguageToggle } from "@/lib/i18n";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { NeoCastLoader } from "@/components/NeoCastLoader";
 
@@ -46,7 +45,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     >
 
       {/* TOP NAV */}
-      <header className="bg-[#0b1230] text-white sticky top-0 z-40 border-b border-white/10">
+      <header className="bg-[#141414] text-white sticky top-0 z-40 border-b-2 border-[#c62828]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 h-12 flex items-center justify-between gap-6">
           <nav className="hidden lg:flex items-center h-full text-[13px] tracking-wide">
             {items.map((n) => (
@@ -57,8 +56,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 className={({ isActive }) =>
                   `h-full px-4 flex items-center transition-colors border-b-2 relative ${
                     isActive
-                      ? "text-[#22d3ee] border-[#22d3ee] bg-white/[0.06]"
-                      : "text-[#aab6d6] border-transparent hover:text-white"
+                      ? "text-white border-[#c62828] bg-[#c62828]"
+                      : "text-white/70 border-transparent hover:text-white hover:bg-white/[0.06]"
                   }`
                 }
               >
@@ -78,7 +77,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
           </div>
         </div>
         {drawerOpen && (
-          <div className="lg:hidden bg-[#0b1230] border-t border-white/10">
+          <div className="lg:hidden bg-[#141414] border-t border-white/10">
             {items.map((n) => (
               <NavLink
                 key={n.to}
@@ -87,7 +86,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-3 text-sm border-l-2 ${
-                    isActive ? "border-[#22d3ee] text-[#22d3ee] bg-white/5" : "border-transparent text-[#aab6d6] hover:bg-white/5"
+                    isActive ? "border-[#c62828] text-white bg-[#c62828]/80" : "border-transparent text-white/70 hover:bg-white/5"
                   }`
                 }
               >
@@ -101,7 +100,6 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       {/* SUB BAR */}
       <div className="bg-white border-b border-[#e6e6e6]">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-6 min-h-12 py-1.5 flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-[12px] sm:text-[13px]">
-          <LanguageToggle />
           <span className="px-2 sm:px-3 py-1.5 border border-[#e6e6e6] text-[#0e7490] max-w-[120px] sm:max-w-none truncate">
 
 

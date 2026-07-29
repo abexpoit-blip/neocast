@@ -313,8 +313,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    const saved = (typeof localStorage !== "undefined" ? localStorage.getItem(LS_KEY) : null) as Lang | null;
-    if (saved === "en" || saved === "ru") setLangState(saved);
+    // English-only site: clear any previously saved language preference.
+    if (typeof localStorage !== "undefined") localStorage.setItem(LS_KEY, "en");
   }, []);
 
   useEffect(() => {
@@ -353,7 +353,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 export const useLanguage = () => useContext(Ctx);
 
 /** Small inline switcher — matches the flat Scorpion sub-bar style. */
-export const LanguageToggle = ({ className = "" }: { className?: string }) => {
+export const LanguageToggle = (_props: { className?: string }) => null;
+
+const LegacyLanguageToggle = ({ className = "" }: { className?: string }) => {
   const { lang, setLang } = useLanguage();
   return (
     <button
