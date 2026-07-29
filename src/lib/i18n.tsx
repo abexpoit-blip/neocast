@@ -355,7 +355,7 @@ export const useLanguage = () => useContext(Ctx);
 /** Small inline switcher — matches the flat Scorpion sub-bar style. */
 export const LanguageToggle = (_props: { className?: string }) => null;
 
-const LegacyLanguageToggle = ({ className = "" }: { className?: string }) => {
+export const LegacyLanguageToggle = ({ className = "" }: { className?: string }) => {
   const { lang, setLang } = useLanguage();
   return (
     <button
