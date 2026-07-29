@@ -56,18 +56,15 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
                 to={n.to}
                 end={(n as any).end}
                 className={({ isActive }) =>
-                  `group relative overflow-hidden rounded-full px-5 py-1.5 border transition-all duration-200 ease-out will-change-transform translate-y-0 active:translate-y-[2px] ${
+                  `group relative rounded-full px-4 py-1.5 transition-all duration-300 ease-out ${
                     isActive
-                      ? "text-white border-[var(--nc-accent)]/80 bg-gradient-to-b from-[var(--nc-accent-hi)] to-[var(--nc-accent-lo)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_4px_rgba(0,0,0,0.35),0_4px_0_-1px_rgba(0,0,0,0.55),0_10px_20px_-8px_rgba(var(--nc-accent-rgb),0.85)] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_3px_rgba(0,0,0,0.4),0_2px_0_-1px_rgba(0,0,0,0.5)]"
-                      : "text-white/70 border-white/12 bg-gradient-to-b from-white/[0.10] to-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_3px_0_-1px_rgba(0,0,0,0.5),0_8px_16px_-10px_rgba(0,0,0,0.9)] hover:text-white hover:-translate-y-[1px] hover:border-[var(--nc-accent)]/60 hover:from-[var(--nc-accent)]/30 hover:to-[var(--nc-accent)]/10 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_5px_0_-1px_rgba(0,0,0,0.55),0_12px_22px_-10px_rgba(var(--nc-accent-rgb),0.8)] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                      ? "text-white bg-[linear-gradient(180deg,rgba(var(--nc-accent-rgb),0.95),rgba(var(--nc-accent-rgb),0.55))] ring-1 ring-[var(--nc-accent-soft)]/50 shadow-[0_2px_14px_-4px_rgba(var(--nc-accent-rgb),0.9)]"
+                      : "text-white/60 hover:text-white hover:bg-white/[0.06] ring-1 ring-transparent hover:ring-white/10"
                   }`
                 }
               >
-                {/* glossy top highlight */}
-                <span className="pointer-events-none absolute inset-x-1 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent opacity-70" />
-                {/* sweep shine */}
-                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
-                <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)]">{n.label}</span>
+                <span className="relative">{n.label}</span>
+
               </NavLink>
 
             ))}
