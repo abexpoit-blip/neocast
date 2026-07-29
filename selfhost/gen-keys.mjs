@@ -28,7 +28,7 @@ const PG_META_CRYPTO_KEY = rand(16); // 32 chars
 const LOGFLARE_KEY = rand(16);
 const S3_PROTOCOL_ACCESS_KEY_ID = rand(16);
 const S3_PROTOCOL_ACCESS_KEY_SECRET = rand(32);
-const POOLER_TENANT_ID = `zoru${rand(6)}`;
+const POOLER_TENANT_ID = `neocast${rand(6)}`;
 
 const ANON_KEY = sign({ role: 'anon', iss: 'supabase', iat, exp }, JWT_SECRET);
 const SERVICE_ROLE_KEY = sign({ role: 'service_role', iss: 'supabase', iat, exp }, JWT_SECRET);
@@ -40,7 +40,7 @@ console.log(
       ANON_KEY,
       SERVICE_ROLE_KEY,
       POSTGRES_PASSWORD,
-      DASHBOARD_USERNAME: 'zoru',
+      DASHBOARD_USERNAME: 'neocast',
       DASHBOARD_PASSWORD,
       SECRET_KEY_BASE,
       VAULT_ENC_KEY,

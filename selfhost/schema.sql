@@ -503,9 +503,9 @@ INSERT INTO public.payment_methods (name, code, instructions, address, sort_orde
   ('USDT (TRC-20)', 'usdt_trc20', 'Отправьте USDT в сети TRON (TRC-20) и укажите TXID.', 'TExampleAddressReplaceInAdmin', 2);
 
 INSERT INTO public.site_settings (key, value) VALUES
-  ('brand_name', 'Zoru Shop'),
+  ('brand_name', 'NeoCast'),
   ('tagline', 'Маркетплейс цифровых товаров'),
-  ('support_telegram', '@zorushop'),
+  ('support_telegram', '@neocast'),
   ('currency_symbol', '$');REVOKE EXECUTE ON FUNCTION public.purchase_product(uuid, integer) FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.admin_adjust_balance(uuid, numeric, text) FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.admin_set_deposit_status(uuid, text, text) FROM anon, public;

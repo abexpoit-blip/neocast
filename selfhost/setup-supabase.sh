@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Zoru Shop — Self-hosted Supabase installer for Ubuntu VPS (157.173.117.34 / zoru.cc)
+# NeoCast — Self-hosted Supabase installer for Ubuntu VPS (157.173.117.34 / neocast.cc)
 # Run as root:  bash setup-supabase.sh
 set -euo pipefail
 
 # Resolve script dir BEFORE any cd
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-DOMAIN_API="${DOMAIN_API:-api.zoru.cc}"
+DOMAIN_API="${DOMAIN_API:-supabase.neocast.cc}"
 BASE_DIR="/opt/supabase"
-APP_DIR="/var/www/zoru-cc"
+APP_DIR="/var/www/neocast-cc"
 
 echo "==> 1/8 Installing Docker + tools"
 apt-get update -y
@@ -56,7 +56,7 @@ const rand = (n) => crypto.randomBytes(n).toString('hex');
 const ensure = (key, value) => {
   if (!data[key] || data[key] === 'null') data[key] = typeof value === 'function' ? value() : value;
 };
-ensure('DASHBOARD_USERNAME', 'zoru');
+ensure('DASHBOARD_USERNAME', 'neocast');
 ensure('SECRET_KEY_BASE', () => rand(32));
 ensure('VAULT_ENC_KEY', () => rand(16));
 ensure('REALTIME_DB_ENC_KEY', () => rand(8));
@@ -64,7 +64,7 @@ ensure('PG_META_CRYPTO_KEY', () => rand(16));
 ensure('LOGFLARE_KEY', () => rand(16));
 ensure('S3_PROTOCOL_ACCESS_KEY_ID', () => rand(16));
 ensure('S3_PROTOCOL_ACCESS_KEY_SECRET', () => rand(32));
-ensure('POOLER_TENANT_ID', () => `zoru${rand(6)}`);
+ensure('POOLER_TENANT_ID', () => `neocast${rand(6)}`);
 fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
 NODE
 
@@ -117,10 +117,10 @@ setenv LOGFLARE_PUBLIC_ACCESS_TOKEN "$LOGFLARE_KEY"
 setenv LOGFLARE_PRIVATE_ACCESS_TOKEN "$LOGFLARE_KEY"
 setenv S3_PROTOCOL_ACCESS_KEY_ID "$S3_PROTOCOL_ACCESS_KEY_ID"
 setenv S3_PROTOCOL_ACCESS_KEY_SECRET "$S3_PROTOCOL_ACCESS_KEY_SECRET"
-setenv SITE_URL "https://zoru.cc"
+setenv SITE_URL "https://neocast.cc"
 setenv API_EXTERNAL_URL "https://$DOMAIN_API/auth/v1"
 setenv SUPABASE_PUBLIC_URL "https://$DOMAIN_API"
-setenv ADDITIONAL_REDIRECT_URLS "https://zoru.cc,https://zoru.cc/auth"
+setenv ADDITIONAL_REDIRECT_URLS "https://neocast.cc,https://neocast.cc/auth"
 setenv DISABLE_SIGNUP "false"
 setenv ENABLE_EMAIL_AUTOCONFIRM "true"
 setenv ENABLE_EMAIL_SIGNUP "true"
@@ -139,8 +139,8 @@ setenv POOLER_TENANT_ID "$POOLER_TENANT_ID"
 setenv PGRST_DB_SCHEMAS "public,graphql_public"
 setenv PGRST_DB_MAX_ROWS "1000"
 setenv PGRST_DB_EXTRA_SEARCH_PATH "public,extensions"
-setenv STUDIO_DEFAULT_ORGANIZATION "Zoru Shop"
-setenv STUDIO_DEFAULT_PROJECT "Zoru Shop"
+setenv STUDIO_DEFAULT_ORGANIZATION "NeoCast"
+setenv STUDIO_DEFAULT_PROJECT "NeoCast"
 setenv FUNCTIONS_VERIFY_JWT "false"
 
 echo "==> 5/8 Starting Supabase containers"
@@ -149,7 +149,7 @@ docker compose up -d || { print_db_help; exit 1; }
 sleep 25
 docker compose ps db | grep -q "healthy" || { print_db_help; exit 1; }
 
-echo "==> 6/8 Applying Zoru Shop schema"
+echo "==> 6/8 Applying NeoCast schema"
 SCHEMA="$SCRIPT_DIR/schema.sql"
 docker compose exec -T db psql -U postgres -d postgres < "$SCHEMA" || echo "!! schema had warnings, check output above"
 
@@ -199,12 +199,12 @@ NGINX
     apt-get install -y certbot
     if [ -n "$NEXUS_WEBROOT" ]; then
       certbot certonly --webroot -w "$NEXUS_WEBROOT" -d "$DOMAIN_API" \
-        --non-interactive --agree-tos -m admin@zoru.cc \
+        --non-interactive --agree-tos -m admin@neocast.cc \
         || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
     else
       # No shared webroot mount: serve ACME from a temp local http server on 8899
       certbot certonly --standalone --http-01-port 8899 -d "$DOMAIN_API" \
-        --non-interactive --agree-tos -m admin@zoru.cc \
+        --non-interactive --agree-tos -m admin@neocast.cc \
         || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
     fi
   fi
@@ -260,7 +260,7 @@ NGINX
   nginx -t && (systemctl reload nginx || systemctl restart nginx) || {
     echo "!! host nginx start failed (port 80 probably taken by a container)"; return 1; }
   apt-get install -y certbot python3-certbot-nginx
-  certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@zoru.cc --redirect \
+  certbot --nginx -d "$DOMAIN_API" --non-interactive --agree-tos -m admin@neocast.cc --redirect \
     || echo "!! certbot failed — DNS A record $DOMAIN_API -> this VPS lagbe"
 }
 
@@ -283,6 +283,7 @@ SUPABASE_URL=https://$DOMAIN_API
 SUPABASE_PUBLISHABLE_KEY=$ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
 SUPABASE_DB_URL=postgresql://postgres:$POSTGRES_PASSWORD@127.0.0.1:5432/postgres
+PORT=3002
 APPENV
   chmod 600 "$APP_DIR/.env"
 fi
