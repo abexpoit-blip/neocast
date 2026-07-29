@@ -143,7 +143,7 @@ export interface AuthResult {
   user: { id: string; email: string; username: string; role: string; roles?: string[] };
 }
 
-const SYNTH_DOMAIN = "cruzercc.shop";
+const SYNTH_DOMAIN = "neocast.cc";
 
 function toAuthEmail(identifier: string): string {
   const id = identifier.trim();
