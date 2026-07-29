@@ -1,24 +1,32 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { newsApi, announcementsApi, ordersApi } from "@/lib/api";
 import { AppShell } from "@/components/AppShell";
 import Seo from "@/components/Seo";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Activity, Megaphone, ShieldCheck, MessageCircle, ArrowRight,
+  Zap, Layers, RefreshCw, Send,
+} from "lucide-react";
 
 /**
- * Buyer HOME — Scorpion-style layout copy:
- *   - News & Updates (left) + Announcement (right)
- *   - Scorpion Shop Rules + Contact Information
+ * Buyer HOME — NeoCast premium layout.
+ * Live stock feed + announcements + rules + contact.
  */
 
 const Index = () => {
+  const { profile } = useAuth();
   const [news, setNews] = useState<{ id: string; label: string; count: number }[]>([]);
   const [anns, setAnns] = useState<{ id: string; title: string; body: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadNews = useCallback(async () => {
     try {
       const res = await newsApi.list();
       setNews((res.updates ?? []) as typeof news);
+      setUpdatedAt(new Date());
     } catch { /* ignore */ }
   }, []);
 
@@ -40,103 +48,162 @@ const Index = () => {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [loadNews]);
 
+  const totalStock = news.reduce((s, n) => s + (Number(n.count) || 0), 0);
+
   return (
     <AppShell>
-      <Seo title="NeoCast — Главная" description="Личный кабинет покупателя, живая лента поступлений и объявления." path="/" />
+      <Seo title="NeoCast — Home" description="Buyer dashboard, live stock feed and announcements." path="/" />
+
+      {/* HERO */}
+      <section className="rounded-xl overflow-hidden bg-[#141414] border border-[#2a2a2a] relative mb-5">
+        <div className="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-[#c62828]/25 blur-3xl" />
+        <div className="relative px-5 sm:px-7 py-6 flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[#ef5350] font-semibold">Welcome back</div>
+            <h1 className="mt-1.5 text-white text-[22px] sm:text-[27px] font-bold tracking-tight">
+              {profile?.username ?? "buyer"}
+            </h1>
+            <p className="mt-1 text-[12.5px] text-white/50 max-w-lg leading-relaxed">
+              Fresh stock is pushed to the shop around the clock. Track new drops in the live feed below.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/shop" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md bg-[#c62828] hover:bg-[#b02121] text-white text-[12px] font-semibold uppercase tracking-wide transition">
+                Browse shop <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link to="/recharge" className="inline-flex items-center gap-1.5 px-4 h-9 rounded-md border border-[#3a3a3a] text-white/80 hover:text-white hover:border-[#c62828] text-[12px] font-semibold uppercase tracking-wide transition">
+                Add funds
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2.5 lg:min-w-[380px]">
+            <Stat icon={<Zap className="h-4 w-4" />} label="Balance" value={`$${Number(profile?.balance ?? 0).toFixed(2)}`} />
+            <Stat icon={<Layers className="h-4 w-4" />} label="Live items" value={totalStock ? String(totalStock) : "—"} />
+            <Stat icon={<Activity className="h-4 w-4" />} label="Feeds" value={String(news.length)} />
+          </div>
+        </div>
+        <div className="h-[3px] bg-gradient-to-r from-[#c62828] via-[#ef5350] to-transparent" />
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* НОВОСТИ И ОБНОВЛЕНИЯ */}
-        <Panel title="Новости и обновления">
-          <div className="max-h-[420px] overflow-y-auto py-3 text-center font-mono text-[15px] leading-[2.1] text-[#d32f2f]">
-            {loading && (
-              <div className="space-y-3 px-6 py-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-3 bg-[#f0f0f0] animate-pulse" style={{ width: `${60 + (i % 3) * 12}%`, marginInline: "auto" }} />
-                ))}
+        {/* LIVE STOCK FEED */}
+        <Panel
+          title="Live stock feed"
+          icon={<Activity className="h-4 w-4" />}
+          right={
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[#2fb344]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-[#2fb344] opacity-70 animate-ping" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2fb344]" />
+              </span>
+              Live
+            </span>
+          }
+        >
+          <div className="max-h-[420px] overflow-y-auto divide-y divide-[#f0f0f0]">
+            {loading && Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="px-4 py-3">
+                <div className="h-3 bg-[#f0f0f0] animate-pulse rounded" style={{ width: `${55 + (i % 3) * 14}%` }} />
               </div>
-            )}
+            ))}
             {!loading && news.length === 0 && (
-              <div className="text-[#888] font-sans text-sm py-6">Пока нет обновлений.</div>
+              <div className="px-4 py-10 text-center text-[13px] text-[#888]">No updates yet.</div>
             )}
             {!loading && news.map((n) => (
-              <div key={n.id}>
-                {n.label}
-                {n.count ? `,КОЛ-ВО:${n.count}` : ""}
+              <div key={n.id} className="px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-[#fafafa] transition group">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#c62828] shrink-0" />
+                  <span className="text-[13px] text-[#222] truncate font-medium">{n.label}</span>
+                </div>
+                {n.count ? (
+                  <span className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-0.5 rounded border border-[#f2caca] bg-[#fdf2f2] text-[#c62828]">
+                    {n.count} pcs
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
+          <div className="px-4 py-2.5 border-t border-[#eee] flex items-center justify-between text-[11px] text-[#999]">
+            <span className="inline-flex items-center gap-1.5">
+              <RefreshCw className="h-3 w-3" /> Auto-refresh · 30s
+            </span>
+            <span>{updatedAt ? `Updated ${updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}</span>
+          </div>
         </Panel>
 
-        {/* ОБЪЯВЛЕНИЯ */}
-        <Panel title="Объявления">
-          <div className="px-6 py-6 space-y-6 text-center max-h-[420px] overflow-y-auto">
+        {/* ANNOUNCEMENTS */}
+        <Panel title="Announcements" icon={<Megaphone className="h-4 w-4" />}>
+          <div className="px-5 py-5 space-y-4 max-h-[420px] overflow-y-auto">
             {anns.length === 0 ? (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#8e24aa] mb-2">
-                    Добро пожаловать в NeoCast
-                  </h3>
-                  <p className="text-[14px] text-[#333] leading-[1.9]">
-                    Следите за официальным каналом, чтобы не пропустить обновления.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-[#d32f2f] mb-2">Акция на пополнение</h3>
-                  <p className="text-[14px] text-[#d32f2f] font-semibold leading-[1.9]">
-                    Пополнение на $500 — бонус $35. Пополнение на $1000 — бонус $100.
-                  </p>
-                  <p className="text-[14px] text-[#d32f2f] font-semibold leading-[1.9] mt-2">
-                    Пополнение на $2000 — бонус $240. Пополнение на $5000 — бонус $750.
-                  </p>
-                </div>
+              <div className="rounded-lg border border-[#eee] bg-[#fafafa] p-5 text-center">
+                <h3 className="text-[15px] font-semibold text-[#1a1a1a]">Welcome to NeoCast</h3>
+                <p className="mt-1.5 text-[13px] text-[#666] leading-relaxed">
+                  Follow the official channel so you never miss a drop or an update.
+                </p>
               </div>
             ) : (
-              anns.map((a, i) => (
-                <div key={a.id}>
-                  <h3 className={`text-lg font-semibold mb-2 ${i === 0 ? "text-[#8e24aa]" : "text-[#d32f2f]"}`}>
-                    {a.title}
-                  </h3>
-                  <p className="text-[14px] text-[#333] leading-[1.75] whitespace-pre-line">
-                    {a.body}
-                  </p>
-                </div>
+              anns.map((a) => (
+                <article key={a.id} className="rounded-lg border border-[#eee] bg-white p-4 border-l-[3px] border-l-[#c62828]">
+                  <h3 className="text-[14px] font-semibold text-[#1a1a1a]">{a.title}</h3>
+                  <p className="mt-1.5 text-[13px] text-[#555] leading-[1.75] whitespace-pre-line">{a.body}</p>
+                </article>
               ))
             )}
           </div>
         </Panel>
       </div>
 
-      {/* ПРАВИЛА + КОНТАКТЫ */}
+      {/* RULES + CONTACT */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-        <Panel title="Правила NeoCast">
-          <div className="px-6 py-5 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 space-y-2 leading-[1.7]">
-            <p>Регистрируясь, вы автоматически соглашаетесь с правилами магазина.</p>
-            <p>Правила могут изменяться без уведомления пользователей.</p>
-            <p>Если вы нашли ошибку или уязвимость, сообщите об этом через тикеты.</p>
-            <p>Умышленное использование ошибок в корыстных целях приведёт к безвозвратной блокировке аккаунта.</p>
-            <p>После очистки раздела покупок администрация не сможет восстановить данные. Сохраняйте покупки на своих устройствах.</p>
-            <p>При потере доступа к аккаунту администрация не сможет восстановить данные, доступ будет утерян навсегда.</p>
-            <p>Пополняйте баланс разумно. Средства на балансе возврату не подлежат.</p>
-            <p>Владельцы магазина не несут ответственности за то, как вы используете информацию с этого ресурса.</p>
-          </div>
+        <Panel title="Shop rules" icon={<ShieldCheck className="h-4 w-4" />}>
+          <ul className="px-5 py-4 space-y-2.5 text-[13px] text-[#444] leading-[1.7]">
+            {[
+              "By registering you automatically accept the shop rules.",
+              "Rules may change without prior notice.",
+              "Found a bug or vulnerability? Report it through tickets.",
+              "Intentional abuse of bugs for profit leads to a permanent ban.",
+              "After clearing the purchases section, data cannot be restored — keep your own copies.",
+              "If you lose access to your account, access is lost forever.",
+              "Top up wisely. Balance funds are non-refundable.",
+              "The shop is not responsible for how you use information from this resource.",
+            ].map((r) => (
+              <li key={r} className="flex gap-2.5">
+                <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[#c62828] shrink-0" />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
         </Panel>
 
-        <Panel title="Контактная информация">
-          <div className="px-6 py-5 space-y-3 text-[13px] text-[#333] border-l-2 border-[#e6e6e6] ml-3 leading-[1.7]">
-            <p>Остерегайтесь поддельной поддержки NeoCast. По вопросам и предложениям пишите нам в Telegram.</p>
-            <div>
-              <div className="text-[#333] mb-1">Telegram:</div>
-              <a href="https://t.me/zoru_support" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
-                @zoru_support
+        <Panel title="Contact information" icon={<MessageCircle className="h-4 w-4" />}>
+          <div className="px-5 py-4 space-y-4 text-[13px] text-[#444] leading-[1.7]">
+            <p className="rounded-lg bg-[#fdf2f2] border border-[#f2caca] px-3.5 py-2.5 text-[#c62828]">
+              Beware of fake NeoCast support. We never message you first.
+            </p>
+            <div className="grid gap-2.5">
+              <a href="https://t.me/zoru_support" target="_blank" rel="noreferrer"
+                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[#c62828]/50 hover:bg-[#fafafa] transition group">
+                <span className="flex items-center gap-2.5">
+                  <span className="h-8 w-8 rounded-md bg-[#1c1c1c] text-white flex items-center justify-center"><Send className="h-4 w-4" /></span>
+                  <span>
+                    <span className="block text-[10px] uppercase tracking-[0.18em] text-[#999]">Support</span>
+                    <span className="block text-[13px] font-medium text-[#1a1a1a]">@zoru_support</span>
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[#c62828] transition" />
+              </a>
+              <a href="https://t.me/zoru_shop" target="_blank" rel="noreferrer"
+                className="flex items-center justify-between rounded-lg border border-[#eee] px-3.5 py-3 hover:border-[#c62828]/50 hover:bg-[#fafafa] transition group">
+                <span className="flex items-center gap-2.5">
+                  <span className="h-8 w-8 rounded-md bg-[#1c1c1c] text-white flex items-center justify-center"><Megaphone className="h-4 w-4" /></span>
+                  <span>
+                    <span className="block text-[10px] uppercase tracking-[0.18em] text-[#999]">Channel</span>
+                    <span className="block text-[13px] font-medium text-[#1a1a1a]">t.me/zoru_shop</span>
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-[#bbb] group-hover:text-[#c62828] transition" />
               </a>
             </div>
-            <div>
-              <div className="text-[#333] mb-1">Telegram-канал:</div>
-              <a href="https://t.me/zoru_shop" target="_blank" rel="noreferrer" className="block text-[#1976d2] hover:underline">
-                https://t.me/zoru_shop
-              </a>
-            </div>
-            <p className="text-[#d32f2f] font-semibold pt-2">Приглашаем продавцов присоединиться к нашей платформе</p>
+            <p className="text-[12.5px] text-[#c62828] font-semibold">Sellers are welcome to join the platform.</p>
           </div>
         </Panel>
       </div>
@@ -144,11 +211,24 @@ const Index = () => {
   );
 };
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <section className="bg-white border border-[#e6e6e6]">
-      <header className="px-5 py-3 border-b border-[#eee] text-center">
-        <h2 className="text-[15px] font-medium text-[#1a1a1a]">{title}</h2>
+    <div className="rounded-lg border border-[#333] bg-[#1c1c1c] px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[#ef5350]">{icon}</div>
+      <div className="mt-1.5 text-[16px] font-bold text-white tabular-nums truncate">{value}</div>
+      <div className="text-[9px] uppercase tracking-[0.18em] text-white/40">{label}</div>
+    </div>
+  );
+}
+
+function Panel({ title, icon, right, children }: { title: string; icon?: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="bg-white border border-[#e6e6e6] rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+      <header className="px-4 h-11 bg-[#1c1c1c] border-b-2 border-[#c62828] flex items-center justify-between">
+        <h2 className="text-[12.5px] font-medium text-white/85 uppercase tracking-[0.14em] flex items-center gap-2">
+          <span className="text-[#ef5350]">{icon}</span>{title}
+        </h2>
+        {right}
       </header>
       <div>{children}</div>
     </section>
