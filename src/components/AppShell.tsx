@@ -174,12 +174,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       <footer className="mt-10 border-t-2 !border-t-[#c62828] bg-[#101010] text-white/70 border-t border-white/10">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#c62828] to-[#7f1414] text-white flex items-center justify-center text-sm font-extrabold shadow-[0_8px_24px_-8px_rgba(198,40,40,0.8)]">
-                N
-              </span>
-              <span className="text-white text-[15px] font-bold tracking-tight">{settings.shop_name}</span>
-            </div>
+            <BrandLogo size={38} />
+
             <p className="mt-3 text-[12px] leading-relaxed text-white/55 max-w-[260px]">
               A verified marketplace built for speed — vetted stock, instant delivery and secure settlement.
             </p>
