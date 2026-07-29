@@ -19,7 +19,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
           className="absolute left-1/2 top-1/2 h-[126px] w-[126px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70 neocast-spin"
           style={{
             background:
-              "conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.75) 90deg, rgba(129,140,248,0.55) 190deg, transparent 300deg)",
+              "conic-gradient(from 0deg, transparent 0deg, rgba(239,83,80,0.75) 90deg, rgba(129,140,248,0.55) 190deg, transparent 300deg)",
             maskImage: "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
             WebkitMaskImage:
               "radial-gradient(circle, transparent 56%, black 58%, black 62%, transparent 64%)",
@@ -32,7 +32,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
             className="absolute left-1/2 top-1/2 h-[58px] w-[94px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20 neocast-card"
             style={{
               background: [
-                "linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%)",
+                "linear-gradient(135deg, #c62828 0%, #9e1c1c 100%)",
                 "linear-gradient(135deg, #06b6d4 0%, #0f172a 100%)",
                 "linear-gradient(135deg, #818cf8 0%, #1e293b 100%)",
               ][i],
@@ -54,7 +54,7 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
         <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full w-1/3 rounded-full neocast-rail"
-            style={{ background: "linear-gradient(90deg, #4f46e5, #22d3ee, #a5f3fc)" }}
+            style={{ background: "linear-gradient(90deg, #c62828, #ef5350, #ffcdd2)" }}
           />
         </div>
         <div className="mt-3 text-center text-[10px] uppercase tracking-[0.38em] text-white/45">
@@ -89,11 +89,11 @@ export function NeoCastLoader({ variant = "screen", label = "Loading" }: Props) 
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
-      style={{ background: "linear-gradient(160deg, #05070f 0%, #0b1230 50%, #05070f 100%)" }}
+      style={{ background: "linear-gradient(160deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%)" }}
     >
       <div
         className="absolute -top-32 -left-24 h-[380px] w-[380px] rounded-full blur-[120px] opacity-50"
-        style={{ background: "radial-gradient(circle, #4f46e5 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, #c62828 0%, transparent 70%)" }}
       />
       <div
         className="absolute -bottom-32 -right-20 h-[400px] w-[400px] rounded-full blur-[130px] opacity-40"

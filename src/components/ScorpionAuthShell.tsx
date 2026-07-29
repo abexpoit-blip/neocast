@@ -9,7 +9,7 @@ type Props = {
 };
 
 const accentBar: Record<NonNullable<Props["accent"]>, string> = {
-  blue: "from-transparent via-[#22d3ee] to-transparent",
+  blue: "from-transparent via-[#ef5350] to-transparent",
   red: "from-transparent via-[#f472b6] to-transparent",
   gold: "from-transparent via-[#818cf8] to-transparent",
 };
@@ -110,7 +110,7 @@ export function ScorpionAuthShell({
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 sm:py-14 overflow-hidden"
       style={{
         fontFamily: '"DM Sans", "Segoe UI", system-ui, sans-serif',
-        background: "linear-gradient(160deg, #05070f 0%, #0b1230 48%, #05070f 100%)",
+        background: "linear-gradient(160deg, #0a0a0a 0%, #141414 48%, #0a0a0a 100%)",
       }}
     >
       {/* Grid */}
@@ -127,7 +127,7 @@ export function ScorpionAuthShell({
       {/* Aurora glows */}
       <div
         className="absolute -top-40 -left-32 h-[460px] w-[460px] rounded-full blur-[130px] opacity-60"
-        style={{ background: "radial-gradient(circle, #4f46e5 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, #c62828 0%, transparent 70%)" }}
       />
       <div
         className="absolute -bottom-48 -right-24 h-[500px] w-[500px] rounded-full blur-[140px] opacity-50"
@@ -147,7 +147,7 @@ export function ScorpionAuthShell({
         {/* Brand panel */}
         <section className="hidden lg:block text-white">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#22d3ee] shadow-[0_0_10px_#22d3ee]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ef5350] shadow-[0_0_10px_#ef5350]" />
             <span className="text-[10px] uppercase tracking-[0.3em] text-white/70">
               Premium gift card marketplace
             </span>
@@ -161,7 +161,7 @@ export function ScorpionAuthShell({
             <br />
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(100deg, #818cf8 0%, #22d3ee 60%, #a5f3fc 100%)" }}
+              style={{ backgroundImage: "linear-gradient(100deg, #818cf8 0%, #ef5350 60%, #ffcdd2 100%)" }}
             >
               that just work.
             </span>
@@ -175,7 +175,7 @@ export function ScorpionAuthShell({
             {perks.map(({ icon: Icon, title: t, copy }) => (
               <div key={t} className="flex items-start gap-3.5">
                 <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/12 bg-white/[0.05] backdrop-blur-md">
-                  <Icon className="h-4 w-4 text-[#67e8f9]" />
+                  <Icon className="h-4 w-4 text-[#ff8a80]" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[13.5px] font-semibold text-white">{t}</div>
@@ -191,7 +191,7 @@ export function ScorpionAuthShell({
               label="Balance"
               value="$100.00"
               className="left-0 top-0 -rotate-6"
-              gradient="linear-gradient(140deg, rgba(79,70,229,0.85) 0%, rgba(14,165,233,0.7) 100%)"
+              gradient="linear-gradient(140deg, rgba(198,40,40,0.85) 0%, rgba(158,28,28,0.7) 100%)"
             />
             <CardMock
               label="Balance"
@@ -249,7 +249,7 @@ export function ScorpionAuthShell({
               className="absolute -inset-[1px] rounded-[22px] opacity-80"
               style={{
                 background:
-                  "linear-gradient(140deg, rgba(34,211,238,0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
+                  "linear-gradient(140deg, rgba(239,83,80,0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
               }}
             />
             <div
@@ -269,15 +269,15 @@ export function ScorpionAuthShell({
                         className="absolute inset-0 rounded-2xl blur-xl opacity-70"
                         style={{
                           background:
-                            "radial-gradient(circle, rgba(34,211,238,0.65) 0%, rgba(79,70,229,0) 70%)",
+                            "radial-gradient(circle, rgba(239,83,80,0.65) 0%, rgba(198,40,40,0) 70%)",
                         }}
                       />
                       <div
                         className="relative h-full w-full rounded-2xl border border-white/15 flex items-center justify-center"
                         style={{
-                          background: "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)",
+                          background: "linear-gradient(135deg, #c62828 0%, #06b6d4 100%)",
                           boxShadow:
-                            "inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 30px -10px rgba(34,211,238,0.6)",
+                            "inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 30px -10px rgba(239,83,80,0.6)",
                         }}
                       >
                         <span
@@ -295,7 +295,7 @@ export function ScorpionAuthShell({
                   >
                     {title}
                   </h1>
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#67e8f9]/70">
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-[#ff8a80]/70">
                     Secure Access
                   </p>
                   {tagline && (
