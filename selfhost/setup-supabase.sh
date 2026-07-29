@@ -39,9 +39,24 @@ if [ ! -d "$BASE_DIR/docker" ]; then
 fi
 cd "$BASE_DIR/docker"
 
+# Docker Compose only auto-merges an override whose name matches the base file
+# family (compose.yaml -> compose.override.yaml, docker-compose.yml -> docker-compose.override.yml).
+# Detect the base file and write the matching override name, otherwise the
+# stack would fall back to upstream's hardcoded "supabase-*" container names
+# and collide with another Supabase stack on this VPS.
+if [ -f "$BASE_DIR/docker/compose.yaml" ]; then
+  OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yaml"
+elif [ -f "$BASE_DIR/docker/compose.yml" ]; then
+  OVERRIDE_FILE="$BASE_DIR/docker/compose.override.yml"
+elif [ -f "$BASE_DIR/docker/docker-compose.yaml" ]; then
+  OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yaml"
+else
+  OVERRIDE_FILE="$BASE_DIR/docker/docker-compose.override.yml"
+fi
+
 # Isolate this stack: unique container names + unique host ports so it can run
 # side by side with any other Supabase stack already on this VPS.
-cat > "$BASE_DIR/docker/docker-compose.override.yml" <<OVERRIDE
+cat > "$OVERRIDE_FILE" <<OVERRIDE
 services:
   studio:    { container_name: ${STACK_NAME}-studio }
   kong:      { container_name: ${STACK_NAME}-kong }
@@ -61,6 +76,16 @@ services:
       - "${PG_PORT}:5432"
       - "${POOLER_PORT}:6543"
 OVERRIDE
+echo "    override written: $OVERRIDE_FILE"
+
+# Safety: never touch containers that belong to another stack.
+docker compose config --format json 2>/dev/null \
+  | jq -r '.services | to_entries[] | .value.container_name // empty' 2>/dev/null \
+  | grep -E '^supabase-' >/dev/null 2>&1 && {
+    echo "!! Container names still resolve to upstream 'supabase-*' — override not merged. Aborting to avoid clashing with the other stack."
+    exit 1
+  }
+
 
 echo "==> 3/8 Generating keys"
 KEYS_FILE="$BASE_DIR/credentials.json"
