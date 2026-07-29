@@ -12,8 +12,8 @@ type Props = {
 
 const accentBar: Record<NonNullable<Props["accent"]>, string> = {
   blue: "from-transparent via-[#ef5350] to-transparent",
-  red: "from-transparent via-[#f472b6] to-transparent",
-  gold: "from-transparent via-[#818cf8] to-transparent",
+  red: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
+  gold: "from-transparent via-[var(--nc-accent-hi)] to-transparent",
 };
 
 const perks = [
@@ -49,7 +49,7 @@ function CardMock({
 }) {
   return (
     <div
-      className={`absolute w-[230px] rounded-2xl border border-white/15 p-4 backdrop-blur-md shadow-[0_28px_70px_-24px_rgba(2,6,23,0.95)] ${className}`}
+      className={`absolute w-[230px] rounded-2xl border border-white/15 p-4 backdrop-blur-md shadow-[0_28px_70px_-24px_rgba(8,4,6,0.95)] ${className}`}
       style={{ background: gradient }}
     >
       <div className="flex items-start justify-between">
@@ -96,7 +96,7 @@ export function ScorpionAuthShell({
         className="absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(129,140,248,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.10) 1px, transparent 1px)",
+            "linear-gradient(rgba(var(--nc-accent-rgb),0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--nc-accent-rgb),0.10) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
           maskImage: "radial-gradient(ellipse at 50% 35%, black 10%, transparent 78%)",
           WebkitMaskImage: "radial-gradient(ellipse at 50% 35%, black 10%, transparent 78%)",
@@ -109,11 +109,11 @@ export function ScorpionAuthShell({
       />
       <div
         className="absolute -bottom-48 -right-24 h-[500px] w-[500px] rounded-full blur-[140px] opacity-50"
-        style={{ background: "radial-gradient(circle, #06b6d4 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent-hi) 0%, transparent 70%)" }}
       />
       <div
         className="absolute top-1/3 left-1/2 h-[360px] w-[360px] -translate-x-1/2 rounded-full blur-[150px] opacity-30"
-        style={{ background: "radial-gradient(circle, #d946ef 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, var(--nc-accent) 0%, transparent 70%)" }}
       />
       <div
         className="absolute -top-24 right-1/4 h-[300px] w-[300px] rounded-full blur-[130px] opacity-25"
@@ -139,7 +139,7 @@ export function ScorpionAuthShell({
             <br />
             <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(100deg, #818cf8 0%, #ef5350 60%, #ffcdd2 100%)" }}
+              style={{ backgroundImage: "linear-gradient(100deg, var(--nc-accent-hi) 0%, #ef5350 60%, #ffcdd2 100%)" }}
             >
               that just work.
             </span>
@@ -175,13 +175,13 @@ export function ScorpionAuthShell({
               label="Balance"
               value="$50.00"
               className="left-[150px] top-[46px] rotate-3"
-              gradient="linear-gradient(140deg, rgba(6,182,212,0.8) 0%, rgba(15,23,42,0.85) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.8) 0%, rgba(18,9,12,0.85) 100%)"
             />
             <CardMock
               label="Balance"
               value="$25.00"
               className="left-[300px] top-[14px] rotate-[9deg]"
-              gradient="linear-gradient(140deg, rgba(129,140,248,0.7) 0%, rgba(30,41,59,0.9) 100%)"
+              gradient="linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.7) 0%, rgba(30,14,18,0.9) 100%)"
             />
           </div>
 
@@ -232,14 +232,14 @@ export function ScorpionAuthShell({
               className="absolute -inset-[1px] rounded-[22px] opacity-80"
               style={{
                 background:
-                  "linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.55), rgba(99,102,241,0.35) 45%, rgba(255,255,255,0.05) 100%)",
+                  "linear-gradient(140deg, rgba(var(--nc-accent-rgb),0.55), rgba(var(--nc-accent-rgb),0.35) 45%, rgba(255,255,255,0.05) 100%)",
               }}
             />
             <div
-              className="relative rounded-[22px] border border-white/10 shadow-[0_30px_90px_-25px_rgba(4,8,25,0.95)]"
+              className="relative rounded-[22px] border border-white/10 shadow-[0_30px_90px_-25px_rgba(8,4,6,0.95)]"
               style={{
                 background:
-                  "linear-gradient(165deg, rgba(18,24,52,0.86) 0%, rgba(9,12,30,0.92) 100%)",
+                  "linear-gradient(165deg, rgba(22,10,14,0.86) 0%, rgba(10,6,8,0.92) 100%)",
                 backdropFilter: "blur(24px) saturate(140%)",
               }}
             >
