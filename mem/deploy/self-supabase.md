@@ -1,49 +1,23 @@
 ---
-name: Self-hosted Supabase for NeoCast
-description: NeoCast runs its OWN isolated self-hosted Supabase stack at supabase.neocast.cc, separate from the zoru.cc stack on the same VPS
+name: Self-hosted Supabase (NeoCast) — isolated from Zoru
+description: NeoCast uses its own self-hosted Supabase at supabase.neocast.cc; must never share DB/keys/ports with the Zoru project on the same VPS
 type: feature
 ---
 
-## Decision
-NeoCast runs a **dedicated self-hosted Supabase stack** on VPS 157.173.117.34,
-completely separate from the existing zoru.cc Supabase at `/opt/supabase`.
-Lovable Cloud backend is only used inside the Lovable preview/editor.
+VPS 157.173.117.34 হোস্ট করে দুইটি সম্পূর্ণ আলাদা প্রজেক্ট। কখনো মেশানো যাবে না — আলাদা DB, আলাদা keys, আলাদা পোর্ট।
 
-## Isolation (do not mix with zoru)
-| Item | zoru.cc (do not touch) | NeoCast |
+| | NeoCast | Zoru |
 |---|---|---|
-| Install dir | `/opt/supabase` | `/opt/supabase-neocast` |
-| Compose project | default | `neocast` |
-| Container prefix | `supabase-*` | `neocast-*` |
-| Kong/API port | 8000 | **8001** |
-| Postgres (pooler) | 5432 | **5433** |
-| Transaction pooler | 6543 | **6544** |
-| App port (pm2) | 3002 (`zoru-cc`) | **3003** (`neocast-cc`) |
-| Domain | zoru.cc / api.zoru.cc | neocast.cc / supabase.neocast.cc |
+| Supabase install dir | `/opt/supabase-neocast` | `/opt/supabase` |
+| Kong/API port | 8001 | 8000 |
+| Postgres port | 5433 | 5432 |
+| App port / PM2 name | 3003 / `neocast-cc` | 3002 / `zoru-cc` |
+| Domains | neocast.cc, supabase.neocast.cc | zoru.cc |
+| App dir | /var/www/neocast-cc | Zoru-র নিজের dir |
 
-## Endpoints
-- API / Auth / REST: `https://supabase.neocast.cc` → `172.17.0.1:8001`
-- Studio UI: `http://157.173.117.34:8001` (basic auth from credentials file)
-- Postgres: `postgresql://postgres:<POSTGRES_PASSWORD>@127.0.0.1:5433/postgres`
-- Credentials file: `/opt/supabase-neocast/credentials.json` (chmod 600)
+Edge proxy: `nexus_nginx` কন্টেইনার (host nginx disabled), host-এ পৌঁছায় `172.17.0.1:<port>` দিয়ে।
 
-## Installer
-`selfhost/setup-supabase.sh` — all paths/ports overridable via env
-(`BASE_DIR`, `STACK_NAME`, `KONG_PORT`, `PG_PORT`, `POOLER_PORT`, `APP_PORT`).
-It writes a `docker-compose.override.yml` that renames containers and remaps
-host ports, then overwrites `/var/www/neocast-cc/.env` with the self-hosted keys
-and `PORT=3003`.
-
-## Seed users
-`selfhost/create-users.mjs` → `admin@neocast.cc` / `user@neocast.cc`
-(passwords overridable via `ADMIN_PASS` / `USER_PASS`).
-
-## Edge proxy
-Host nginx is disabled; `nexus_nginx` (Docker) owns 80/443. NeoCast vhost lives at
-`/opt/nexus/deployment/nginx/conf.d/neocast.cc.conf`. Reload with
-`docker exec nexus_nginx nginx -t && docker exec nexus_nginx nginx -s reload`.
-
-## Important
-- Never commit credentials.json values, service_role keys or JWT secrets.
-- After any `.env` change: `bun run build && pm2 restart neocast-cc --update-env`
-  (VITE_* values are baked into the build).
+নিয়ম:
+- ANON_KEY / SERVICE_ROLE_KEY / JWT_SECRET / POSTGRES_PASSWORD প্রতিটি ইনস্ট্যান্সের আলাদা; কপি করা নিষেধ।
+- NeoCast-এর `.env` শুধু `https://supabase.neocast.cc` এবং তার নিজের keys ব্যবহার করবে।
+- Zoru-র কন্টেইনার/DB/nginx কনফিগ কখনো পরিবর্তন করা যাবে না (লাইভ সাইট)।

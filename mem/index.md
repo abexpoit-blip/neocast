@@ -7,6 +7,8 @@ Palette: midnight indigo #0b1230 base, indigo #4f46e5 → cyan #22d3ee accents. 
 Redesign work is visual only — backend, APIs and business logic must stay unchanged.
 Target domain: neocast.cc (Namecheap). Existing VPS: 157.173.117.34 (also hosts zoru.cc).
 Production backend is SELF-HOSTED Supabase at https://supabase.neocast.cc — not Lovable Cloud.
+NeoCast and Zoru are fully isolated: NeoCast = /opt/supabase-neocast, Kong 8001, PG 5433, app port 3003. Never share DBs, keys or ports with Zoru (8000/5432/3002).
+
 
 ## Memories
 - [Deploy setup (zoru.cc)](mem://deploy/vps) — existing VPS layout, nginx config path, safe boundaries around the Nexus stack
