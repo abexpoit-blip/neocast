@@ -90,24 +90,15 @@ const Cart = () => {
             {items.map((c) => (
               <tr key={c.id} className="border-b border-[#f0f0f0] hover:bg-[#fafcff] transition">
                 <td className="p-2 text-center font-mono text-[#333]">
-                  <span className="inline-flex items-center gap-2">
-                    <BrandLogo brand={c.brand || detectBrandFromBin(c.bin ?? "")} className="h-5 w-8 shrink-0" />
-                    <span>{c.bin ?? "—"}<span className="text-[#bbb]">••••••</span></span>
-                  </span>
+                  <span>{c.bin ?? "—"}<span className="text-[#bbb]">••••••</span></span>
                 </td>
                 <td className="p-2 text-center font-mono">{c.exp_month ?? "—"}</td>
                 <td className="p-2 text-center font-mono">{c.exp_year ?? "—"}</td>
                 <td className="p-2 text-center max-w-[140px] truncate" title={c.city ?? ""}>{c.city ?? "—"}</td>
                 <td className="p-2 text-center">{c.state ?? "—"}</td>
                 <td className="p-2 text-center font-mono">{c.zip ?? "—"}</td>
-                <td className="p-2 text-center">
-                  {c.country ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <CountryFlagImg code={c.country} className="h-3.5 w-5" />
-                      <span>{countryCode(c.country)}</span>
-                    </span>
-                  ) : "—"}
-                </td>
+                <td className="p-2 text-center">{c.country ? countryCode(c.country) : "—"}</td>
+
                 <td className="p-2 text-center font-mono">{Number(c.price).toFixed(2)}</td>
                 <td className="p-2 text-center text-[11px] text-[#666] max-w-[180px]">
                   <span className="whitespace-pre-line break-words">{c.base ?? "—"}</span>
