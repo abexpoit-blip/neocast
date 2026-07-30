@@ -7,7 +7,7 @@ import { listProducts, type Product } from "@/lib/store";
 import { addToCart, cartCount, onCartChange } from "@/lib/cart";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { BrandLogo, detectBrandFromBin, CountryFlagImg, countryCode } from "@/lib/brands";
+import { detectBrandFromBin, countryCode } from "@/lib/brands";
 
 const Shop = () => {
   const { profile, refresh: refreshProfile } = useAuth();
